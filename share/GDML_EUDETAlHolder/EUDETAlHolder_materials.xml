@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--   GDML materials definition from the Fastrad file : "EUDETAlHolder.ray"
+	Processed the 03/02/2011 at 13h49 by the GDML module of Fastrad 3.1.0.4 -->
+
+<materials>
+	<element name="videRef" formula="VACUUM" Z="1">
+		<atom value="1"/>
+	</element>
+	<element name="aluminum" formula="Al" Z="13">
+		<atom value="26.9815"/>
+	</element>
+	<element name="silicon" formula="Si" Z="14">
+		<atom value="28.0855"/>
+	</element>
+		
+	<element name="Oxygen" formula="O" Z="8">
+      <atom value="15.9994"/>
+    </element>
+    
+    <element name="Hydrogen" formula="H" Z="1">
+      <atom value="1.00794"/>
+    </element>
+    
+    <element name="Carbon" formula="C" Z="6">
+      <atom value="12.011"/>
+    </element>
+
+	<material name="Vacuum" formula="Vacuum">
+		<D value ="1E-25" unit="g/cm3"/>
+		<fraction n="1.0" ref="videRef"/>
+	</material>
+	<material name="ALUMINUM" formula="ALUMINUM">
+		<D value ="2.7000" unit="g/cm3"/>
+		<fraction n="1.0000" ref="aluminum"/>
+	</material>
+	<material name="SILICON" formula="SILICON">
+		<D value ="2.3300" unit="g/cm3"/>
+		<fraction n="1.0000" ref="silicon"/>
+	</material>
+	
+	<material name="Mylar">
+		 <D type="density" value="1.38" unit="g/cm3"/>
+         <composite n="4" ref="Hydrogen"/>
+         <composite n="5" ref="Carbon"/>
+         <composite n="2" ref="Oxygen"/>
+    </material>
+
+	
+	
+</materials>
+

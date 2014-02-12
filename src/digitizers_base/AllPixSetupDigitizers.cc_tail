@@ -1,0 +1,20 @@
+ 
+        // __endofdigitlist__
+   	    else {
+			G4cout << "    can't find digitizer with name : " << digitizerName << G4endl;
+			exit(1);
+		}
+
+		///////////////////////////////////////////////////////////
+		// Common task to all digitizers provided in the interface
+		// pass here the AllPixGeoDsc ptr
+		dmPtr->SetDetectorGeoDscPtr((*geoMap)[detectorId]);
+
+		// push back the digitizer
+		m_digiPtrs.push_back( dmPtr );
+		fDM->AddNewModule(m_digiPtrs[itr]);
+		m_nDigitizers++;
+
+	}
+
+}
