@@ -1,0 +1,117 @@
+
+# Detector 
+/allpix/det/setId        800
+/allpix/det/setPosition   0.0 0.0  0.0  mm
+/allpix/det/setRotation   0.0 0.0  0.0 deg
+/allpix/det/setLowTHL 13. keV
+
+# Detector J03 - Flight Unit
+#/allpix/det/setId        801
+#/allpix/det/setPosition   0.0 0.0  30.0  mm
+#/allpix/det/setRotation   0.0 0.0  0.0 deg
+#/allpix/det/setLowTHL 13. keV
+
+
+# Appliances
+#   Extra volumes placed with respect to the center of the wrapper.
+#   The wrapper is the envolvent volume of the medipix.  This volumes
+#   rotate with the Medipix !
+# The command:
+#   /allpix/extras/setWrapperEnhancement --> extends the wrapper !
+# [HINT!] If you want your appliance touching the Si wafer, the 
+#         center of the volume should be z_coordinate = 
+#         	half_appliance + (PCB + Si - Enhance)/2.
+#         z coordinate = 0 --> (on top of the PCB)
+#         z coordinate = -1* (PCB + appliance) --> behind the PCB
+
+/control/alias appPosZ -3.750
+/control/alias enhanceZ 5.0
+
+#/allpix/extras/setTestStructurePosition 0. 0.  0. mm
+#/allpix/extras/setAppliancePosition     0  0   0  mm
+#/allpix/extras/setWrapperEnhancement    0. 0. {enhanceZ} mm
+
+################################################
+# Max step lenght.  Applies only to the sensor
+/allpix/det/setMaxStepLengthSensor 10 um
+################################################
+# initialize
+/run/initialize
+################################################
+# Build detectors
+/allpix/det/update
+
+####################################################################
+# prefix for output filename (string) Don't use quotation marks \"
+/allpix/config/setOutputPrefixWithPath dataprefix
+
+########################################################################
+########################################################################
+# vis
+/vis/scene/create
+/vis/scene/add/axes 0. 0. 0. 10. cm
+/vis/scene/add/volume World -1 2
+/vis/viewer/set/style s
+
+/run/verbose 0
+/control/verbose 0
+/control/saveHistory
+/tracking/verbose 0
+/allpix/phys/verbose 0
+
+/vis/open OIX 1024x768-100+100
+#/vis/open OGLIXm 1024x768-100+100
+#/vis/open RayTracer
+#/vis/open OGLIQt
+#/vis/open OGLSQt
+#/vis/open OIX
+#/vis/open OGLIX 1024x768-100+100
+#/vis/open OGLSXm
+#/vis/open DAWNFILE
+#/vis/open OGLSX
+#/vis/open OGL 600x600-0+0
+
+/vis/viewer/set/background 0.4 0.5 0.6
+/vis/viewer/set/viewpointThetaPhi 20 50
+#/vis/viewer/set/background 0 0 0
+/vis/viewer/zoom 2.0
+/vis/viewer/flush
+
+# Draw trajectories at end of event, showing trajectory points as
+# markers of size 2 pixels
+/vis/scene/add/trajectories
+/vis/modeling/trajectories/create/drawByCharge
+/vis/modeling/trajectories/drawByCharge-0/default/setDrawStepPts true
+/vis/modeling/trajectories/drawByCharge-0/default/setStepPtsSize 2
+/vis/scene/endOfEventAction accumulate
+
+########################################################################
+########################################################################
+
+/tracking/verbose 1
+
+#########################
+# GPS
+/gps/particle e-
+/gps/pos/type Plane
+#/gps/pos/rot1 0 0 1
+#/gps/pos/rot2 1 0 0
+/gps/pos/shape Rectangle
+/gps/pos/centre 0.0 16.896 50.0 mm
+/gps/pos/halfy 14080. um
+/gps/pos/halfx 14080. um
+/gps/direction  0 0 -1
+/gps/ene/type User
+/gps/hist/type energy
+# spectra
+/gps/hist/point 2.2 1
+
+/gps/source/list
+
+/run/beamOn 1
+
+# video
+#/control/alias phi 50
+#/control/loop macros/movie.loop theta 50 200 1
+#/control/loop macros/movie_zoom.loop theta 120 200 1
+

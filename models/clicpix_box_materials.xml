@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--   GDML materials definition from the Fastrad file : "clicpix_box.ray"
+	Processed the 22/10/2012 at 11h19 by the GDML module of Fastrad 3.2.2.1 -->
+
+<materials>
+	<element name="videRef" formula="VACUUM" Z="1">
+		<atom value="1"/>
+	</element>
+	<element name="aluminum" formula="Al" Z="13">
+		<atom value="26.9815"/>
+	</element>
+	<element name="silicon" formula="Si" Z="14">
+		<atom value="28.0855"/>
+	</element>
+
+	<material name="VACUUM" formula="VACUUM">
+		<D value ="1E-25" unit="g/cm3"/>
+		<fraction n="1.0" ref="videRef"/>
+	</material>
+	<material name="ALUMINUM" formula="ALUMINUM">
+		<D value ="2.7000" unit="g/cm3"/>
+		<fraction n="1.0000" ref="aluminum"/>
+	</material>
+	<material name="SILICON" formula="SILICON">
+		<D value ="2.3300" unit="g/cm3"/>
+		<fraction n="1.0000" ref="silicon"/>
+	</material>
+</materials>
+

@@ -1,0 +1,41 @@
+// ********************************************************************
+//                                                        AllPix      *
+//                        Generic simulation for pixel detectors      *
+//                                                                    *
+//                              John Idarraga <idarraga@cern.ch>      *
+//                              Mathieu Benoit <mbenoit@cern.ch>      *
+// ********************************************************************
+
+Dependencies:
+
+	1) Geant4 must be installed with the following dependencies
+	satisfied
+
+	- OpenGL
+	- Inventor
+	- GDML (excerces)
+
+	2) ROOT 5.24 or newer (avoid 5.28 for now).  A basic setup is
+	enough.
+
+Build:
+
+	Make sure you loaded your Geant4 and ROOT setups (check
+	$G4LIB and $ROOTSYS vars for instance).  Then you go
+	
+	$ make
+
+Running:
+
+	Setup your Geant4 and ROOT environments and run the following
+	way
+
+	Interactive run:
+	  allpix macros/telescope1_vis.in
+
+	Batch run
+	  allpix macros/telescope1.in batch
+
+...
+...
+...

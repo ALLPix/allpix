@@ -1,0 +1,106 @@
+# Detector 2012
+/allpix/det/setId        500
+/allpix/det/setPosition  0 0 0 mm
+/allpix/det/setRotation  0.0 0.0 0 deg
+
+# Appliances
+#   Extra volumes placed with respect to the center of the wrapper.
+#   The wrapper is the envolvent volume of the medipix.  This volumes
+#   rotate with the Medipix !
+# The command:
+#   /allpix/extras/setWrapperEnhancement --> extends the wrapper !
+# [HINT!] If you want your appliance touching the Si wafer, the 
+#         center of the volume should be (z coordinate) = 
+#  if (Enhance <= PCB + Si) 
+#    half_appliance + (PCB + Si - Enhance)/2.
+#  else
+#    half_appliance - (Enhance - Si - PCB)/2.
+#/allpix/extras/setAppliancePosition  0. 23460. 450. um
+/allpix/extras/setWrapperEnhancement 0. 0. 4500. um
+
+/allpix/extras/setApplianceType 1
+/allpix/extras/setAppliancePosition  0. 0. 0. mm
+
+/allpix/extras/setTestStructureType 4
+/allpix/extras/setTestStructurePosition 0. 0.  0. mm 
+
+# Build detectors
+/allpix/phys/Physics LIVERMORE_FTFP_BERT
+/run/initialize
+
+/allpix/config/setOutputPrefixWithPath Fe55
+/allpix/det/update
+
+#############Visualization############
+
+/vis/scene/create
+/vis/scene/add/axes 0. 0. 0. 10. cm
+
+#/vis/scene/add/volume World -1 2
+/vis/scene/add/volume World -1 2
+/vis/viewer/set/style s
+
+#/run/verbose 0
+#/control/verbose 0
+/control/saveHistory
+#/tracking/verbose 0
+#/allpix/phys/verbose 0
+
+#/vis/open OIX 1024x768-100+100
+#/vis/open OGLIXm 1024x768-100+100
+
+#/vis/open RayTracer
+#/vis/open OGLIQt
+#/vis/open OGLSQt
+#/vis/open OIX
+#/vis/open OGLIX 1024x768-100+100
+/vis/open OGLSXm
+#/vis/open DAWNFILE
+#/vis/open OGLSX
+#/vis/open OGL 600x600-0+0
+
+/vis/viewer/set/background 0.4 0.5 0.6
+/vis/viewer/set/viewpointThetaPhi 20 50
+#/vis/viewer/set/background 0 0 0
+/vis/viewer/zoom 2.0
+
+/vis/viewer/flush
+
+#
+# Draw trajectories at end of event, showing trajectory points as
+# markers of size 2 pixels
+/vis/scene/add/trajectories
+/vis/modeling/trajectories/create/drawByCharge
+/vis/modeling/trajectories/drawByCharge-0/default/setDrawStepPts true
+/vis/modeling/trajectories/drawByCharge-0/default/setStepPtsSize 2
+/vis/scene/endOfEventAction accumulate
+
+
+#########################
+# GPS
+/gps/particle gamma
+/gps/pos/type Plane
+/gps/pos/shape Circle
+/gps/pos/centre 0 -22.25 22 mm
+/gps/pos/radius 5.0 mm
+/gps/direction  0 0 -1
+/gps/ene/type User
+/gps/hist/type energy
+# spectra
+/gps/hist/point  0.00588  8.2   	
+/gps/hist/point  0.00589  16.20   	
+/gps/hist/point  0.00649  1.89 	
+	
+/gps/ang/type iso
+/gps/mintheta 0
+/gps/maxtheta 1.8
+
+/gps/source/list
+
+/allpix/beam/frames 10
+/allpix/beam/type gauss 500 50
+#/allpix/beam/type poisson 200
+#/allpix/beam/type expo 100
+/allpix/beam/on
+
+#/run/beamOn 1

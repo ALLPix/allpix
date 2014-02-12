@@ -1,0 +1,162 @@
+####################################################################
+# Test sensors
+
+/control/alias appPosZ -4.750
+/control/alias enhanceZ 5.0
+
+############################
+# Detector 0
+/allpix/det/setId        100
+/allpix/det/setPosition -4.3 28.2 401.95 mm
+/allpix/det/setRotation  0.0 0.0 180.0 deg
+/allpix/det/setLowTHL 13. keV
+
+#/allpix/extras/setAppliancePosition  -4.3 28.2 {appPosZ}  mm
+#/allpix/extras/setWrapperEnhancement  0.0  0.0 {enhanceZ} mm
+
+# Appliances
+#   Extra volumes placed with respect to the center of the wrapper.
+#   The wrapper is the envolvent volume of the medipix.  This volumes
+#   rotate with the Medipix !
+# The command:
+#   /allpix/extras/setWrapperEnhancement --> extends the wrapper !
+# [HINT!] If you want your appliance touching the Si wafer, the 
+#         center of the volume should be (z coordinate) = 
+#    half_appliance + (PCB + Si - Enhance)/2.
+## /allpix/extras/setAppliancePosition  -4.3 28.2 -4.750 mm
+## /allpix/extras/setWrapperEnhancement 0. 0. 5000. um
+
+##### end of detector 0 #####
+
+# Detector 1
+/allpix/det/setId        101
+/allpix/det/setPosition -4.3 28.2 455.65 mm
+/allpix/det/setRotation  0.0 0.0 180.0 deg
+/allpix/det/setLowTHL 13. keV
+
+#/allpix/extras/setAppliancePosition  -4.3 28.2 {appPosZ}  mm
+#/allpix/extras/setWrapperEnhancement  0.0  0.0 {enhanceZ} mm
+
+# Detector 2
+/allpix/det/setId        102
+/allpix/det/setPosition -4.3 28.2 505.25 mm
+/allpix/det/setRotation  0.0 0.0 180.0 deg
+/allpix/det/setLowTHL 13. keV
+
+#/allpix/extras/setAppliancePosition  -4.3 28.2 {appPosZ}  mm
+#/allpix/extras/setWrapperEnhancement  0.0  0.0 {enhanceZ} mm
+
+# Detector 3
+/allpix/det/setId        103
+/allpix/det/setPosition -4.3 28.2 557.65 mm
+/allpix/det/setRotation  0.0 0.0 180.0 deg
+/allpix/det/setLowTHL 13. keV
+
+#/allpix/extras/setAppliancePosition  -4.3 28.2 {appPosZ}  mm
+#/allpix/extras/setWrapperEnhancement  0.0  0.0 {enhanceZ} mm
+
+# Detector 4
+/allpix/det/setId        104
+/allpix/det/setPosition -4.3 28.2 606.75 mm
+/allpix/det/setRotation  0.0 0.0 180.0 deg
+/allpix/det/setLowTHL 13. keV
+
+#/allpix/extras/setAppliancePosition  -4.3 28.2 {appPosZ}  mm
+#/allpix/extras/setWrapperEnhancement  0.0  0.0 {enhanceZ} mm
+
+####################################################################
+# EUDET Planes
+
+# Al Holder
+/allpix/extras/setTestStructurePosition 0. 0.  0. mm
+/allpix/extras/setTestStructureRotation 0. 0.  0. deg
+/allpix/extras/setTestStructureDetLink 300
+# Mimosa detector
+/allpix/det/setId        300
+/allpix/det/setPosition  0.0 15.0   5.0 mm
+/allpix/det/setRotation  0.0 0.0 180.0 deg
+/allpix/det/setLowTHL    13. keV
+
+# Al Holder
+/allpix/extras/setTestStructurePosition 0. 0. 150. mm
+/allpix/extras/setTestStructureRotation 0. 0.   0. deg
+/allpix/extras/setTestStructureDetLink 301
+# Mimosa detector.
+/allpix/det/setId        301
+/allpix/det/setPosition  0.0 15.0 155.0 mm
+/allpix/det/setRotation  0.0 0.0 180.0 deg
+/allpix/det/setLowTHL    13. keV
+
+# Al Holder
+/allpix/extras/setTestStructurePosition 0. 0. 300. mm
+/allpix/extras/setTestStructureRotation 0. 0.  0. deg
+/allpix/extras/setTestStructureDetLink 302
+# Mimosa detector
+/allpix/det/setId        302
+/allpix/det/setPosition  0.0 15.0 305.0 mm
+/allpix/det/setRotation  0.0 0.0 180.0 deg
+/allpix/det/setLowTHL    13. keV
+
+# Al Holder
+/allpix/extras/setTestStructurePosition 0. 0. 693.8 mm
+/allpix/extras/setTestStructureRotation 0. 0.  0. deg
+/allpix/extras/setTestStructureDetLink 303
+# Mimosa detector
+/allpix/det/setId        303
+/allpix/det/setPosition  0.0 15.0 698.8 mm
+/allpix/det/setRotation  0.0 0.0 180.0 deg
+/allpix/det/setLowTHL    13. keV
+
+# Al Holder
+/allpix/extras/setTestStructurePosition 0. 0. 843.8 mm
+/allpix/extras/setTestStructureRotation 0. 0.  0. deg
+/allpix/extras/setTestStructureDetLink 304
+# Mimosa detector
+/allpix/det/setId        304
+/allpix/det/setPosition  0.0 15.0 848.8 mm
+/allpix/det/setRotation  0.0 0.0 180.0 deg
+/allpix/det/setLowTHL    13. keV
+
+# Al Holder
+/allpix/extras/setTestStructurePosition 0. 0. 993.8 mm
+/allpix/extras/setTestStructureRotation 0. 0.  0. deg
+/allpix/extras/setTestStructureDetLink 305
+# Mimosa detector
+/allpix/det/setId        305
+/allpix/det/setPosition  0.0 15.0 998.8 mm
+/allpix/det/setRotation  0.0 0.0 180.0 deg
+/allpix/det/setLowTHL    13. keV
+
+####################################################################
+# Build detectors
+/allpix/det/update
+
+
+####################################################################
+# Source GPS example
+/gps/particle e+
+/gps/pos/type Plane
+#/gps/pos/rot1 0 0 1
+#/gps/pos/rot2 1 0 0
+/gps/pos/shape Rectangle
+/gps/pos/centre 0.0 0.0 1100.0 mm
+/gps/pos/halfy 3600. um
+/gps/pos/halfx 4100. um
+/gps/direction  0 0 -1
+/gps/ene/type User
+/gps/hist/type energy
+# spectra
+/gps/hist/point 4000 1
+
+/gps/source/list
+
+####################################################################
+# Verbose control
+/run/verbose 0
+/control/verbose 0
+/control/saveHistory
+/tracking/verbose 0
+/allpix/phys/verbose 0
+
+
+
