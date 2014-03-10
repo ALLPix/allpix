@@ -623,11 +623,11 @@ void AllPixDetectorConstruction::BuildPixelDevices(map<int, AllPixGeoDsc *> geoM
 		G4ThreeVector posWrapper = m_posVector[(*detItr)];
 
 		// Apply position Offset for the wrapper due to the enhancement
-		if(m_vectorWrapperEnhancement.find(*detItr) != m_vectorWrapperEnhancement.end()){
-			posWrapper.setX(posWrapper.x() + m_vectorWrapperEnhancement[*detItr].x()/2.);
-			posWrapper.setY(posWrapper.y() + m_vectorWrapperEnhancement[*detItr].y()/2.);
-			posWrapper.setZ(posWrapper.z() + m_vectorWrapperEnhancement[*detItr].z()/2.);
-		}
+// 		if(m_vectorWrapperEnhancement.find(*detItr) != m_vectorWrapperEnhancement.end()){
+// 			posWrapper.setX(posWrapper.x() + m_vectorWrapperEnhancement[*detItr].x()/2.);
+// 			posWrapper.setY(posWrapper.y() + m_vectorWrapperEnhancement[*detItr].y()/2.);
+// 			posWrapper.setZ(posWrapper.z() + m_vectorWrapperEnhancement[*detItr].z()/2.);
+// 		}
 
 		// starting at user position --> vector pos
 		m_wrapper_phys[(*detItr)] = new G4PVPlacement(
@@ -700,11 +700,11 @@ void AllPixDetectorConstruction::BuildPixelDevices(map<int, AllPixGeoDsc *> geoM
 		G4ThreeVector posPCB(0,0,0);
 
 		// Apply position Offset for the detector due to the enhancement
-		if(m_vectorWrapperEnhancement.find(*detItr) != m_vectorWrapperEnhancement.end()){
-			posDevice.setX(posDevice.x() - m_vectorWrapperEnhancement[*detItr].x()/2.);
-			posDevice.setY(posDevice.y() - m_vectorWrapperEnhancement[*detItr].y()/2.);
-			posDevice.setZ(posDevice.z() - m_vectorWrapperEnhancement[*detItr].z()/2.);
-		}
+// 		if(m_vectorWrapperEnhancement.find(*detItr) != m_vectorWrapperEnhancement.end()){
+// 			posDevice.setX(posDevice.x() - m_vectorWrapperEnhancement[*detItr].x()/2.);
+// 			posDevice.setY(posDevice.y() - m_vectorWrapperEnhancement[*detItr].y()/2.);
+// 			posDevice.setZ(posDevice.z() - m_vectorWrapperEnhancement[*detItr].z()/2.);
+// 		}
 
 
 

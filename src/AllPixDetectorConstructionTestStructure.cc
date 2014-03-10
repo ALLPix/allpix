@@ -422,7 +422,7 @@ void AllPixDetectorConstruction::BuildTestStructure(int){
 		m_TestStructure_log2->SetVisAttributes(visAtt_bp2);
 
 		m_TestStructure_phys = new G4PVPlacement(0,
-				G4ThreeVector(0,0*mm,31*mm),
+				G4ThreeVector(0,22.5*mm,31*mm),
 				m_TestStructure_log,
 				"box1_phys",
 				expHall_log,
@@ -495,7 +495,7 @@ void AllPixDetectorConstruction::BuildTestStructure(int){
 				0);
 
 		m_TestStructure_phys2 = new G4PVPlacement(0,
-				G4ThreeVector(0,0*mm,-30.0*mm),
+				G4ThreeVector(0,22.5*mm,-30.0*mm),
 				//G4ThreeVector(0,-22.5*mm,14.0*mm),
 				m_TestStructure_log2,
 				"box2_phys",
@@ -596,7 +596,7 @@ void AllPixDetectorConstruction::BuildTestStructure(int){
 
 		G4Tubs *disk = new G4Tubs("disk",
 				0.0*mm, //innerRadiusOfTheTube,
-				9.0*mm, //outerRadiusOfTheTube,
+				11.0*mm, //outerRadiusOfTheTube,
 				5*mm/2, //heightOfTheTube,
 				0.*deg, //startAngleOfTheTube,
 				360.*deg); //spanningAngleOfTheTube)
@@ -625,7 +625,7 @@ void AllPixDetectorConstruction::BuildTestStructure(int){
 		m_TestStructure_log2->SetVisAttributes(visAtt_bp2);
 
 		m_TestStructure_phys = new G4PVPlacement(0,
-				G4ThreeVector(0,-22.25*mm,22*mm),
+				G4ThreeVector(0,0,24.5*mm),
 				m_TestStructure_log,
 				"box1_phys",
 				expHall_log,

@@ -49,7 +49,7 @@ AllPixTimepixDigitizer::AllPixTimepixDigitizer(G4String modName, G4String hitsCo
 	
 	nseek=1;
 	
-	doAnimation = false;
+	doAnimation = true;
 	
 	
 	// Registration of digits collection name

@@ -15,6 +15,8 @@
 #include "AllPixMCTruthDigitizer.hh"
 #include "AllPixLETCalculatorDigitizer.hh"
 
+// Included by newdigitizer.sh script --> Donut
+#include "AllPixDonutDigitizer.hh"
 // __endofheader__
 
 // geometry
@@ -132,6 +134,13 @@ void AllPixEventAction::SetupDigitizers(){
 					dmPtr = static_cast<AllPixDigitizerInterface *> (dp);
 					cout << "    Setting up a " << digitizerName << " digitizer for det : " << detectorId << endl;
 				}
+ 
+// Included by newdigitizer.sh script --> Donut
+else if (digitizerName == "Donut") {
+			AllPixDonutDigitizer * dp = new AllPixDonutDigitizer(digitizerModulesNames[itr] , hcName, digitColectionName);
+			dmPtr = static_cast<AllPixDigitizerInterface *> (dp);
+			cout << "    Setting up a " << digitizerName << " digitizer for det : " << detectorId << endl;
+		}
  
         // __endofdigitlist__
    	    else {

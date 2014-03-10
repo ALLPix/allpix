@@ -104,6 +104,7 @@ void AllPixDetectorConstruction::BuildAppliances(int){
 
 			// If you mother vol is m_wrapper_log[detId],
 			//  it will rotate with the medipix
+			
 			new G4PVPlacement(0,
 					m_posVectorAppliances[detId]-G4ThreeVector(0,-10.25*mm,0*mm),
 					appliance_log,
@@ -166,9 +167,9 @@ void AllPixDetectorConstruction::BuildAppliances(int){
 
 			G4LogicalVolume * box_log = new G4LogicalVolume(box,alu,appLogS);
 			box_log->SetVisAttributes(applianceAtt);
-
-			new G4PVPlacement(0,
-					m_posVectorAppliances[detId]+G4ThreeVector(0,0*mm,11.12*mm),
+			G4RotationMatrix * rot =new  G4RotationMatrix(0, 0, 180.*deg);
+			new G4PVPlacement(rot,
+					m_posVectorAppliances[detId]+G4ThreeVector(0,-22.25*mm,11.12*mm),
 					box_log,
 					appPhysS,
 					m_wrapper_log[detId], // mother volume
