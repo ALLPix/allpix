@@ -1,0 +1,92 @@
+############################
+# Detector 0
+/allpix/det/setId        500
+/allpix/det/setPosition  0.0 0.0 0.0 mm
+/allpix/det/setRotation  0.0 0.0 0.0 deg
+/allpix/det/setMaxStepLengthSensor 1.0 um
+
+/allpix/extras/setTestStructureType 3
+/allpix/extras/setTestStructurePosition 0. 0. 0. mm
+/allpix/extras/setTestStructureRotation 45 180. 0. deg
+/allpix/extras/setTestStructureDetLink 8
+
+
+/allpix/extras/setApplianceType 1
+/allpix/extras/setAppliancePosition  0. 0. 0. mm
+/allpix/extras/setWrapperEnhancement  0.0  0.0 50 mm
+
+##### end of detector 0 #####
+
+####################################################################
+# Build detectors
+/allpix/phys/Physics emstandard_opt0
+/run/initialize
+/allpix/det/update
+
+####################################################################
+# Verbose control
+/run/verbose 0
+/control/verbose 0
+/control/saveHistory
+/tracking/verbose 0
+/allpix/phys/verbose 0
+
+####################################################################
+# Visualization
+/vis/scene/create
+#/vis/scene/add/axes 0. 0. 0. 10. cm
+/vis/scene/add/volume World -1 2
+/vis/viewer/set/style s
+#/vis/drawVolume
+/vis/open OIX 1024x768-100+100
+#/vis/open OGLIXm 1024x768-100+100
+#/vis/open RayTracer
+#/vis/open OGLIQt
+#/vis/open OGLSQt
+#/vis/open OIX
+#/vis/open OGLIX 1024x768-100+100
+#/vis/open OGLSXm
+#/vis/open DAWNFILE
+#/vis/open OGLSX
+#/vis/open OGL 600x600-0+0
+/vis/viewer/set/background 0.4 0.5 0.6
+/vis/viewer/set/viewpointThetaPhi 20 50
+/vis/viewer/zoom 2.0
+/vis/viewer/flush
+
+####################################################################
+# Draw trajectories at end of event, showing trajectory points as
+# markers of size 2 pixels
+/vis/scene/add/trajectories
+/vis/modeling/trajectories/create/drawByCharge
+/vis/modeling/trajectories/drawByCharge-0/default/setDrawStepPts false
+/vis/modeling/trajectories/drawByCharge-0/default/setStepPtsSize 2
+/vis/scene/endOfEventAction accumulate
+
+
+#########################
+# gammas
+#/gps/source/intensity 75.17
+/gps/particle gamma
+/gps/pos/type Plane
+/gps/pos/shape Circle
+/gps/pos/centre 0 0 22 mm
+/gps/pos/radius 2.5 mm
+/gps/direction  0 0 -1
+/gps/ene/type User
+/gps/hist/type energy
+# spectra	
+#/gps/hist/point  0.0139  37  	
+#/gps/hist/point  0.026345  2.27  	
+/gps/hist/point  0.059541  59.541  	
+/gps/ang/type iso
+/gps/mintheta 0
+/gps/maxtheta 1.8
+
+
+/gps/source/list
+####################################################################
+# Shoot
+/allpix/beam/frames 1
+/allpix/beam/type const 50
+/allpix/beam/on
