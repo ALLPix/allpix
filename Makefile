@@ -2,7 +2,7 @@
 # Makefile for examples module
 # --------------------------------------------------------------
 
-#export EUTELESCOPE=1
+export EUTELESCOPE=1
 
 name = allpix
 G4TARGET = $(name)
