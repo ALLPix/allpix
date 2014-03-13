@@ -1,4 +1,5 @@
 '''
+Writes the macro for the allpix simulation by giving the gear files corresponding to the placement of the telescope planes and the DUT and the alignment/prealignment files.
 niloufar.alipour.tehrani@cern.ch
 '''
 #-------------------------------------------------#
@@ -10,7 +11,7 @@ import numpy as np
 #-------------------------------------------------#
 #-------------------------------------------------#
 def usage():
-    print 'Usage: %s runNumber step'%(sys.argv[0])
+    print 'Usage: %s MacroName OutFolder preAlign Align DUTAlign GearFile Energy FrameNb'%(sys.argv[0])
     sys.exit( 2 )
 #-------------------------------------------------#
 def readAlignment(fileName): #From Samir #takes the .slcio files for the alignment and the prealignment
@@ -49,9 +50,9 @@ def readAlignment(fileName): #From Samir #takes the .slcio files for the alignme
 
     return alignmentVals
 #-------------------------------------------------#
-def CreateFile(RunNb, Energy, FrameNb, ladderList, FinalAlignment, outputMacro) :
-    
-    file_general=open("macros/EUDETtelescope_general.in")
+def CreateFile(Energy, FrameNb, ladderList, FinalAlignment, outputMacro, OutFolder, DUTAlign) :
+#     CreateFile(Energy, FrameNb, ladderList, FinalAlignment, MacroName)
+    file_general=open("GeneralMacro.in")
     file_out=open(("%s")%outputMacro, "w")
     
     lines = file_general.readlines()
@@ -83,10 +84,23 @@ def CreateFile(RunNb, Energy, FrameNb, ladderList, FinalAlignment, outputMacro) 
     file_out.write("".join(lines[lines_control[0]+1:lines_control[1]]))
 
     # --- DUT ---
+    # Alignment for the DUT 
+    f = open(DUTAlign)
+    lineDUT = f.readlines()
+    f.close()
     if len(ladderList)>6:
         file_out.write("#### DUT #### \n")
-        file_out.write("".join(lines[lines_DUT[0]+1:lines_DUT[1]]))
-
+        for line in lines[lines_DUT[0]+1:lines_DUT[1]]:
+            lineM=line
+            lineM=lineM.replace(("@DUTId@"), str(550)) # SET the id of the DUT manually
+            lineM=lineM.replace(("@DUTpositionX@"), lineDUT[0].split()[3])
+            lineM=lineM.replace(("@DUTpositionY@"), lineDUT[0].split()[4])
+            lineM=lineM.replace(("@DUTpositionZ@"), ladderList[6].attributes['positionZ'].value)
+            lineM=lineM.replace(("@DUTalpha@"), lineDUT[0].split()[0])
+            lineM=lineM.replace(("@DUTbeta@"), lineDUT[0].split()[1])
+            lineM=lineM.replace(("@DUTgamma@"), lineDUT[0].split()[2])
+            
+            file_out.write(lineM)
     # --- Telescope ---
     file_out.write("#### Telescope planes #### \n")
     for planeNB in range(0, 6):
@@ -108,7 +122,7 @@ def CreateFile(RunNb, Energy, FrameNb, ladderList, FinalAlignment, outputMacro) 
 
     # --- Build detectors ---
     for line in lines[lines_buildDetectors[0]+1:lines_buildDetectors[1]]:
-        line=line.replace("@FolderPath@", ("/afs/cern.ch/work/n/nalipour/allpixCourse/allpix/EUTelescopeFiles/run%06i")%RunNb)
+        line=line.replace("@FolderPath@", OutFolder)
         line=line.replace("@BeamEnergy@", str(Energy))
         line=line.replace("@FrameNB@", str(FrameNb))
         file_out.write(line)
@@ -118,42 +132,40 @@ def CreateFile(RunNb, Energy, FrameNb, ladderList, FinalAlignment, outputMacro) 
 
 if __name__ == '__main__':
 
-    if len(sys.argv) < 3:
+    if len(sys.argv) < 8:
         usage()
     
-    run=int(sys.argv[1])
-    step=sys.argv[2]
+    MacroName=sys.argv[1]
+    OutFolder=sys.argv[2]
+    preAlignFile=sys.argv[3]
+    AlignFile=sys.argv[4]
+    DUTAlign=sys.argv[5]
+    GearFile=sys.argv[6]
+    Energy=float(sys.argv[7])
+    FrameNb=int(sys.argv[8])
 
-#-------------------------------------------------------------------#
-    launch_folder="launch"
-    launch_file="%s/run%s.sh"%(launch_folder, run)
-    log_folder="%s/logs"%launch_folder
-    outputFolder="/VertexScratch/workspace/nalipour/Simulation"+step+"/lcio-raw"
-    outputMacro="%s/run%06i.in"%(launch_folder, run)
-    queue = "1nd"
+    #The alignment file should contain: rotation1 rotation2 rotation3 translationX translationY
 #-------------------------------------------------------------------#
     #1. Create the macro
     # READ ALIGNMENTS
-    pathAlign="/VertexScratch/workspace/nalipour/TestBeam/"+step+"/db"
+    #pathAlign="/VertexScratch/workspace/nalipour/TestBeam/"+step+"/db"
     filesAlignment=[]
-    filesAlignment.append(pathAlign+"/run%06i-prealign-db.slcio"%run)
-    filesAlignment.append(pathAlign+"/run%06i-align-db.slcio"%run)
+    filesAlignment.append(preAlignFile)
+    filesAlignment.append(AlignFile)
  
     preAlign=readAlignment(filesAlignment[0])
     Align=readAlignment(filesAlignment[1])
     FinalAlignment=[[0 for i in range(len(preAlign))] for j in range(len(preAlign))]
 
+    # Alignment for the telescope
     for i in range(len(preAlign)):
         for j in range(len(preAlign[i])):
             FinalAlignment[i][j]=(preAlign[i][j]+Align[i][j])
-
-    if run==8 or run==9:
-        xmlFile="/afs/cern.ch/work/n/nalipour/pixelCourse/pyEudetAna/LCD_github/EUTelescopeInstallation/Eutelescope/v00-08-00/jobsub/examples/clic_timepix/gear_desyAugust2013_tb21_"+step+".xml"
     
-    xmldoc = minidom.parse(xmlFile)
+  
+
+    #XML file 
+    xmldoc = minidom.parse(GearFile)
     ladderList = xmldoc.getElementsByTagName('ladder') 
 
-    
-    CreateFile(run, 5, 100000, ladderList, FinalAlignment, outputMacro)
-
-
+    CreateFile(Energy, FrameNb, ladderList, FinalAlignment, MacroName, OutFolder, DUTAlign)
