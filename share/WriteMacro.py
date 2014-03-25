@@ -88,37 +88,58 @@ def CreateFile(Energy, FrameNb, ladderList, FinalAlignment, outputMacro, OutFold
     f = open(DUTAlign)
     lineDUT = f.readlines()
     f.close()
-    if len(ladderList)>6:
-        file_out.write("#### DUT #### \n")
-        for line in lines[lines_DUT[0]+1:lines_DUT[1]]:
-            lineM=line
-            lineM=lineM.replace(("@DUTId@"), str(550)) # SET the id of the DUT manually
-            lineM=lineM.replace(("@DUTpositionX@"), lineDUT[0].split()[3])
-            lineM=lineM.replace(("@DUTpositionY@"), lineDUT[0].split()[4])
-            lineM=lineM.replace(("@DUTpositionZ@"), ladderList[6].attributes['positionZ'].value)
-            lineM=lineM.replace(("@DUTalpha@"), lineDUT[0].split()[0])
-            lineM=lineM.replace(("@DUTbeta@"), lineDUT[0].split()[1])
-            lineM=lineM.replace(("@DUTgamma@"), lineDUT[0].split()[2])
+    # if len(ladderList)>6:
+    #     file_out.write("#### DUT #### \n")
+    #     for line in lines[lines_DUT[0]+1:lines_DUT[1]]:
+    #         lineM=line
+    #         lineM=lineM.replace(("@DUTId@"), str(2042)) # SET the id of the DUT manually
+    #         lineM=lineM.replace(("@DUTpositionX@"), lineDUT[0].split()[3])
+    #         lineM=lineM.replace(("@DUTpositionY@"), lineDUT[0].split()[4])
+    #         lineM=lineM.replace(("@DUTpositionZ@"), ladderList[6].attributes['positionZ'].value)
+    #         lineM=lineM.replace(("@DUTalpha@"), lineDUT[0].split()[0])
+    #         lineM=lineM.replace(("@DUTbeta@"), str(180+float(lineDUT[0].split()[1])))
+    #         lineM=lineM.replace(("@DUTgamma@"), str(90+float(lineDUT[0].split()[2])))
             
-            file_out.write(lineM)
+    #         file_out.write(lineM)
     # --- Telescope ---
     file_out.write("#### Telescope planes #### \n")
-    for planeNB in range(0, 6):
-        file_out.write(("#### EUD%i #### \n")%planeNB)
-        for line in lines[lines_telescope[0]+1:lines_telescope[1]]:
-            lineM=line
-            lineM=lineM.replace(("@ID@"), str(300+planeNB))
-            lineM=lineM.replace(("@EUDpositionX@"), str(FinalAlignment[planeNB][0]))
-            lineM=lineM.replace(("@EUDpositionY@"), str(FinalAlignment[planeNB][1]))
-            lineM=lineM.replace(("@EUDpositionZ@"), ladderList[planeNB].attributes['positionZ'].value)
-            lineM=lineM.replace(("@EUDalpha@"), str(FinalAlignment[planeNB][3]))
-            lineM=lineM.replace(("@EUDbeta@"), str(FinalAlignment[planeNB][4]))
-            lineM=lineM.replace(("@EUDgamma@"), str(FinalAlignment[planeNB][5]))
-            lineM=lineM.replace(("@EUDalphaSensor@"), str(FinalAlignment[planeNB][3]))
-            lineM=lineM.replace(("@EUDbetaSensor@"), str(180+FinalAlignment[planeNB][4])) 
-            lineM=lineM.replace(("@EUDgammaSensor@"), str(180+FinalAlignment[planeNB][5]))
+    for i in range(0, len(ladderList)):
+        planeNB=int(ladderList[i].attributes['ID'].value)
+        if planeNB==6:
+            print "DUT", i
+            file_out.write("#### DUT #### \n")
+            for line in lines[lines_DUT[0]+1:lines_DUT[1]]:
+                lineM=line
+                lineM=lineM.replace(("@DUTId@"), str(2042)) # SET the id of the DUT manually
+                lineM=lineM.replace(("@DUTpositionX@"), lineDUT[0].split()[3])
+                lineM=lineM.replace(("@DUTpositionY@"), lineDUT[0].split()[4])
+                lineM=lineM.replace(("@DUTpositionZ@"), ladderList[i].attributes['positionZ'].value)
+                lineM=lineM.replace(("@DUTalpha@"), lineDUT[0].split()[0])
+                lineM=lineM.replace(("@DUTbeta@"), str(180+float(lineDUT[0].split()[1])))
+                lineM=lineM.replace(("@DUTgamma@"), str(90+float(lineDUT[0].split()[2])))
+                
+                file_out.write(lineM)
+        else:
+            print "EUTel", i
+            #planeNB=int(ladderList[i].attributes['ID'].value)
+            print "Eutel plane:", planeNB
+            file_out.write(("#### EUD%i #### \n")%planeNB)
+            for line in lines[lines_telescope[0]+1:lines_telescope[1]]:
+                lineM=line
+                lineM=lineM.replace(("@ID@"), str(300+planeNB))
+                lineM=lineM.replace(("@EUDpositionX@"), str(FinalAlignment[planeNB][0]))
+                lineM=lineM.replace(("@EUDpositionY@"), str(FinalAlignment[planeNB][1]))
+                lineM=lineM.replace(("@EUDpositionZ@"), ladderList[i].attributes['positionZ'].value)
+                lineM=lineM.replace(("@EUDalpha@"), str(FinalAlignment[planeNB][3]))
+                lineM=lineM.replace(("@EUDbeta@"), str(180+FinalAlignment[planeNB][4]))
+                lineM=lineM.replace(("@EUDgamma@"), str(FinalAlignment[planeNB][5]))
+                lineM=lineM.replace(("@EUDalphaSensor@"), str(FinalAlignment[planeNB][3]))
+                lineM=lineM.replace(("@EUDbetaSensor@"), str(180+FinalAlignment[planeNB][4])) 
+                lineM=lineM.replace(("@EUDgammaSensor@"), str(180+FinalAlignment[planeNB][5]))
             
-            file_out.write(lineM)
+                file_out.write(lineM)
+
+
 
     # --- Build detectors ---
     for line in lines[lines_buildDetectors[0]+1:lines_buildDetectors[1]]:
@@ -167,5 +188,6 @@ if __name__ == '__main__':
     #XML file 
     xmldoc = minidom.parse(GearFile)
     ladderList = xmldoc.getElementsByTagName('ladder') 
+
 
     CreateFile(Energy, FrameNb, ladderList, FinalAlignment, MacroName, OutFolder, DUTAlign)

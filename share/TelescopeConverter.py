@@ -13,8 +13,6 @@ from time import time
 import sys, math, glob, tarfile
 from collections import defaultdict
 
-mySensorID = '550'
-
 telescopeTestDict = {}
 telescopeTestDict['300'] = 0
 telescopeTestDict['301'] = 0
@@ -22,7 +20,13 @@ telescopeTestDict['302'] = 0
 telescopeTestDict['303'] = 0
 telescopeTestDict['304'] = 0
 telescopeTestDict['305'] = 0
-telescopeTestDict[mySensorID] = 0
+
+print "DUT considered for the conversion"
+print sys.argv[3:]
+
+mySensorIDlist = sys.argv[3:]
+for mySensorID in mySensorIDlist:
+    telescopeTestDict[mySensorID] = 0
 
 #########################################################################################
 def parseFrameFile( inputFile ):
@@ -196,13 +200,13 @@ def convertRun( inputTarFile, outputFileName ):
             DUTDataColl = IMPL.LCCollectionVec( EVENT.LCIO.TRACKERDATA )
             idEncoder_DUT = UTIL.CellIDEncoder( IMPL.TrackerDataImpl )( encodingString, DUTDataColl )
 
-            for sensorID in sorted( DUTData.iterkeys() ):
+            for i,sensorID in enumerate( sorted( DUTData.iterkeys() ) ):
             
                 planeData = IMPL.TrackerDataImpl()
             
                 idEncoder_DUT.reset()
                 #idEncoder_DUT['sensorID'] = int( sensorID ) - 500 + 6 # cannot fit 500 in 5 bits!! FIXME
-                idEncoder_DUT['sensorID'] = 6 # cannot fit 500 in 5 bits!! FIXME
+                idEncoder_DUT['sensorID'] = i+6 # cannot fit 500 in 5 bits!! FIXME
                 idEncoder_DUT['sparsePixelType'] = 1
                 idEncoder_DUT.setCellID( planeData )
             
@@ -247,7 +251,7 @@ def convertRun( inputTarFile, outputFileName ):
 #########################################################################################
 def usage():
     print 'Converts allpix generated telescope files into LCIO format'
-    print 'Usage:\n python %s <inputTarball> <outputFile>' % ( sys.argv[0] )
+    print 'Usage:\n python %s <inputTarball> <outputFile> <sensorID1> <sensorID2> <sensorIDn>' % ( sys.argv[0] )
 
 #########################################################################################
 if __name__ == '__main__':
@@ -258,9 +262,3 @@ if __name__ == '__main__':
 
     for sensorID in sorted( telescopeTestDict.iterkeys() ):
         print sensorID, telescopeTestDict[sensorID]
-
-    #c = TCanvas( 'c', 'c' )
-    #c.cd()
-    #h.Draw()
-
-    #raw_input( '...' )
