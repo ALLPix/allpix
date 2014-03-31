@@ -97,7 +97,7 @@ AllPixTimepixDigitizer::AllPixTimepixDigitizer(G4String modName, G4String hitsCo
 	/////////////////////////////////
 	// Magnetic Field 			   //
 	////////////////////////////////
-	B_Field = 5.0;
+	B_Field = 0.0;
 	r_H_e = 1.1;
 	r_H_h=0.7;	
 
