@@ -294,7 +294,7 @@
 
 <chip_hx units="um">7055.5</chip_hx>
 <chip_hy units="um">8060</chip_hy>
-<chip_hz units="um">10.0</chip_hz>
+<chip_hz units="um">25.0</chip_hz>
 
 <chip_offsetx units="um">0.</chip_offsetx>
 <chip_offsety units="um">-1020.</chip_offsety>
@@ -302,7 +302,7 @@
 
 <sensor_hx units="um">7040.</sensor_hx>
 <sensor_hy units="um">7040.</sensor_hy>
-<sensor_hz units="um">10.0</sensor_hz>
+<sensor_hz units="um">25.0</sensor_hz>
 
 <sensor_gr_excess_htop units="um">500.0</sensor_gr_excess_htop>
 <sensor_gr_excess_hbottom units="um">500.0</sensor_gr_excess_hbottom>

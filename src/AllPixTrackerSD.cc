@@ -202,8 +202,8 @@ G4bool AllPixTrackerSD::ProcessHits(G4Step * aStep, G4TouchableHistory *)
 		correctedPos = correctedPos - centerOfPixel - m_relativePosOfSD;
 
 
-		G4cout << TString::Format("uncorrectedPos: %08.0f %08.0f %08.0f [um]", prePos.x()/um, prePos.y()/um, prePos.z()/um);
-		G4cout << TString::Format("correctedPos: %08.0f %08.0f %08.0f [um]", correctedPos.x()/um, correctedPos.y()/um, correctedPos.z()/um);
+		G4cout << TString::Format("uncorrectedPos: %.08f %.08f %.08f [um] \n", prePos.x()/um, prePos.y()/um, prePos.z()/um);
+		G4cout << TString::Format("correctedPos: %.08f %.08f %.08f [um] \n", correctedPos.x()/um, correctedPos.y()/um, correctedPos.z()/um);
 		G4cout << "uncorrectedPos : " << prePos.x()/um << " " << prePos.y()/um
 		       << " " << prePos.z()/um << " [um]" << G4endl;
 

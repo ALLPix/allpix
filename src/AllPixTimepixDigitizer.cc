@@ -778,7 +778,6 @@ void AllPixTimepixDigitizer::Digitize(){
       // see if need more energy in neighbor
       pair<G4int, G4int> extraPixel;
       extraPixel = tempPixel;
-      G4cout << "ExtraPixel = (" << extraPixel.first << ", " << extraPixel.second << ")" << G4endl; //Nilou 
 
       //loop over all hit pixel neighbors
       //G4cout << TString::Format("[MC Truth] Hit Energy=%f, x=%f, y=%f pixel(%i,%i)",eHitTruth/elec,xpos/um,ypos/um,tempPixel.first,tempPixel.second) << endl;
@@ -796,14 +795,21 @@ void AllPixTimepixDigitizer::Digitize(){
 	      {
 		//We compute contribution of the hit to each pixels
 
-		double Etemp = IntegrateGaussian(xpos/nm+offsetX/nm,ypos/nm+offsetY/nm,sigma/nm,(-pitchX/2.0 + i*pitchX)/nm,(-pitchX/2.+(i+1)*pitchX)/nm,(-pitchY/2 + j*pitchY)/nm,(-pitchY/2 + (j+1)*pitchY)/nm, eHit );
-		//double Etemp = IntegrateGaussian(xpos/nm,ypos/nm,sigma/nm,(-j*pitchX)/nm,((1-j)*pitchX)/nm,(-(i+1)*pitchY)/nm,(-i*pitchY)/nm, eHit );
+		double Etemp = IntegrateGaussian(xpos/nm,ypos/nm,sigma/nm,(-pitchX/2.0 + i*pitchX)/nm,(-pitchX/2.+(i+1)*pitchX)/nm,(-pitchY/2 + j*pitchY)/nm,(-pitchY/2 + (j+1)*pitchY)/nm, eHit );
+
+		//double xmin = ((2*i+1)*pitchX/2)
+		//double xmax =
+		//double ymin =
+		//double ymax = 
+
 
 		if(doTrapping==true) pixelsContent[extraPixel]+=ApplyTrapping(driftTime,Etemp);
 		else pixelsContent[extraPixel] +=Etemp;
-		//G4cout << "[" << i << ", " << j << "]:" <<"(" << extraPixel.first << ", " << extraPixel.second << "): xpos=" << xpos/nm << ", ypos=" <<ypos/nm << ", sigma=" <<sigma/nm << ", xlow=" << (-j*pitchX)/nm << ", xhigh=" << ((1-j)*pitchX)/nm << ", ylow=" << (-(i+1)*pitchY)/nm << ", yhigh=" << (-i*pitchY)/nm << ", eHit=" << eHit << ", Etemp=" << Etemp << G4endl; //Nilou
+		G4cout << "[" << i << ", " << j << "]:" <<"(" << extraPixel.first << ", " << extraPixel.second << "): xpos=" << xpos/nm << ", ypos=" <<ypos/nm << ", sigma="
+		<<sigma/nm << ", xlow=" << (-j*pitchX)/nm << ", xhigh=" << ((1-j)*pitchX)/nm << ", ylow=" << (-(i+1)*pitchY)/nm << ", yhigh=" << (-i*pitchY)/nm << ", eHit="
+		<< eHit << ", Etemp=" << Etemp/keV << G4endl; //Nilou
 		//G4cout << TString::Format("[Digitizer] Pixel %i %i Energy=%f, Energy after Trapping=%f",extraPixel.first,extraPixel.second,Etemp,ApplyTrapping(driftTime,pixelsContent[extraPixel])/elec) << endl;
-		//if(Etemp/keV>0)cout << TString::Format("Pixel %i %i, Energy collected = %f sigma=%f tdrift=%f",extraPixel.first,extraPixel.second,Etemp/keV,sigma/um,driftTime/ns) << endl;
+		if(Etemp/keV>0)cout << TString::Format("Pixel %i %i, Energy collected = %f sigma=%f tdrift=%f",extraPixel.first,extraPixel.second,Etemp/keV,sigma/um,driftTime/ns) << endl;
 
 	      };
 	  };
