@@ -1,0 +1,82 @@
+####################################################################
+#### DUT #### 
+####################################################################
+# Al Holder
+# Mimosa detector
+/allpix/det/setId        500
+/allpix/det/setPosition   0.0 0.0 340.5 mm
+/allpix/det/setRotation   0.0 0.0 0.00 deg
+####################################################################
+
+####################################################################
+# Build detectors
+#/allpix/phys/Physics LIVERMORE_FTFP_BERT
+/allpix/phys/Physics emstandard_opt0
+/allpix/det/setMaxStepLengthSensor 10 um
+/run/initialize
+/allpix/det/update
+
+####################################################################
+# Verbose control
+/run/verbose 0
+/control/verbose 0
+/control/saveHistory
+/tracking/verbose 0
+/allpix/phys/verbose 0
+
+####################################################################
+# Visualization
+/vis/scene/create
+#/vis/scene/add/axes 0. 0. 0. 10. cm
+/vis/scene/add/volume World -1 2
+/vis/viewer/set/style s
+#/vis/open OIX 1024x768-100+100
+#/vis/open OGLIXm 1024x768-100+100
+#/vis/open RayTracer
+#/vis/open OGLIQt
+#/vis/open OGLSQt
+/vis/open OIX
+#/vis/open OGLIX 1024x768-100+100
+#/vis/open OGLSXm
+#/vis/open DAWNFILE
+#/vis/open OGLSX
+#/vis/open OGL 600x600-0+0
+/vis/viewer/set/background 0.4 0.5 0.6
+/vis/viewer/set/viewpointThetaPhi 20 50
+/vis/viewer/zoom 2.0
+/vis/viewer/flush
+
+####################################################################
+# Draw trajectories at end of event, showing trajectory points as
+# markers of size 2 pixels
+/vis/scene/add/trajectories
+/vis/modeling/trajectories/create/drawByCharge
+/vis/modeling/trajectories/drawByCharge-0/default/setDrawStepPts false
+/vis/modeling/trajectories/drawByCharge-0/default/setStepPtsSize 2
+/vis/scene/endOfEventAction accumulate
+
+####################################################################
+# Write Telescope files
+/allpix/timepixtelescope/setFolderPath /VertexScratch/workspace/mbenoit/test/Run000049
+/allpix/timepixtelescope/setEventIDcolumn 0
+/allpix/timepixtelescope/setSumTOT 1
+/allpix/timepixtelescope/write 0
+
+####################################################################
+# Source GPS
+/gps/particle mu+
+/gps/pos/centre -6.983 7.0125 -1.0 mm
+/gps/direction  0 0 1
+
+/gps/ene/type User
+/gps/hist/type energy
+# spectra
+/gps/hist/point 500000 1
+
+/gps/source/list
+
+####################################################################
+# Shoot
+/allpix/beam/frames 1
+/allpix/beam/type const 1
+/allpix/beam/on
