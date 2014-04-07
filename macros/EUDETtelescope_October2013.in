@@ -152,7 +152,7 @@
 
 ####################################################################
 # Write Telescope files
-/allpix/timepixtelescope/setFolderPath ./EUTelescopeFiles/Run_000000
+/allpix/timepixtelescope/setFolderPath ./test
 /allpix/timepixtelescope/setEventIDcolumn 0
 /allpix/timepixtelescope/setSumTOT 1
 /allpix/timepixtelescope/write 1

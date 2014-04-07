@@ -43,6 +43,73 @@
 
 </pixeldet>
 
+
+<!-- Timepix 100um sensor + 100um ASIC for run 2042: By Nilou-->
+<pixeldet id="2042">
+
+<digitizer>Timepix</digitizer>
+
+
+<bump_radius units="um">9.0</bump_radius>
+<bump_height units="um">20.0</bump_height>
+<bump_offset_x units="um">0.0</bump_offset_x>
+<bump_offset_y units="um">0.0</bump_offset_y>
+<bump_dr units="um">2.0</bump_dr>
+
+<npix_x>256</npix_x>
+<npix_y>256</npix_y>
+<npix_z>0</npix_z>
+
+
+<pixsize_x units="um">27.5</pixsize_x>
+<pixsize_y units="um">27.5</pixsize_y>
+<pixsize_z units="um">25.0</pixsize_z>
+
+<chip_hx units="um">7040</chip_hx>
+<chip_hy units="um">7040</chip_hy>
+<chip_hz units="um">50.0</chip_hz>
+
+
+<chip_posx units="um">0.</chip_posx>
+<chip_posy units="mm">-22.25</chip_posy>
+<chip_posz units="um">0.</chip_posz>
+
+<place_chip>1</place_chip>
+
+
+<sensor_hx units="um">7040</sensor_hx>
+<sensor_hy units="um">7040</sensor_hy>
+<sensor_hz units="um">50.0</sensor_hz>
+
+
+<sensor_gr_excess_htop units="um">50.0</sensor_gr_excess_htop>
+<sensor_gr_excess_hbottom units="um">50.0</sensor_gr_excess_hbottom>
+<sensor_gr_excess_hright units="um">50.0</sensor_gr_excess_hright>
+<sensor_gr_excess_hleft units="um">50.0</sensor_gr_excess_hleft>
+
+<sensor_posx units="mm">0</sensor_posx>
+<sensor_posy units="mm">-22.25</sensor_posy>
+<sensor_posz units="mm">0.</sensor_posz>
+
+
+<pcb_hx units="mm">23.50</pcb_hx>
+<pcb_hy units="mm">39.5</pcb_hy>
+<pcb_hz units="mm">0.88</pcb_hz>
+
+
+<sensor_resistivity>5000.0</sensor_resistivity>
+<MIP_Tot> 500 </MIP_Tot>
+<MIP_Charge> 4000.</MIP_Charge>
+<Counter_Depth> 11810 </Counter_Depth>
+<Clock_Unit> 10.416666666666e-9 </Clock_Unit>
+
+<Chip_Noise>120.</Chip_Noise>
+<Chip_Threshold> 455.</Chip_Threshold>
+<Cross_Talk>0.001</Cross_Talk>
+<Saturation_Energy>350.</Saturation_Energy>
+</pixeldet>
+
+
 <!-- FEI3 -->
 <pixeldet id="100,101,102,103,104">
 

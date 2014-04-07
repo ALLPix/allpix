@@ -1,10 +1,11 @@
+export EUTELESCOPE=1
 export LD_RUN_PATH=/afs/cern.ch/eng/clic/software/Pixel_TestBeam_Software/OpenInventor/OIV_Install/lib
 
 export PATH=$PATH:/afs/cern.ch/eng/clic/software/Pixel_TestBeam_Software/OpenInventor/OIV_Install/bin
 
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/afs/cern.ch/eng/clic/software/Pixel_TestBeam_Software/OpenInventor/OIV_Install/lib
 
-export G4WORKDIR=/afs/cern.ch/eng/clic/software/Pixel_TestBeam_Software/geant4_workdir
+export G4WORKDIR=/afs/cern.ch/work/n/nalipour/allpixCourse/nalipourBranch/g4workdir
  
 
 #openinventor 

@@ -148,7 +148,7 @@ G4bool AllPixTrackerSD::ProcessHits(G4Step * aStep, G4TouchableHistory *)
 		G4cout << "          has been given. AllPixTrackerSD::ProcessHits returns false." << G4endl;
 		return false;
 	}
-
+       
 	// Work with the Hit
 	G4double edep = aStep->GetTotalEnergyDeposit();
 	if(edep==0.) return false;
@@ -166,6 +166,9 @@ G4bool AllPixTrackerSD::ProcessHits(G4Step * aStep, G4TouchableHistory *)
 	G4ThreeVector correctedPos(0,0,0);
 
 	if (m_thisIsAPixelDetector) {
+
+	G4cout << "------------------------begin hit ----------------------------------------" << G4endl;
+
 		// This positions are global, I will bring them to pixel-centered frame
 		// I can use the physical volumes for that
 		G4ThreeVector prePos = preStepPoint->GetPosition();
@@ -192,22 +195,31 @@ G4bool AllPixTrackerSD::ProcessHits(G4Step * aStep, G4TouchableHistory *)
 				m_gD->GetPixelY()*TMath::FloorNint(correctedPos.y() / m_gD->GetPixelY()) + m_gD->GetHalfPixelY(),
 				0.); // in the middle of the tower
 
-		// The position within the pixel !!!
+	
+		copyIDx_pre  =(int)TMath::FloorNint(((m_gD->GetHalfSensorX() + correctedPos.x())/ m_gD->GetPixelX()));
+		copyIDy_pre  =(int)TMath::FloorNint(((m_gD->GetHalfSensorY() + correctedPos.y())/ m_gD->GetPixelY()));
+  	// The position within the pixel !!!
 		correctedPos = correctedPos - centerOfPixel - m_relativePosOfSD;
 
-		//G4cout << "uncorrectedPos : " << prePos.x()/um << " " << prePos.y()/um
-		//	   << " " << prePos.z()/um << " [um]" << G4endl;
 
-		//G4cout << "correctedPos : " << correctedPos.x()/um << " " << correctedPos.y()/um
-		//	   << " " << correctedPos.z()/um << " [um]" << G4endl;
+		G4cout << TString::Format("uncorrectedPos: %08.0f %08.0f %08.0f [um]", prePos.x()/um, prePos.y()/um, prePos.z()/um);
+		G4cout << TString::Format("correctedPos: %08.0f %08.0f %08.0f [um]", correctedPos.x()/um, correctedPos.y()/um, correctedPos.z()/um);
+		G4cout << "uncorrectedPos : " << prePos.x()/um << " " << prePos.y()/um
+		       << " " << prePos.z()/um << " [um]" << G4endl;
+
+		G4cout << "correctedPos : " << correctedPos.x()/um << " " << correctedPos.y()/um
+		       << " " << correctedPos.z()/um << " [um]" << G4endl;
 
 		//G4cout << "(" << shi << ") "<<	 correctedPos.z()/um << " " ;
 		//G4cout << TString::Format("(%02.0f) %02.1f ",shi,correctedPos.z()/um);
 
 		// depth 1 --> x
 		// depth 0 --> y
-		copyIDy_pre  = touchablepre->GetCopyNumber();
-		copyIDx_pre  = touchablepre->GetCopyNumber(1);
+		//copyIDy_pre  = touchablepre->GetCopyNumber();
+		//copyIDx_pre  = touchablepre->GetCopyNumber(1);		
+
+
+		G4cout << "[Nilou]: copyIDx_pre=" << copyIDx_pre << ", copyIDy_pre=" << copyIDy_pre <<G4endl; 
 
 	}
 
@@ -220,6 +232,7 @@ G4bool AllPixTrackerSD::ProcessHits(G4Step * aStep, G4TouchableHistory *)
 		postPos = postStepPoint->GetPosition();
 		copyIDy_post = touchablepost->GetCopyNumber();
 		copyIDx_post = touchablepost->GetCopyNumber(1);
+		G4cout << "[Nilou2]: copyIDx_pre=" << copyIDx_pre << ", copyIDy_pre=" << copyIDy_pre <<G4endl; 
 	}
 
 	// process
@@ -264,6 +277,8 @@ G4bool AllPixTrackerSD::ProcessHits(G4Step * aStep, G4TouchableHistory *)
 	hitsCollection->insert(newHit);
 	//newHit->Print();
 	//newHit->Draw();
+
+	G4cout << "------------------------end hit ----------------------------------------" << G4endl;
 
 	return true;
 }
