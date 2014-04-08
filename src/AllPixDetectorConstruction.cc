@@ -812,34 +812,46 @@ void AllPixDetectorConstruction::BuildPixelDevices(map<int, AllPixGeoDsc *> geoM
 
 		///////////////////////////////////////////////////////////
 		// slices and pixels
-		m_Slice_log[(*detItr)] = new G4LogicalVolume(Box_slice,
-				Silicon,
-				SliceName.second); // 0,0,0);
+		// m_Slice_log[(*detItr)] = new G4LogicalVolume(Box_slice,
+		// 		Silicon,
+		// 		SliceName.second); // 0,0,0);
 		//m_Slice_log[(*detItr)]->SetUserLimits(ulim);
 		m_Pixel_log[(*detItr)] = new G4LogicalVolume(Box_pixel,
 				Silicon,
 				PixelName.second); // 0,0,0);
 
-		if ( m_ulim ) m_Pixel_log[(*detItr)]->SetUserLimits(m_ulim);
+		//Nilou Begin
 
-		// divide in slices
-		new G4PVDivision(
-				SliceName.second,
-				m_Slice_log[(*detItr)],
-				m_Box_log[(*detItr)],
-				kXAxis,
-				//geoMap[*detItr]->GetPixelX(),
-				geoMap[*detItr]->GetNPixelsX(),
-				0); // offset
+		pixels_parameterization = new Allpix_PixelsParameterization(geoMap[*detItr]);
+		G4int NPixTot = geoMap[*detItr]->GetNPixelsX()*geoMap[*detItr]->GetNPixelsY();
+		new G4PVParameterised(PixelName.second+"phys",
+				      m_Pixel_log[(*detItr)],     // logical volume
+				      m_Box_log[(*detItr)],             // mother volume
+				      kUndefined,                 // axis
+				      NPixTot,                      // replicas
+				      pixels_parameterization);         // G4VPVParameterisation
+		//Nilou End
 
-		new G4PVDivision(
-				PixelName.second,
-				m_Pixel_log[(*detItr)],
-				m_Slice_log[(*detItr)],
-				kYAxis,
-				//geoMap[*detItr]->GetPixelY(),
-				geoMap[*detItr]->GetNPixelsY(),
-				0); // offset
+		// if ( m_ulim ) m_Pixel_log[(*detItr)]->SetUserLimits(m_ulim);
+
+		// // divide in slices
+		// new G4PVDivision(
+		// 		SliceName.second,
+		// 		m_Slice_log[(*detItr)],
+		// 		m_Box_log[(*detItr)],
+		// 		kXAxis,
+		// 		//geoMap[*detItr]->GetPixelX(),
+		// 		geoMap[*detItr]->GetNPixelsX(),
+		// 		0); // offset
+
+		// new G4PVDivision(
+		// 		PixelName.second,
+		// 		m_Pixel_log[(*detItr)],
+		// 		m_Slice_log[(*detItr)],
+		// 		kYAxis,
+		// 		//geoMap[*detItr]->GetPixelY(),
+		// 		geoMap[*detItr]->GetNPixelsY(),
+		// 		0); // offset
 
 		///////////////////////////////////////////////////////////
 		// Guard rings and excess area

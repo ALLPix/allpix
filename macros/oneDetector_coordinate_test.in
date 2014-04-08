@@ -30,17 +30,7 @@
 #/vis/scene/add/axes 0. 0. 0. 10. cm
 /vis/scene/add/volume World -1 2
 /vis/viewer/set/style s
-#/vis/open OIX 1024x768-100+100
-#/vis/open OGLIXm 1024x768-100+100
-#/vis/open RayTracer
-#/vis/open OGLIQt
-#/vis/open OGLSQt
 /vis/open OIX
-#/vis/open OGLIX 1024x768-100+100
-#/vis/open OGLSXm
-#/vis/open DAWNFILE
-#/vis/open OGLSX
-#/vis/open OGL 600x600-0+0
 /vis/viewer/set/background 0.4 0.5 0.6
 /vis/viewer/set/viewpointThetaPhi 20 50
 /vis/viewer/zoom 2.0
@@ -57,7 +47,7 @@
 
 ####################################################################
 # Write Telescope files
-/allpix/timepixtelescope/setFolderPath /VertexScratch/workspace/mbenoit/test/Run000049
+/allpix/timepixtelescope/setFolderPath /home/nalipour/testBeamAnalysis/Simulation/Test
 /allpix/timepixtelescope/setEventIDcolumn 0
 /allpix/timepixtelescope/setSumTOT 1
 /allpix/timepixtelescope/write 0

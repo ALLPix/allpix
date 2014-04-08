@@ -45,6 +45,7 @@
 
 #include "AllPixTrackerSD.hh"
 #include "AllPixBumpsParameterization.hh"
+#include "AllPixPixelsParameterization.hh"
 #include "AllPixDetectorMessenger.hh"
 #include "ReadGeoDescription.hh"
 
@@ -206,6 +207,7 @@ private:
 
 
 	Allpix_BumpsParameterization * parameterization;
+  Allpix_PixelsParameterization * pixels_parameterization;
 
 	/*
   //////////////////////////////////
