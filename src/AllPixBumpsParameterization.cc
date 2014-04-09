@@ -43,7 +43,7 @@ double Allpix_BumpsParameterization::posX(int id) const {
 
 double Allpix_BumpsParameterization::posY(int id) const {
 
-	G4int Y = (id-(id%npixelX))/npixelY;
+	G4int Y = (id-(id%npixelX))/npixelX;
 	return Y*hpixelY*2 + hpixelY - hsensorY;
 
 
