@@ -504,7 +504,7 @@ void AllPixDetectorConstruction::BuildPixelDevices(map<int, AllPixGeoDsc *> geoM
 		G4Box * Box_pixel = new G4Box(PixelName.first,
 				geoMap[*detItr]->GetHalfPixelX(),
 				geoMap[*detItr]->GetHalfPixelY(),
-				geoMap[*detItr]->GetHalfPixelZ());
+				geoMap[*detItr]->GetHalfSensorZ());
 
 		//Bump itself
 		G4UnionSolid * aBump = 0;
@@ -832,7 +832,7 @@ void AllPixDetectorConstruction::BuildPixelDevices(map<int, AllPixGeoDsc *> geoM
 				      pixels_parameterization);         // G4VPVParameterisation
 		//Nilou End
 
-		// if ( m_ulim ) m_Pixel_log[(*detItr)]->SetUserLimits(m_ulim);
+	    if ( m_ulim ) m_Pixel_log[(*detItr)]->SetUserLimits(m_ulim);
 
 		// // divide in slices
 		// new G4PVDivision(
