@@ -16,6 +16,7 @@ Allpix_PixelsParameterization::Allpix_PixelsParameterization(AllPixGeoDsc * geo)
 
 	npixelX = fGeoPars->GetNPixelsX();
 	npixelY = fGeoPars->GetNPixelsY();
+
 }
 
 
@@ -38,12 +39,14 @@ double Allpix_PixelsParameterization::posX(int id) const {
   // G4cout <<"id=" << id << ", X=" << X << ", posX=" << X*hpixelX*2 + hpixelX - hsensorX << G4endl;
 
   return X*hpixelX*2 + hpixelX - hsensorX;
+
 }
 
 double Allpix_PixelsParameterization::posY(int id) const {
   
   G4int Y = (id-(id%npixelX))/npixelX;
   // G4cout <<"id=" << id << ", Y=" << Y << ", posY=" <<Y*hpixelY*2 + hpixelY - hsensorY << G4endl;
+  if(Y>575)G4cout << "i = " <<  id << endl;
   return Y*hpixelY*2 + hpixelY - hsensorY;
 
   

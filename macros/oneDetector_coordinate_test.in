@@ -3,9 +3,9 @@
 ####################################################################
 # Al Holder
 # Mimosa detector
-/allpix/det/setId        500
+/allpix/det/setId        300
 /allpix/det/setPosition   0.0 0.0 340.5 mm
-/allpix/det/setRotation   0.0 0.0 0.00 deg
+/allpix/det/setRotation   25.0 34.0 60.00 deg
 ####################################################################
 
 ####################################################################
@@ -55,7 +55,7 @@
 ####################################################################
 # Source GPS
 /gps/particle mu+
-/gps/pos/centre -6.983 7.0125 -1.0 mm
+/gps/pos/centre -0 0 -1.0 mm
 /gps/direction  0 0 1
 
 /gps/ene/type User

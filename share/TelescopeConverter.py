@@ -7,7 +7,7 @@ Tool to convert allpix telescope simulation files into LCIO EUTelescope format.
 '''
 
 from pyLCIO import EVENT, IMPL, IOIMPL, UTIL
-from ROOT import TVector3, TLorentzVector, TRandom3, TMath, std, TH1D, TCanvas
+#from ROOT import TVector3, TLorentzVector, TRandom3, TMath, std, TH1D, TCanvas
 from time import time
 
 import sys, math, glob, tarfile

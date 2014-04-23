@@ -4,7 +4,7 @@ export PATH=$PATH:/afs/cern.ch/eng/clic/software/Pixel_TestBeam_Software/OpenInv
 
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/afs/cern.ch/eng/clic/software/Pixel_TestBeam_Software/OpenInventor/OIV_Install/lib
 
-export G4WORKDIR=/afs/cern.ch/work/n/nalipour/allpixCourse/nalipourBranch/geant4_workdir
+export G4WORKDIR=/afs/cern.ch/eng/clic/software/Pixel_TestBeam_Software/geant4_workdir
  
 
 #openinventor 

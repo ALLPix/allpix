@@ -163,30 +163,56 @@ G4bool AllPixTrackerSD::ProcessHits(G4Step * aStep, G4TouchableHistory *)
 	G4int copyIDx_pre  = -1;
 	G4int copyIDy_post = -1;
 	G4int copyIDx_post = -1;
+	G4ThreeVector correctedPrePos(0,0,0);
+	G4ThreeVector correctedPostPos(0,0,0);
 	G4ThreeVector correctedPos(0,0,0);
 
 	if (m_thisIsAPixelDetector) {
 
-	G4cout << "------------------------begin hit ----------------------------------------" << G4endl;
+	//G4cout << "------------------------begin hit ----------------------------------------" << G4endl;
 
 		// This positions are global, I will bring them to pixel-centered frame
 		// I can use the physical volumes for that
 		G4ThreeVector prePos = preStepPoint->GetPosition();
+		G4ThreeVector postPos = postStepPoint->GetPosition();
 
 
 		// Find the inverse rotation
 		//G4RotationMatrix invRot2 = CLHEP::inverseOf(*m_rotationOfWrapper);
-		G4RotationMatrix invRot = m_rotationOfWrapper->inverse().inverse();
+		G4RotationMatrix invRot = m_rotationOfWrapper->inverse();
+
+
+//		G4cout << "Rotation Matrix" << endl;
+//		m_rotationOfWrapper->print(G4cout);
+//		G4cout << "Inverted  Matrix" << endl;
+//		G4cout << m_rotationOfWrapper->inverse() << endl;
+
+
 
 		// Absolute center of Si wafer
 		G4ThreeVector absCenterOfDetector = m_absolutePosOfWrapper ;
 		//G4cout << "Absolute position of Wrapper : " << absCenterOfDetector << endl;
 
 		// Bring the detector (Si layer) to the Origin
-		correctedPos = prePos;
-		correctedPos -= absCenterOfDetector;
+		correctedPrePos = prePos;
+		correctedPrePos -= absCenterOfDetector;
 		// apply rotation !
-		correctedPos = invRot * correctedPos;
+		correctedPrePos = invRot * correctedPrePos;
+
+		// Bring the detector (Si layer) to the Origin
+		correctedPostPos = postPos;
+		correctedPostPos -= absCenterOfDetector;
+		// apply rotation !
+		correctedPostPos = invRot * correctedPostPos;
+
+
+
+		double correctedPos_x = (correctedPrePos.x() + correctedPostPos.x())/2;
+		double correctedPos_y = (correctedPrePos.y() + correctedPostPos.y())/2;
+		double correctedPos_z = (correctedPrePos.z() + correctedPostPos.z())/2;
+		correctedPos= G4ThreeVector(correctedPos_x,correctedPos_y,correctedPos_z);
+
+		//G4cout << "pre: " << correctedPrePos << " post: " << correctedPostPos << " avg: " << correctedPos << endl;
 
 		// Now let's finally provide pixel-centered coordinates for each hit
 		// Build the center of the Pixel
@@ -198,20 +224,26 @@ G4bool AllPixTrackerSD::ProcessHits(G4Step * aStep, G4TouchableHistory *)
 	
 		copyIDx_pre  =(int)TMath::FloorNint(((m_gD->GetHalfSensorX() + correctedPos.x())/ m_gD->GetPixelX()));
 		copyIDy_pre  =(int)TMath::FloorNint(((m_gD->GetHalfSensorY() + correctedPos.y())/ m_gD->GetPixelY()));
+
+		if((copyIDx_pre>=m_gD->GetNPixelsX() or copyIDy_pre>=m_gD->GetNPixelsY()) or (copyIDx_pre<0 or copyIDy_pre<0) ){
+			G4cerr << " ERROR, pixel outside matrix , Corrected Position : " << correctedPos << " " << copyIDx_pre << " " << copyIDy_pre << " pre-step position: " << preStepPoint->GetPosition() << " post step position : " <<  postStepPoint->GetPosition() << endl;
+		}
+
+
   	// The position within the pixel !!!
 		correctedPos = correctedPos - centerOfPixel - m_relativePosOfSD;
 
 
-		G4cout << TString::Format("uncorrectedPos: %.08f %.08f %.08f [um] \n", prePos.x()/um, prePos.y()/um, prePos.z()/um);
-		G4cout << TString::Format("correctedPos: %.08f %.08f %.08f [um] \n", correctedPos.x()/um, correctedPos.y()/um, correctedPos.z()/um);
-		G4cout << "uncorrectedPos : " << prePos.x()/um << " " << prePos.y()/um
-		       << " " << prePos.z()/um << " [um]" << G4endl;
+		//G4cout << TString::Format("uncorrectedPrePos: %.08f %.08f %.08f [um] \n", prePos.x()/um, prePos.y()/um, prePos.z()/um);
+		//G4cout << TString::Format("correctedPrePos: %.08f %.08f %.08f [um] \n", correctedPrePos.x()/um, correctedPrePos.y()/um, correctedPrePos.z()/um);
+		//G4cout << "uncorrectedPrePos : " << prePos.x()/um << " " << prePos.y()/um
+//		       << " " << prePos.z()/um << " [um]" << G4endl;
 
-		G4cout << "correctedPos : " << correctedPos.x()/um << " " << correctedPos.y()/um
-		       << " " << correctedPos.z()/um << " [um]" << G4endl;
+		//G4cout << "correctedPrePos : " << correctedPrePos.x()/um << " " << correctedPrePos.y()/um
+		//       << " " << correctedPrePos.z()/um << " [um]" << G4endl;
 
-		//G4cout << "(" << shi << ") "<<	 correctedPos.z()/um << " " ;
-		//G4cout << TString::Format("(%02.0f) %02.1f ",shi,correctedPos.z()/um);
+		//G4cout << "(" << shi << ") "<<	 correctedPrePos.z()/um << " " ;
+		//G4cout << TString::Format("(%02.0f) %02.1f ",shi,correctedPrePos.z()/um);
 
 		// depth 1 --> x
 		// depth 0 --> y
@@ -219,7 +251,7 @@ G4bool AllPixTrackerSD::ProcessHits(G4Step * aStep, G4TouchableHistory *)
 		//copyIDx_pre  = touchablepre->GetCopyNumber(1);		
 
 
-		G4cout << "[Nilou]: copyIDx_pre=" << copyIDx_pre << ", copyIDy_pre=" << copyIDy_pre <<G4endl; 
+		//G4cout << "[Nilou]: copyIDx_pre=" << copyIDx_pre << ", copyIDy_pre=" << copyIDy_pre <<G4endl;
 
 	}
 
@@ -232,7 +264,7 @@ G4bool AllPixTrackerSD::ProcessHits(G4Step * aStep, G4TouchableHistory *)
 		postPos = postStepPoint->GetPosition();
 		copyIDy_post = touchablepost->GetCopyNumber();
 		copyIDx_post = touchablepost->GetCopyNumber(1);
-		G4cout << "[Nilou2]: copyIDx_pre=" << copyIDx_pre << ", copyIDy_pre=" << copyIDy_pre <<G4endl; 
+		//G4cout << "[Nilou2]: copyIDx_pre=" << copyIDx_pre << ", copyIDy_pre=" << copyIDy_pre <<G4endl;
 	}
 
 	// process
@@ -278,7 +310,7 @@ G4bool AllPixTrackerSD::ProcessHits(G4Step * aStep, G4TouchableHistory *)
 	//newHit->Print();
 	//newHit->Draw();
 
-	G4cout << "------------------------end hit ----------------------------------------" << G4endl;
+	//G4cout << "------------------------end hit ----------------------------------------" << G4endl;
 
 	return true;
 }
@@ -305,7 +337,7 @@ void AllPixTrackerSD::EndOfEvent(G4HCofThisEvent*)
 G4cout << " ----------------------------- " << G4endl;
 G4cout << "prePos       : " << prePos.x()/mm << " " << prePos.y()/mm << " " << prePos.z()/mm << " [mm]" << G4endl;
 G4cout << "detectorPos  : " << absCenterOfDetector.x()/mm << " " << absCenterOfDetector.y()/mm << " " << absCenterOfDetector.z()/mm << " [mm]" << G4endl;
-G4cout << "previous correctedPos : " << correctedPos.x()/um << " " << correctedPos.y()/um
-			<< " " << correctedPos.z()/um << " [um]" << G4endl << G4endl;
+G4cout << "previous correctedPrePos : " << correctedPrePos.x()/um << " " << correctedPrePos.y()/um
+			<< " " << correctedPrePos.z()/um << " [um]" << G4endl << G4endl;
  */
 

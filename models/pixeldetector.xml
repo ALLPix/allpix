@@ -12,34 +12,34 @@
 <npix_y>576</npix_y>
 <npix_z>0</npix_z>
 
-<pixsize_x units="um">9.25</pixsize_x>
-<pixsize_y units="um">9.25</pixsize_y>
+<pixsize_x units="um">9.2</pixsize_x>
+<pixsize_y units="um">9.2></pixsize_y>
 <pixsize_z units="um">25.</pixsize_z>
 
-<chip_hx units="um">10656.0</chip_hx>
-<chip_hy units="um">5328.0</chip_hy>
+<chip_hx units="um">10598.4</chip_hx>
+<chip_hy units="um">5299.2</chip_hy>
 <chip_hz units="um">0.0</chip_hz>
 
 <chip_posx units="um">0.</chip_posx>
 <chip_posy units="um">0.</chip_posy>
 <chip_posz units="um">0.</chip_posz>
 
-<sensor_hx units="um">10656.0</sensor_hx>
-<sensor_hy units="um">5328.0</sensor_hy>
+<sensor_hx units="um">10598.4</sensor_hx>
+<sensor_hy units="um">5299.2</sensor_hy>
 <sensor_hz units="um">25.0</sensor_hz>
 
-<sensor_gr_excess_htop units="um">375.0</sensor_gr_excess_htop>
-<sensor_gr_excess_hbottom units="um">375.0</sensor_gr_excess_hbottom>
-<sensor_gr_excess_hright units="um">475.0</sensor_gr_excess_hright>
-<sensor_gr_excess_hleft units="um">475.0</sensor_gr_excess_hleft>
+<sensor_gr_excess_htop units="um">10.0</sensor_gr_excess_htop>
+<sensor_gr_excess_hbottom units="um">10.0</sensor_gr_excess_hbottom>
+<sensor_gr_excess_hright units="um">10.0</sensor_gr_excess_hright>
+<sensor_gr_excess_hleft units="um">10.0</sensor_gr_excess_hleft>
 
 <sensor_posx units="mm">0</sensor_posx>
-<sensor_posy units="mm">15.0</sensor_posy>
+<sensor_posy units="mm">0.0</sensor_posy>
 <sensor_posz units="mm">0</sensor_posz>
 
 <pcb_hx units="mm">30.75</pcb_hx>
 <pcb_hy units="mm">39.7</pcb_hy>
-<pcb_hz units="mm">0.00000001</pcb_hz>
+<pcb_hz units="mm">0.0</pcb_hz>
 
 </pixeldet>
 
@@ -288,13 +288,13 @@
 <npix_y>256</npix_y>
 <npix_z>0</npix_z>
 
-<pixsize_x units="um">27.5.</pixsize_x>
-<pixsize_y units="um">27.5.</pixsize_y>
-<pixsize_z units="um">10.</pixsize_z>
+<pixsize_x units="um">27.5</pixsize_x>
+<pixsize_y units="um">27.5</pixsize_y>
+<pixsize_z units="um">25.</pixsize_z>
 
 <chip_hx units="um">7055.5</chip_hx>
 <chip_hy units="um">8060</chip_hy>
-<chip_hz units="um">25.0</chip_hz>
+<chip_hz units="um">375.0</chip_hz>
 
 <chip_offsetx units="um">0.</chip_offsetx>
 <chip_offsety units="um">-1020.</chip_offsety>
@@ -304,36 +304,36 @@
 <sensor_hy units="um">7040.</sensor_hy>
 <sensor_hz units="um">25.0</sensor_hz>
 
-<sensor_gr_excess_htop units="um">500.0</sensor_gr_excess_htop>
-<sensor_gr_excess_hbottom units="um">500.0</sensor_gr_excess_hbottom>
-<sensor_gr_excess_hright units="um">500.0</sensor_gr_excess_hright>
-<sensor_gr_excess_hleft units="um">500.0</sensor_gr_excess_hleft>
+<sensor_gr_excess_htop units="um">50.0</sensor_gr_excess_htop>
+<sensor_gr_excess_hbottom units="um">50.0</sensor_gr_excess_hbottom>
+<sensor_gr_excess_hright units="um">50.0</sensor_gr_excess_hright>
+<sensor_gr_excess_hleft units="um">50.0</sensor_gr_excess_hleft>
 
 <sensor_posx units="mm">0</sensor_posx>
 <sensor_posy units="mm">22.25</sensor_posy>
 <sensor_posz units="mm">0.</sensor_posz>
 
 
-<bump_radius units="um">9.0</bump_radius>
-<bump_height units="um">20.0</bump_height>
+<bump_radius units="um">7.0</bump_radius>
+<bump_height units="um">16.0</bump_height>
 <bump_offset_x units="um">0.0</bump_offset_x>
 <bump_offset_y units="um">0.0</bump_offset_y>
-<bump_dr units="um">2.0</bump_dr>
+<bump_dr units="um">1.0</bump_dr>
 
 
 <pcb_hx units="mm">23.50</pcb_hx>
 <pcb_hy units="mm">39.5</pcb_hy>
 <pcb_hz units="mm">0.88</pcb_hz>
 
-<sensor_resistivity>4000.0</sensor_resistivity>
+<sensor_resistivity>4500.0</sensor_resistivity>
 <MIP_Tot> 160 </MIP_Tot>
 <MIP_Charge> 24000.</MIP_Charge>
-<Counter_Depth> 65536 </Counter_Depth>
-<Clock_Unit> 25e-9 </Clock_Unit>
+<Counter_Depth> 11810 </Counter_Depth>
+<Clock_Unit> 10.41e-9 </Clock_Unit>
 
-<Chip_Noise>300.</Chip_Noise>
+<Chip_Noise>120.</Chip_Noise>
 <Chip_Threshold> 800. </Chip_Threshold>
-<Cross_Talk>0.001</Cross_Talk>
+<Cross_Talk>0.005</Cross_Talk>
 <Saturation_Energy>350.</Saturation_Energy>
 </pixeldet>
 

@@ -22,11 +22,13 @@
 #define dE 5. // 50V/cm cm supposed to be equal to 10
 
 using namespace TMath;
-AllPixTimepixDigitizer::AllPixTimepixDigitizer(G4String modName, G4String hitsColName, G4String digitColName) 
+AllPixTimepixDigitizer::AllPixTimepixDigitizer(G4String modName, G4String hitsColName, G4String digitColName)
   : AllPixDigitizerInterface (modName) {
 
-	
+
   doFastErf= true;
+
+  debug = false ;
 
   if(doFastErf){
     ifstream erfFile("share/Erf.dat");
@@ -46,19 +48,19 @@ AllPixTimepixDigitizer::AllPixTimepixDigitizer(G4String modName, G4String hitsCo
 
 
   hitindex=0;
-	
+
   nseek=1;
-	
+
   doAnimation = false;
-	
-	
+
+
   // Registration of digits collection name
   collectionName.push_back(digitColName);
   m_hitsColName.push_back(hitsColName);
 
   //// Unit for charge in FEIX average e/h pair creation energy in Silicon
   elec = 3.64*eV;
-	
+
   readoutType = HOLE;
 
 
@@ -70,7 +72,7 @@ AllPixTimepixDigitizer::AllPixTimepixDigitizer(G4String modName, G4String hitsCo
   // Bias and Temperature //
   //////////////////////////
 
-  biasVoltage=80.0; //[V]
+  biasVoltage=15.0; //[V]
   Temperature = 300.0;
   detectorThickness = gD->GetSensorZ();
   resistivity=gD->GetResistivity();
@@ -88,8 +90,6 @@ AllPixTimepixDigitizer::AllPixTimepixDigitizer(G4String modName, G4String hitsCo
   nPixX= gD->GetNPixelsX();
   nPixY= gD->GetNPixelsY();
 
-  offsetX= gD->GetSensorXOffset()*mm;
-  offsetY= gD->GetSensorYOffset()*mm;
 
   //cout << TString::Format("[Timepix Digitizer] Lx=%f Ly=%f npixX=%d npixY=%d, offsetX=%f offsetY=%f",pitchX/um,pitchY/um,nPixX,nPixY,offsetX/um,offsetY/um) << endl;
 
@@ -99,7 +99,7 @@ AllPixTimepixDigitizer::AllPixTimepixDigitizer(G4String modName, G4String hitsCo
   ////////////////////////////////
   B_Field = 0.0;
   r_H_e = 1.1;
-  r_H_h=0.7;	
+  r_H_h=0.7;
 
 
 
@@ -112,7 +112,7 @@ AllPixTimepixDigitizer::AllPixTimepixDigitizer(G4String modName, G4String hitsCo
   Default_Electron_Mobility=1415.0*cm2/s; // Electron mobility (cm2/Vs)
   Default_Hole_Mobility=450.0*cm2/s;// Hole mobility (cm2/Vs
   Default_Electron_D=36.62*cm2/s; // Electron mobility (cm2/s)
-  Default_Hole_D=18*cm2/s;// Hole mobility (cm2/s
+  Default_Hole_D=12.4*cm2/s;// Hole mobility (cm2/s
 
 
 
@@ -170,10 +170,10 @@ AllPixTimepixDigitizer::AllPixTimepixDigitizer(G4String modName, G4String hitsCo
   electricFieldX = 0; // V/um
   electricFieldY = 0; // V/um
 
-  //G4cout << "!!!!!!!Radiation Damage Report !!!!!!!!" << endl
-  //	 << TString::Format("depletionVoltage : %f depleted Depth : %f",depletionVoltage,depletedDepth/um) << endl
-  //	 << TString::Format("Neff : %e Neff0 : %e ",Neff*cm3,Neff0*cm3);
-  //if(bulkType==false && Neff<0) cout << "Bulk inverted" << endl;
+  G4cout << "!!!!!!!Radiation Damage Report !!!!!!!!" << endl
+  	 << TString::Format("[TimepixDigitizer] depletionVoltage : %f depleted Depth : %f",depletionVoltage,depletedDepth/um) << endl
+  	 << TString::Format("[TimepixDigitizer] Neff : %e Neff0 : %e ",Neff*cm3,Neff0*cm3);
+  if(bulkType==false && Neff<0) cout << "[TimepixDigitizer] Bulk inverted" << endl;
 
 
 
@@ -219,61 +219,86 @@ AllPixTimepixDigitizer::AllPixTimepixDigitizer(G4String modName, G4String hitsCo
 
   MipTOT = gD->GetMIPTot();
   MipCharge = gD->GetMIPCharge();
- 	
- 	
- 
-  // Initializing Pixel Per Pixel preamp characteristics 
- 
- 
+
+
+
+  // Initializing Pixel Per Pixel preamp characteristics
+
+
   Gain = new G4double*[nPixX];
   for(int i=0;i<nPixX;i++){
     Gain[i] = new G4double[nPixY];
   };
- 
+
   RisingSlope = new G4double*[nPixX];
   for(int i=0;i<nPixX;i++){
     RisingSlope[i] = new G4double[nPixY];
-  };	
+  };
 
   FallingSlope = new G4double*[nPixX];
   for(int i=0;i<nPixX;i++){
     FallingSlope[i] = new G4double[nPixY];
-  };	
- 	
+  };
+
   ThresholdMatrix = new G4double*[nPixX];
   for(int i=0;i<nPixX;i++){
     ThresholdMatrix[i] = new G4double[nPixY];
-  };	
- 	
+  };
+
+  MaskedPixels = new G4double*[nPixX];
+  for(int i=0;i<nPixX;i++){
+    MaskedPixels[i] = new G4double[nPixY];
+  };
+
   CounterDepth = gD->GetCounterDepth();
   ClockUnit = gD->GetClockUnit();
   ChipNoise = gD->GetChipNoise()*elec;
   m_digitIn.thl = gD->GetThreshold()*elec;
   SaturationEnergy = gD->GetSaturationEnergy()*keV;
   chargeSharingConstant = gD->GetCrossTalk();
- 	
+
   DefaultGain = 10.;
-  DefaultRisingSlope = 20.0/1e-9; 
+  DefaultRisingSlope = 20.0/1e-9;
   DefaultFallingSlope= GetIkrum(MipCharge*elec,MipTOT);
- 	
+
   G4double GainDispersion = 0.005;
   G4double RisingSlopeDispersion = 0.005;
   G4double FallingSlopeDispersion = 0.005;
- 	
- 	
+
+  int NMasked = 500;
+
+
   for(int i=0;i<nPixX;i++){
     for(int j=0;j<nPixY;j++){
       Gain[i][j]=CLHEP::RandGauss::shoot(DefaultGain,GainDispersion*DefaultGain);
       RisingSlope[i][j]=CLHEP::RandGauss::shoot(DefaultRisingSlope,RisingSlopeDispersion*DefaultRisingSlope);
       FallingSlope[i][j]=CLHEP::RandGauss::shoot(DefaultFallingSlope,FallingSlopeDispersion*DefaultGain);
       ThresholdMatrix[i][j]=CLHEP::RandGauss::shoot(m_digitIn.thl,ChipNoise);
+      MaskedPixels[i][j]=0;
+      if(CLHEP::RandFlat::shoot()<(1.0/NMasked)){
+    	  MaskedPixels[i][j]=1;
+      }
     };};
- 	
 
-  A= 0.50554e+01;
-  B= 4.75150e+02;
-  C=-8.54405e+02;
-  D= 4.01736e+00;
+  // C06-W0110
+//  A= 13.34;
+//  B= 277.6;
+//  C= 190.5;
+//  D= 4.414;
+
+  //A06-W0110
+  A= 13.78;
+  B= 298;
+  C= 34.52;
+  D= 3.698;
+
+
+//  //A06-W0110
+//  A= 30.09;
+//  B= 511.2;
+//  C= 1320.0;
+//  D= 2.098;
+
 
   double Surrogate_Parameter_dispertion = 0.001;
 
@@ -417,16 +442,16 @@ G4double AllPixTimepixDigitizer::MyErf(G4double x){
 
 
 G4double AllPixTimepixDigitizer::GetIkrum(double energy,double Target){
-	
+
   G4double Max=0;
   if(energy>SaturationEnergy)  Max= (1.0/keV)*SaturationEnergy*DefaultGain;
   else	 Max= (1.0/keV)*energy*DefaultGain;
 
   G4double tpeak = Max/DefaultRisingSlope;
-	
+
   G4double a = TMath::FloorNint(tpeak/ClockUnit);
-	
-  /* 	G4cout <<endl << "[IKRum Calculation]" << endl ; 
+
+  /* 	G4cout <<endl << "[IKRum Calculation]" << endl ;
 	G4cout << "[IKRum Calculation] DefaultGain : " << DefaultGain << endl;
 	G4cout << "[IKRum Calculation] energy : " << energy/keV << endl;
 	G4cout << "[IKRum Calculation] DefaultRisingSlope : " << DefaultRisingSlope << endl;
@@ -434,7 +459,7 @@ G4double AllPixTimepixDigitizer::GetIkrum(double energy,double Target){
 	G4cout << "[IKRum Calculation] Max : " << Max << endl;
 	G4cout << "[IKRum Calculation] SE : " << SaturationEnergy << endl; */
 
-	
+
   return (Max-(1.0/keV)*m_digitIn.thl*DefaultGain)/(ClockUnit*(Target-a));
 }
 
@@ -449,12 +474,12 @@ vector<G4double>  AllPixTimepixDigitizer::ComputeDriftTimeFullField(G4double x, 
   //cout << "z : " << z/um << endl;
   vector<G4double> step;
   int counter=0;
-	
-  vector<G4double> vx,vy,vz,vt; 
-	
-	
+
+  vector<G4double> vx,vy,vz,vt;
+
+
   hitindex++;
-	
+
   int iter =0;
   while( ztemp>=-detectorThickness/2 && ztemp<=detectorThickness/2 && iter<1000){
 
@@ -464,16 +489,16 @@ vector<G4double>  AllPixTimepixDigitizer::ComputeDriftTimeFullField(G4double x, 
       vz.push_back(detectorThickness-ztemp/um);
       vt.push_back(driftTime/s);
     };
-		
+
     driftTime+=dt;
-		
+
     if(B_Field!=0.0){
-			
+
       if(readoutType==ELECTRON){
 	step=RKF5IntegrationBFieldElectrons(xtemp,ytemp,ztemp,dt);
       }
       else{
-	step=RKF5IntegrationBFieldHoles(xtemp,ytemp,ztemp,dt);				
+	step=RKF5IntegrationBFieldHoles(xtemp,ytemp,ztemp,dt);
       }
     }
     else {
@@ -481,29 +506,29 @@ vector<G4double>  AllPixTimepixDigitizer::ComputeDriftTimeFullField(G4double x, 
 	step=RKF5IntegrationElectrons(xtemp,ytemp,ztemp,dt);
       }
       else{
-	step=RKF5IntegrationHoles(xtemp,ytemp,ztemp,dt);				
+	step=RKF5IntegrationHoles(xtemp,ytemp,ztemp,dt);
       }
     };
-		
-		
-	
+
+
+
     xtemp+=step[0];
     ytemp+=step[1];
     ztemp+=step[2];
-		
+
 
     if(GetElectricFieldNorm(xtemp,ytemp,ztemp)==0)ztemp=detectorThickness;
     dt=SetDt(dt,step[3]);
-		
-		
+
+
     counter++;
-		
+
     iter++;
     //cout << "!!!!!! Drifting youhou! !!!!! " << TString::Format("x: %f y : %f z : %f ",xtemp/um,ytemp/um,ztemp/um) << endl;
   }
-	
-	
-	
+
+
+
   if(doAnimation)anim->AddTrack(vx,vy,vz,vt,ComputeDiffusionRMS(driftTime)/um,energy);
   //cout << "[animation]" << ComputeDiffusionRMS(driftTime)/um << endl;
 
@@ -620,7 +645,7 @@ void AllPixTimepixDigitizer::Efield1D(G4double z){
     electricFieldZ=-(biasVoltage-depletionVoltage)/detectorThickness+(1-z/detectorThickness)*2*depletionVoltage/detectorThickness;
     //electricFieldZ=-(detectorThickness-z)*biasVoltage/depletedDepth;
   }
-	
+
   if(z>depletedDepth){
     electricFieldZ=0;
     //cout << "bip" << endl;
@@ -661,42 +686,42 @@ void AllPixTimepixDigitizer::Digitize(){
   //TF1 * f1 = new TF1("expint","exp((x-[0])*(x-[0])/2.*[1])",-100.,100.);
 
   G4double hitsETotal = 0.;
-	
-	
+
+
   G4double sx=0;
   G4double sy=0;
-	
+
   if(doAnimation){
-    //Create a Digit Graphical representation 
+    //Create a Digit Graphical representation
     anim = new AllPixDigitAnimation(20,20,detectorThickness/um,pitchX/um,pitchY/um,nEntries,hcID);
-	
-	
-    //////////////////////////////////////////////////////////////////////	
+
+
+    //////////////////////////////////////////////////////////////////////
     //Shift for event display (to recenter the hit around trhe geometry)//
     //////////////////////////////////////////////////////////////////////
     for(G4int itr  = 0 ; itr < nEntries ; itr++) {
-		
+
       tempPixel.first  = (*hitsCollection)[itr]->GetPixelNbX();
       tempPixel.second = (*hitsCollection)[itr]->GetPixelNbY();
       G4double xpos = (*hitsCollection)[itr]->GetPosWithRespectToPixel().x();
       G4double ypos = (*hitsCollection)[itr]->GetPosWithRespectToPixel().y();
       pixelPositionWithRegardToCorner_x=tempPixel.first*pitchX -pitchX/2.;
       pixelPositionWithRegardToCorner_y=tempPixel.second*pitchY -pitchY/2. ;
-			
+
       sx+=xpos+pixelPositionWithRegardToCorner_x;
       sy+=ypos+pixelPositionWithRegardToCorner_y;
     };
     sx/=nEntries;
     sx = TMath::FloorNint(sx/pitchX)*pitchX;
     sy/=nEntries;
-    sy = TMath::FloorNint(sy/pitchY)*pitchY;	
-	
+    sy = TMath::FloorNint(sy/pitchY)*pitchY;
+
     anim->SetShift(sx/(um),sy/(um));
     ///////////////////////////////////////////////////////////////////////
   };
-	
+
   for(G4int itr  = 0 ; itr < nEntries ; itr++) {
-    G4cout << "=================== itr=" << itr << G4endl;
+    if(debug) G4cout << "=================== itr=" << itr << G4endl;
 
     G4double eHitTotal;
 
@@ -713,8 +738,8 @@ void AllPixTimepixDigitizer::Digitize(){
     //Fe55
     // eHitTotal = elec*CLHEP::RandGauss::shoot((*hitsCollection)[itr]->GetEdep()/elec,8.6*TMath::Sqrt((*hitsCollection)[itr]->GetEdep()/elec));
 
-    //    eHitTotal = elec*CLHEP::RandGauss::shoot((*hitsCollection)[itr]->GetEdep()/elec,3*TMath::Sqrt((*hitsCollection)[itr]->GetEdep()/elec)); //Nilou commented
-    eHitTotal = (*hitsCollection)[itr]->GetEdep(); //Nilou
+    eHitTotal = elec*CLHEP::RandGauss::shoot((*hitsCollection)[itr]->GetEdep()/elec,TMath::Sqrt((*hitsCollection)[itr]->GetEdep()/elec)); //Nilou commented
+    //eHitTotal = (*hitsCollection)[itr]->GetEdep(); //Nilou
     //		}
     //G4double eHitTotal = CLHEP::RandGauss::shoot((*hitsCollection)[itr]->GetEdep(),0.6*keV);
 
@@ -735,9 +760,9 @@ void AllPixTimepixDigitizer::Digitize(){
 
     pixelPositionWithRegardToCorner_x=tempPixel.first*pitchX -pitchX/2.;
     pixelPositionWithRegardToCorner_y=tempPixel.second*pitchY -pitchY/2. ;
-		
 
-    G4cout << "eHitTotal=" << eHitTotal << ", tempPixel.first=" << tempPixel.first << ", tempPixel.second=" << tempPixel.second << ", xpos=" << xpos << ", ypos=" << ypos << G4endl; //Nilou		
+
+    if(debug) G4cout << "eHitTotal=" << eHitTotal << ", tempPixel.first=" << tempPixel.first << ", tempPixel.second=" << tempPixel.second << ", xpos=" << xpos << ", ypos=" << ypos << G4endl; //Nilou
 
     //G4cout << TString::Format("[TimepixDigi] hit position x,y,z : %5.5f %5.5f %5.5f",xpos/um,ypos/um,zpos/um)<<endl;
     //G4cout << TString::Format("[TimepixDigi] hit position Nx,Ny : %d %d %f ",tempPixel.first,tempPixel.second,eHitTotal/keV)<<endl;
@@ -772,7 +797,7 @@ void AllPixTimepixDigitizer::Digitize(){
 	xpos=data[0];
 	ypos=data[1];
 	//G4cout << TString::Format("!!!!!!!!! vd/vdep : %f drift time : %f sigma : %f",depletedDepth/detectorThickness,driftTime,sigma) << endl;
-	G4cout << "sigma=" << sigma << G4endl; //Nilou
+	if(debug)G4cout << "sigma=" << sigma << G4endl; //Nilou
       }
 
       // see if need more energy in neighbor
@@ -783,71 +808,68 @@ void AllPixTimepixDigitizer::Digitize(){
       //G4cout << TString::Format("[MC Truth] Hit Energy=%f, x=%f, y=%f pixel(%i,%i)",eHitTruth/elec,xpos/um,ypos/um,tempPixel.first,tempPixel.second) << endl;
       //if(fabs(xpos)>=pitchX/2.-10*sigma && fabs(ypos)>pitchY/2.0-10*sigma){
 
-      if( (fabs(xpos) >= pitchX/2.-3*sigma || fabs(ypos) >=pitchY/2.-3*sigma) ){
-	G4cout <<  pitchX/2.-3*sigma << " ------ " << pitchY/2.-3*sigma << G4endl; //Nilou
-
+    if((tempPixel.first >= 0 && tempPixel.second>=0 && tempPixel.first < nPixX && tempPixel.second < nPixY)){
 	for(int i=-nseek;i<=nseek;i++){
 	  for(int j=-nseek;j<=nseek;j++){
 	    extraPixel = tempPixel;
 	    extraPixel.first +=i;
 	    extraPixel.second+=j;
-	    if(extraPixel.first >= 0 && extraPixel.second>=0 && extraPixel.first < nPixX && extraPixel.second < nPixY)
+	    if((extraPixel.first >= 0 && extraPixel.second>=0) && (extraPixel.first < nPixX && extraPixel.second < nPixY))
 	      {
 		//We compute contribution of the hit to each pixels
 
-		double Etemp = IntegrateGaussian(xpos/nm,ypos/nm,sigma/nm,(-pitchX/2.0 + i*pitchX)/nm,(-pitchX/2.+(i+1)*pitchX)/nm,(-pitchY/2 + j*pitchY)/nm,(-pitchY/2 + (j+1)*pitchY)/nm, eHit );
+			double xmini = (-pitchX/2.0 + i*pitchX);
+			double xmaxi = (-pitchX/2.0 + (i+1)*pitchX);
+			double ymini = (-pitchY/2.0 + j*pitchY);
+			double ymaxi = (-pitchY/2.0 + (j+1)*pitchY);
 
-		//double xmin = ((2*i+1)*pitchX/2)
-		//double xmax =
-		//double ymin =
-		//double ymax = 
+			double Etemp = IntegrateGaussian(xpos,ypos,sigma,xmini,xmaxi,ymini,ymaxi,eHit );
+
+			if(doTrapping==true) pixelsContent[extraPixel]+=ApplyTrapping(driftTime,Etemp);
+			else pixelsContent[extraPixel] +=Etemp;
 
 
-		if(doTrapping==true) pixelsContent[extraPixel]+=ApplyTrapping(driftTime,Etemp);
-		else pixelsContent[extraPixel] +=Etemp;
-		G4cout << "[" << i << ", " << j << "]:" <<"(" << extraPixel.first << ", " << extraPixel.second << "): xpos=" << xpos/nm << ", ypos=" <<ypos/nm << ", sigma="
-		<<sigma/nm << ", xlow=" << (-j*pitchX)/nm << ", xhigh=" << ((1-j)*pitchX)/nm << ", ylow=" << (-(i+1)*pitchY)/nm << ", yhigh=" << (-i*pitchY)/nm << ", eHit="
-		<< eHit << ", Etemp=" << Etemp/keV << G4endl; //Nilou
-		//G4cout << TString::Format("[Digitizer] Pixel %i %i Energy=%f, Energy after Trapping=%f",extraPixel.first,extraPixel.second,Etemp,ApplyTrapping(driftTime,pixelsContent[extraPixel])/elec) << endl;
-		if(Etemp/keV>0)cout << TString::Format("Pixel %i %i, Energy collected = %f sigma=%f tdrift=%f",extraPixel.first,extraPixel.second,Etemp/keV,sigma/um,driftTime/ns) << endl;
+			//G4cout << TString::Format("[Digitizer] Pixel %i %i Energy=%f, Energy after Trapping=%f",extraPixel.first,extraPixel.second,Etemp,ApplyTrapping(driftTime,pixelsContent[extraPixel])/elec) << endl;
+			if(Etemp/keV>0 and debug)cout << TString::Format("Pixel %i %i, Energy collected = %f sigma=%f tdrift=%f",extraPixel.first,extraPixel.second,Etemp/keV,sigma/um,driftTime/ns) << endl;
 
 	      };
-	  };
-	};
-      }
-
-      else{
-	if(doTrapping==true)pixelsContent[extraPixel] +=ApplyTrapping(driftTime,pixelsContent[tempPixel]);
-	else pixelsContent[extraPixel] +=eHit;
-	//G4cout << TString::Format("[Digitizer] Pixel %i %i Energy=%f, Energy after Trapping=%f",extraPixel.first,extraPixel.second,pixelsContent[extraPixel]/elec,ApplyTrapping(driftTime,pixelsContent[extraPixel])/elec) << endl;
-
+	  	  };
+		};
       };
+
+//    else{
+//
+//    	  if(doTrapping==true)pixelsContent[extraPixel] +=ApplyTrapping(driftTime,pixelsContent[tempPixel]);
+//    	  else pixelsContent[extraPixel] +=eHit;
+//
+//
+//      };
 
       //Nilou commented
       // // FEI3 Chip crosstalk
-      // double sharedCharge = chargeSharingConstant*pixelsContent[tempPixel];
-      // pixelsContent[tempPixel]-= sharedCharge;
-      // int nPixelSharing=0;
-      // for(int i=-1;i<=1;i++){
-      // 	for(int j=-1;j<=1;j++){
-      // 	  extraPixel = tempPixel;
-      // 	  extraPixel.first +=i;
-      // 	  extraPixel.second+=j;
-      // 	  if(extraPixel.first >= 0 && extraPixel.second>=0 && extraPixel.first < nPixX && extraPixel.second < nPixY)	{
-      // 	    nPixelSharing+=1;
-      // 	  };
-      // 	};
-      // };
-      // for(int i=-1;i<=1;i++){
-      // 	for(int j=-1;j<=1;j++){
-      // 	  extraPixel = tempPixel;
-      // 	  extraPixel.first +=i;
-      // 	  extraPixel.second+=j;
-      // 	  if(extraPixel.first >= 0 && extraPixel.second>=0 && extraPixel.first < nPixX && extraPixel.second < nPixY)	{
-      // 	    pixelsContent[extraPixel]+=sharedCharge/nPixelSharing;
-      // 	  };
-      // 	};
-      // };
+       double sharedCharge = chargeSharingConstant*pixelsContent[tempPixel];
+       pixelsContent[tempPixel]-= sharedCharge;
+       int nPixelSharing=0;
+       for(int i=-1;i<=1;i++){
+       	for(int j=-1;j<=1;j++){
+       	  extraPixel = tempPixel;
+       	  extraPixel.first +=i;
+       	  extraPixel.second+=j;
+       	  if(extraPixel.first >= 0 && extraPixel.second>=0 && extraPixel.first < nPixX && extraPixel.second < nPixY)	{
+       	    nPixelSharing+=1;
+       	  };
+       	};
+       };
+       for(int i=-1;i<=1;i++){
+       	for(int j=-1;j<=1;j++){
+       	  extraPixel = tempPixel;
+       	  extraPixel.first +=i;
+       	  extraPixel.second+=j;
+       	  if(extraPixel.first >= 0 && extraPixel.second>=0 && extraPixel.first < nPixX && extraPixel.second < nPixY)	{
+       	    pixelsContent[extraPixel]+=sharedCharge/nPixelSharing;
+       	  };
+       	};
+       };
 
     }
 
@@ -865,46 +887,51 @@ void AllPixTimepixDigitizer::Digitize(){
       //				<< ", E =  " << ((*pCItr).second)/keV << " keV "
       //				<< G4endl;
       //		//if((*pCItr).second > m_digitIn.thl)
-		
+
       int x=(*pCItr).first.first;
       int y=(*pCItr).first.second;
-		
-		
-		
+
+
+
       if(doAnimation){
 	if((*pCItr).second>100*elec) anim->SubThresholdPixel(x-TMath::FloorNint(sx/pitchX),y-TMath::FloorNint(sy/pitchY));
       };
       // if preamp pulse rise over trigger
-		
+
       //G4cout << TString::Format("Energy : %f , Threshold : %f",((*pCItr).second/keV),ThresholdMatrix[x][y]/keV) << endl;
-		
-		
-      if(((*pCItr).second) > ThresholdMatrix[x][y])
-	{
+
+     // G4cout << "TOT= "<< EnergyToTOTSurogate((*pCItr).second,x,y) << endl;
+	//  G4cout << "Threshold" << SurrogateD[x][y] << endl;
+	 // G4cout << "Energy= "<< (*pCItr).second/keV << endl;
+
+      if(((*pCItr).second) >ThresholdMatrix[x][y] && MaskedPixels[x][y]==0)
+      {
 	  // create one digit per pixel, I need to look at all the pixels first
 	  AllPixTimepixDigit * digit = new AllPixTimepixDigit;
-	  digit->SetPixelIDX(x);
-	  digit->SetPixelIDY(y);
-	  //digit->SetPixelCounts(EnergyToTOTSurogate((*pCItr).second,x,y));
-	  digit->SetPixelCounts((*pCItr).second/eV);
-	  //digit->IncreasePixelCounts(); // Counting mode
-			
-			
-	  if(doAnimation)anim->FirePixel(x-TMath::FloorNint(sx/pitchX),y-TMath::FloorNint(sy/pitchY));
-			
-	  //G4cout << "TOT= "<< EnergyToTOTSurogate((*pCItr).second,x,y) << endl;
-	  //G4cout << "Energy= "<< 1e6*(*pCItr).second/keV << endl;
 
-	  // MC only //
-	  // Replicating the same information in all pixels
-	  // FIXME !
-	  digit->SetPrimaryVertex(m_primaryVertex->GetPosition());
-	  digit->SetPixelEnergyDep((*pCItr).second/eV);
+	  if(EnergyToTOTSurogate((*pCItr).second,x,y)>0){
+		  digit->SetPixelIDX(x);
+		  digit->SetPixelIDY(y);
+		  digit->SetPixelCounts(EnergyToTOTSurogate((*pCItr).second,x,y));
+		  //digit->SetPixelCounts(10*(*pCItr).second/keV);
+		  //digit->IncreasePixelCounts(); // Counting mode
 
-	  // Finally insert the digit in the digit collection
-	  //  Again, one per pixel.
-	  m_digitsCollection->insert(digit);
-	}
+
+		  if(doAnimation)anim->FirePixel(x-TMath::FloorNint(sx/pitchX),y-TMath::FloorNint(sy/pitchY));
+
+
+
+		  // MC only //
+		  // Replicating the same information in all pixels
+		  // FIXME !
+		  digit->SetPrimaryVertex(m_primaryVertex->GetPosition());
+		  digit->SetPixelEnergyDep((*pCItr).second/eV);
+
+		  // Finally insert the digit in the digit collection
+		  //  Again, one per pixel.
+		  m_digitsCollection->insert(digit);
+	 	}
+      }
     }
 
 
@@ -918,7 +945,7 @@ void AllPixTimepixDigitizer::Digitize(){
   }
 
   StoreDigiCollection(m_digitsCollection);
-	
+
   if(doAnimation)delete anim;
 
 }
@@ -1243,51 +1270,43 @@ G4double  AllPixTimepixDigitizer::SetDt(G4double dt, G4double ErreurMoy)
 
 G4int AllPixTimepixDigitizer::EnergyToTOT(G4double Energy,G4int x,G4int y){
   double Max=0;
-	
+
   //G4cout << TString::Format("Th= %e RS=%e FS=%e ",ThresholdMatrix[x][y],RisingSlope[x][y],FallingSlope[x][y]) << endl;
-	
-	
+
+
   if(Energy>SaturationEnergy)  Max= (1.0/keV)*SaturationEnergy*Gain[x][y];
   else	 Max= (1.0/keV)*Energy*Gain[x][y];
-	
+
   double offset = CLHEP::RandFlat::shoot(0.,1.)*ClockUnit;
-	
+
   double t0 = ((1.0/keV)*ThresholdMatrix[x][y]*Gain[x][y])/RisingSlope[x][y] + offset;
-	
+
   double tpeak = Max/RisingSlope[x][y] + offset;
-	
-	
-	
+
+
+
   double tf = (Max-((1.0/keV)*ThresholdMatrix[x][y]*Gain[x][y]))/FallingSlope[x][y] + tpeak;
-	
-	
+
+
   double ToT= TMath::FloorNint((tf-t0)/ClockUnit);
-	
+
   //G4cout << TString::Format("to=%e tpeak=%e tf=%e ",t0,tpeak,tf) << endl;
   if(ToT==0)ToT=1;
   if(Max <= ((1.0/keV)*ThresholdMatrix[x][y]*Gain[x][y])) ToT=1;
-	
+
   return ToT;
 }
 
 G4int AllPixTimepixDigitizer::EnergyToTOTSurogate(G4double Energy,G4int x,G4int y){
 
-  //double ToT = (SurrogateD[x][y]*SurrogateA[x][y] +Energy/keV -SurrogateB[x][y]+TMath::Sqrt((SurrogateB[x][y]+SurrogateD[x][y]*SurrogateA[x][y]-Energy/keV)*(SurrogateB[x][y]+SurrogateD[x][y]*SurrogateA[x][y]-Energy/keV)+4*SurrogateA[x][y]*SurrogateC[x][y]))/(2*SurrogateA[x][y]);
-
-  //	double zero1 = (1.0/(2*SurrogateA[x][y]))*(SurrogateB[x][y] - SurrogateA[x][y]*SurrogateD[x][y] +
-  //			TMath::Sqrt(SurrogateB[x][y]*SurrogateB[x][y] - 4*SurrogateA[x][y]*SurrogateC[x][y]+2*SurrogateA[x][y]*SurrogateB[x][y]*SurrogateD[x][y] + SurrogateA[x][y]*SurrogateD[x][y]*SurrogateA[x][y]*SurrogateD[x][y]));
-  //	double zero2 = (1.0/(2*SurrogateA[x][y]))*(-SurrogateB[x][y] + SurrogateA[x][y]*SurrogateD[x][y] +
-  //			TMath::Sqrt(SurrogateB[x][y]*SurrogateB[x][y] - 4*SurrogateA[x][y]*SurrogateC[x][y]+2*SurrogateA[x][y]*SurrogateB[x][y]*SurrogateD[x][y] + SurrogateA[x][y]*SurrogateD[x][y]*SurrogateA[x][y]*SurrogateD[x][y]));
-
-  //	G4cout << zero1 << " " << zero2 << endl;
 
   double ToT;
-  //if(Energy/keV<TMath::Max(zero1,zero2)){ToT=0;}
-  if(Energy/keV<SurrogateD[x][y])ToT=0;
-  else {ToT = SurrogateA[x][y]*Energy/keV+SurrogateB[x][y]-SurrogateC[x][y]/(Energy/keV - SurrogateD[x][y]);}
-  //G4cout << TString::Format("A= %f B=%f C=%f D=%f",SurrogateA[x][y],SurrogateB[x][y],SurrogateC[x][y],SurrogateD[x][y]) << endl;
+
+  ToT = SurrogateA[x][y]*Energy/keV+SurrogateB[x][y]-SurrogateC[x][y]/(Energy/keV - SurrogateD[x][y]);
+  //G4cout << TString::Format("A= %f B=%f C=%f D=%f TOT=%f",SurrogateA[x][y],SurrogateB[x][y],SurrogateC[x][y],SurrogateD[x][y],ToT) << endl;
 
   if(ToT<0)ToT=0;
+  if(ToT>CounterDepth)ToT=CounterDepth;
 
   ToT=TMath::Floor(ToT*CALIBRATION_CLOCK_UNIT/ClockUnit);
 
@@ -1298,16 +1317,16 @@ G4int AllPixTimepixDigitizer::EnergyToTOTSurogate(G4double Energy,G4int x,G4int 
 
 
 G4double AllPixTimepixDigitizer::ComputeLorentzAngle(G4double x, G4double y, G4double z){
-	
+
   ComputeElectricField(x,y,z);
   G4double angle=0;
   if (readoutType==ELECTRON){
     angle = TMath::ATan(r_H_e*(MobilityElectron(x,y,z)/(cm2/s))*B_Field*1e-4);
   }
-  else { 
-    angle = TMath::ATan(r_H_h*(MobilityHole(x,y,z)/(cm2/s))*B_Field*1e-4);	
+  else {
+    angle = TMath::ATan(r_H_h*(MobilityHole(x,y,z)/(cm2/s))*B_Field*1e-4);
   };
-			
+
   //cout << "[TimepixDigi] Lorentz Angle = " << angle*TMath::RadToDeg() << endl;
   return angle;
 }
@@ -1319,9 +1338,9 @@ G4double AllPixTimepixDigitizer::ComputeLorentzAngle(G4double x, G4double y, G4d
 //
 //	G4double dEdt = (MipCharge- threshold)/(MipTOT*ClockUnit);
 //	//G4int TOT = TMath::FloorNint((Energy-threshold)/(dEdt*Lv1Unit*ns));
-//	
+//
 //	G4int TOT;
-//	
+//
 //	if(Energy>SaturationEnergy/elec){
 //	TOT = TMath::FloorNint((SaturationEnergy/elec-threshold)/(dEdt*ClockUnit));
 //	}

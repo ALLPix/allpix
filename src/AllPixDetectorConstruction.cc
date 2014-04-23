@@ -496,15 +496,15 @@ void AllPixDetectorConstruction::BuildPixelDevices(map<int, AllPixGeoDsc *> geoM
      /*------------------------------------ Solid definitions ----------------------------------------*/
 
 		// replicated solids (same object/names everywhere)
-		G4Box * Box_slice = new G4Box(SliceName.first,
-				geoMap[*detItr]->GetHalfPixelX(),
-				geoMap[*detItr]->GetHalfSensorY(),
-				geoMap[*detItr]->GetHalfSensorZ());
-
-		G4Box * Box_pixel = new G4Box(PixelName.first,
-				geoMap[*detItr]->GetHalfPixelX(),
-				geoMap[*detItr]->GetHalfPixelY(),
-				geoMap[*detItr]->GetHalfSensorZ());
+//		G4Box * Box_slice = new G4Box(SliceName.first,
+//				geoMap[*detItr]->GetHalfPixelX(),
+//				geoMap[*detItr]->GetHalfSensorY(),
+//				geoMap[*detItr]->GetHalfSensorZ());
+//
+//		G4Box * Box_pixel = new G4Box(PixelName.first,
+//				geoMap[*detItr]->GetHalfPixelX(),
+//				geoMap[*detItr]->GetHalfPixelY(),
+//				geoMap[*detItr]->GetHalfPixelZ());
 
 		//Bump itself
 		G4UnionSolid * aBump = 0;
@@ -816,23 +816,23 @@ void AllPixDetectorConstruction::BuildPixelDevices(map<int, AllPixGeoDsc *> geoM
 		// 		Silicon,
 		// 		SliceName.second); // 0,0,0);
 		//m_Slice_log[(*detItr)]->SetUserLimits(ulim);
-		m_Pixel_log[(*detItr)] = new G4LogicalVolume(Box_pixel,
-				Silicon,
-				PixelName.second); // 0,0,0);
+//		m_Pixel_log[(*detItr)] = new G4LogicalVolume(Box_pixel,
+//				Silicon,
+//				PixelName.second); // 0,0,0);
 
 		//Nilou Begin
 
-		pixels_parameterization = new Allpix_PixelsParameterization(geoMap[*detItr]);
-		G4int NPixTot = geoMap[*detItr]->GetNPixelsX()*geoMap[*detItr]->GetNPixelsY();
-		new G4PVParameterised(PixelName.second+"phys",
-				      m_Pixel_log[(*detItr)],     // logical volume
-				      m_Box_log[(*detItr)],             // mother volume
-				      kUndefined,                 // axis
-				      NPixTot,                      // replicas
-				      pixels_parameterization);         // G4VPVParameterisation
+//		pixels_parameterization = new Allpix_PixelsParameterization(geoMap[*detItr]);
+//		G4int NPixTot = geoMap[*detItr]->GetNPixelsX()*geoMap[*detItr]->GetNPixelsY();
+//		new G4PVParameterised(PixelName.second+"phys",
+//				      m_Pixel_log[(*detItr)],     // logical volume
+//				      m_Box_log[(*detItr)],             // mother volume
+//				      kUndefined,                 // axis
+//				      NPixTot,                      // replicas
+//				      pixels_parameterization);         // G4VPVParameterisation
 		//Nilou End
 
-	    if ( m_ulim ) m_Pixel_log[(*detItr)]->SetUserLimits(m_ulim);
+	    if ( m_ulim ) m_Box_log[(*detItr)]->SetUserLimits(m_ulim);
 
 		// // divide in slices
 		// new G4PVDivision(
@@ -889,7 +889,7 @@ void AllPixDetectorConstruction::BuildPixelDevices(map<int, AllPixGeoDsc *> geoM
 				m_rotVector[(*detItr)] );
 
 		SDman->AddNewDetector( aTrackerSD );
-		m_Pixel_log[(*detItr)]->SetSensitiveDetector( aTrackerSD );
+		m_Box_log[(*detItr)]->SetSensitiveDetector( aTrackerSD );
 
 		// Store the hit Collection name in the geometry
 		geoMap[*detItr]->SetHitsCollectionName( aTrackerSD->GetHitsCollectionName() );

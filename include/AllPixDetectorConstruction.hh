@@ -206,7 +206,7 @@ private:
 
 
 
-	Allpix_BumpsParameterization * parameterization;
+  Allpix_BumpsParameterization * parameterization;
   Allpix_PixelsParameterization * pixels_parameterization;
 
 	/*
