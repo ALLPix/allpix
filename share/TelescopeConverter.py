@@ -6,10 +6,14 @@ Tool to convert allpix telescope simulation files into LCIO EUTelescope format.
 @author: <a href="mailto:samir.arfaoui@cern.ch">Samir Arfaoui</a>
 '''
 
-from pyLCIO import EVENT, IMPL, IOIMPL, UTIL
+from pyLCIO import  UTIL
 from ROOT import TVector3, TLorentzVector, TRandom3, TMath, std, TH1D, TCanvas
-from time import time
 
+#Compiled with Cython if available, comment otherwise
+import pyximport; pyximport.install(pyimport=True)
+
+from pyLCIO import EVENT,IMPL,IOIMPL
+from time import time
 import sys, math, glob, tarfile
 from collections import defaultdict
 
@@ -21,7 +25,6 @@ telescopeTestDict['303'] = 0
 telescopeTestDict['304'] = 0
 telescopeTestDict['305'] = 0
 
-print "DUT considered for the conversion"
 print sys.argv[3:]
 
 mySensorIDlist = sys.argv[3:]
