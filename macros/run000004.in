@@ -128,7 +128,7 @@
 #/vis/open RayTracer
 #/vis/open OGLIQt
 #/vis/open OGLSQt
-/vis/open OIX
+#/vis/open OIX
 #/vis/open OGLIX 1024x768-100+100
 #/vis/open OGLSXm
 #/vis/open DAWNFILE
@@ -153,7 +153,7 @@
 /allpix/timepixtelescope/setFolderPath /tmp/run000004
 /allpix/timepixtelescope/setEventIDcolumn 0
 /allpix/timepixtelescope/setSumTOT 1
-#/allpix/timepixtelescope/write 1
+/allpix/timepixtelescope/write 1
 /allpix/config/setOutputPrefixWithPath TelescopeSim
 ####################################################################
 # Source GPS
