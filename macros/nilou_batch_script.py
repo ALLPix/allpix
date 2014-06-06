@@ -8,7 +8,7 @@ nalipour: Generate scripts to run on the lxbatch
 
 
 def GenerateScript(run):
-    allpixPath="/afs/cern.ch/work/n/nalipour/allpixCourse/nalipour-dev"
+    allpixPath="/afs/cern.ch/work/n/nalipour/allpixCourse/svn_nalipour_allpix"
     macro="%s/macros/run%s.in"%(allpixPath, run)
     batchScriptName = "/afs/cern.ch/work/n/nalipour/testBeamAnalysis/Simulation/lxBatchScripts/launch_run%s.sh"%(run)
     
@@ -38,7 +38,7 @@ def GenerateScript(run):
 
 
 
-run="000003"
+run="000007"
 queue="1nd"
 logname="/afs/cern.ch/work/n/nalipour/testBeamAnalysis/Simulation/lxBatchScripts/run%s.log"%(run)
 batchScriptName=GenerateScript(run)

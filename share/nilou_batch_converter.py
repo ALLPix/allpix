@@ -7,7 +7,7 @@ nalipour: Generate scripts to run telescope converter on the batch
 """
 
 def GenerateScript(run, dutID):
-    converterPath="/afs/cern.ch/work/n/nalipour/allpixCourse/nalipour-dev/share"
+    converterPath="/afs/cern.ch/work/n/nalipour/allpixCourse/svn_nalipour_allpix/share"
     batchScriptName = "/afs/cern.ch/work/n/nalipour/testBeamAnalysis/Simulation/lxBatchScripts/converter_run%s.sh"%(run)
 
     outfile= open(batchScriptName,"w")
@@ -23,8 +23,8 @@ def GenerateScript(run, dutID):
 
 # run="000003"
 # dutID="2044"
-run="000021"
-dutID="2042"
+run="000007"
+dutID="2048"
 queue="1nd"
 logname="/afs/cern.ch/work/n/nalipour/testBeamAnalysis/Simulation/lxBatchScripts/converter_run%s.log"%(run)
 batchScriptName=GenerateScript(run, dutID)

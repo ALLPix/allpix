@@ -128,7 +128,7 @@
 #/vis/open RayTracer
 #/vis/open OGLIQt
 #/vis/open OGLSQt
-/vis/open OIX
+#/vis/open OIX
 #/vis/open OGLIX 1024x768-100+100
 #/vis/open OGLSXm
 #/vis/open DAWNFILE
