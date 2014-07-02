@@ -10,7 +10,7 @@ from pyLCIO import  UTIL
 from ROOT import TVector3, TLorentzVector, TRandom3, TMath, std, TH1D, TCanvas
 
 #Compiled with Cython if available, comment otherwise
-import pyximport; pyximport.install(pyimport=True)
+#import pyximport; pyximport.install(pyimport=True)
 
 from pyLCIO import EVENT,IMPL,IOIMPL
 from time import time
