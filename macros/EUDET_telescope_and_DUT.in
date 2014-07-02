@@ -1,0 +1,191 @@
+####################################################################
+#### Telescope planes #### 
+#### EUD0 #### 
+####################################################################
+# Al Holder
+/allpix/extras/setTestStructureType 8
+/allpix/extras/setTestStructurePosition 0.0 0.0 0.0 mm
+/allpix/extras/setTestStructureRotation 0.0 0.0 0.0 deg
+/allpix/extras/setTestStructureDetLink 300
+# Mimosa detector
+/allpix/det/setId        300
+/allpix/det/setPosition  0.0 0.0 0.0 mm
+/allpix/det/setRotation  0.0 180.0 180.0 deg
+/allpix/det/setLowTHL    13. keV
+####################################################################
+#### EUD1 #### 
+####################################################################
+# Al Holder
+/allpix/extras/setTestStructureType 8
+/allpix/extras/setTestStructurePosition -0.227617950928 -0.254617514893 153.0 mm
+/allpix/extras/setTestStructureRotation -0.0 -0.0 0.00070544 deg
+/allpix/extras/setTestStructureDetLink 301
+# Mimosa detector
+/allpix/det/setId        301
+/allpix/det/setPosition   0.1 0.1 153.0 mm
+/allpix/det/setRotation   0.0 180.0 180.0 deg
+/allpix/det/setLowTHL    13. keV
+####################################################################
+#### EUD2 #### 
+####################################################################
+# Al Holder
+/allpix/extras/setTestStructureType 8
+/allpix/extras/setTestStructurePosition -0.492158130371 -0.17583204793 305.0 mm
+/allpix/extras/setTestStructureRotation -0.0 -0.0 0.0032635 deg
+/allpix/extras/setTestStructureDetLink 302
+# Mimosa detector
+/allpix/det/setId        302
+/allpix/det/setPosition  0.2 0.2 305.0 mm
+/allpix/det/setRotation  0.0 180.0 180.00 deg
+/allpix/det/setLowTHL    13. keV
+####################################################################
+#### EUD3 #### 
+####################################################################
+# Al Holder
+/allpix/extras/setTestStructureType 8
+/allpix/extras/setTestStructurePosition -0.871765687988 -0.135744687646 362.0 mm
+/allpix/extras/setTestStructureRotation -0.0 -0.0 -0.004538 deg
+/allpix/extras/setTestStructureDetLink 303
+# Mimosa detector
+/allpix/det/setId        303
+/allpix/det/setPosition   0.3 0.3 362.0 mm
+/allpix/det/setRotation   0.0 180.0 180.0 deg
+/allpix/det/setLowTHL    13. keV
+####################################################################
+#### EUD4 #### 
+####################################################################
+# Al Holder
+/allpix/extras/setTestStructureType 8
+/allpix/extras/setTestStructurePosition -0.98985583252 -0.170630609912 515 mm
+/allpix/extras/setTestStructureRotation -0.0 -0.0 -0.0044567 deg
+/allpix/extras/setTestStructureDetLink 304
+# Mimosa detector
+/allpix/det/setId        304
+/allpix/det/setPosition  0.4 0.4 515 mm
+/allpix/det/setRotation  0.0 180.0 180 deg
+/allpix/det/setLowTHL    13. keV
+####################################################################
+#### EUD5 #### 
+####################################################################
+# Al Holder
+/allpix/extras/setTestStructureType 8
+/allpix/extras/setTestStructurePosition -1.05242432983 -0.220215597607 667.0 mm
+/allpix/extras/setTestStructureRotation -0.0 -0.0 0.0034919 deg
+/allpix/extras/setTestStructureDetLink 305
+# Mimosa detector
+/allpix/det/setId        305
+/allpix/det/setPosition  0.5 0.5 667.0 mm
+/allpix/det/setRotation  0.0 180.0 180.0 deg
+/allpix/det/setLowTHL    13. keV
+####################################################################
+
+
+####################################################################
+#### DUT #### 
+####################################################################
+# Al Holder
+# Mimosa detector
+/allpix/det/setId        500
+/allpix/det/setPosition   0.0 0.0 340.5 mm
+/allpix/det/setRotation   0.0 180.0 180.00 deg
+####################################################################
+
+
+
+####################################################################
+# Scintillators
+#/allpix/eudet/scint1Pos 0.0  0.0  -24.0 mm # offset of 18mm +/- 6mm with of scinti
+#/allpix/eudet/scint2Pos 0.0  0.0  -18.0 mm
+#/allpix/eudet/scint3Pos 0.0  0.0 690.8 mm
+#/allpix/eudet/scint4Pos 0.0  0.0 696.8 mm
+
+
+
+####################################################################
+# Build detectors
+#/allpix/phys/Physics LIVERMORE_FTFP_BERT
+/allpix/phys/Physics emstandard_opt0
+/allpix/det/setMaxStepLengthSensor 2 um
+/run/initialize
+/allpix/det/update
+
+####################################################################
+# Verbose control
+/run/verbose 0
+/control/verbose 0
+/control/saveHistory
+/tracking/verbose 0
+/allpix/phys/verbose 0
+
+####################################################################
+# Visualization
+/vis/scene/create
+#/vis/scene/add/axes 0. 0. 0. 10. cm
+/vis/scene/add/volume World -1 2
+/vis/viewer/set/style s
+#/vis/open OIX 1024x768-100+100
+#/vis/open OGLIXm 1024x768-100+100
+#/vis/open RayTracer
+#/vis/open OGLIQt
+#/vis/open OGLSQt
+/vis/open OIX
+#/vis/open OGLIX 1024x768-100+100
+#/vis/open OGLSXm
+#/vis/open DAWNFILE
+#/vis/open OGLSX
+#/vis/open OGL 600x600-0+0
+/vis/viewer/set/background 0.4 0.5 0.6
+/vis/viewer/set/viewpointThetaPhi 20 50
+/vis/viewer/zoom 2.0
+/vis/viewer/flush
+
+####################################################################
+# Draw trajectories at end of event, showing trajectory points as
+# markers of size 2 pixels
+/vis/scene/add/trajectories
+/vis/modeling/trajectories/create/drawByCharge
+/vis/modeling/trajectories/drawByCharge-0/default/setDrawStepPts false
+/vis/modeling/trajectories/drawByCharge-0/default/setStepPtsSize 2
+/vis/scene/endOfEventAction accumulate
+
+####################################################################
+# Write Telescope files
+/allpix/timepixtelescope/setFolderPath /home/mbenoit/test/Run000049
+/allpix/timepixtelescope/setEventIDcolumn 0
+/allpix/timepixtelescope/setSumTOT 1
+/allpix/timepixtelescope/write 1
+#/allpix/config/setOutputPrefixWithPath /home/mbenoit/test/TelescopeSim_
+####################################################################
+# Source GPS
+/gps/particle pi-
+/gps/pos/type Beam
+/gps/pos/sigma_r 5.0 mm
+/gps/pos/centre 0 0 -100.0 mm
+/gps/direction  0 0 1
+
+/gps/ene/type User
+/gps/hist/type energy
+# spectra
+/gps/hist/point 120000 1
+
+/gps/source/list
+
+# Source GPS
+#/gps/particle mu+
+#/gps/pos/centre 0 0 -1.0 mm
+#/gps/direction  0 0 1
+
+#/gps/ene/type User
+#/gps/hist/type energy
+# spectra
+#/gps/hist/point 200000 1
+
+
+
+####################################################################
+# Shoot
+/allpix/beam/frames 1
+/allpix/beam/type const 50
+/allpix/beam/on
+
+
