@@ -128,7 +128,7 @@
 #/vis/open RayTracer
 #/vis/open OGLIQt
 #/vis/open OGLSQt
-/vis/open OIX
+#/vis/open OIX
 #/vis/open OGLIX 1024x768-100+100
 #/vis/open OGLSXm
 #/vis/open DAWNFILE
@@ -150,11 +150,11 @@
 
 ####################################################################
 # Write Telescope files
-/allpix/timepixtelescope/setFolderPath /home/mbenoit/test/Run000049
+/allpix/timepixtelescope/setFolderPath TutoFiles
 /allpix/timepixtelescope/setEventIDcolumn 0
 /allpix/timepixtelescope/setSumTOT 1
 /allpix/timepixtelescope/write 1
-#/allpix/config/setOutputPrefixWithPath /home/mbenoit/test/TelescopeSim_
+/allpix/config/setOutputPrefixWithPath TelescopeSim
 ####################################################################
 # Source GPS
 /gps/particle pi-
@@ -184,7 +184,7 @@
 
 ####################################################################
 # Shoot
-/allpix/beam/frames 1
+/allpix/beam/frames 100
 /allpix/beam/type const 50
 /allpix/beam/on
 
