@@ -42,6 +42,7 @@
 
 #include "AllPixDetectorConstruction.hh"
 #include "AllPix_Frames_WriteToEntuple.h"
+#include "AllPix_Frames_WriteToEntuple_RD53.h" //nalipour
 #include "allpix_dm.h"
 #include "AllPixPrimaryGeneratorMessenger.hh"
 

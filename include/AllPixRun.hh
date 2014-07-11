@@ -29,6 +29,7 @@ using namespace std;
 
 class FramesHandler;
 class WriteToNtuple;
+class WriteToNtupleRD53; //nalipou
 class SimpleHits;
 class AllPixDetectorConstruction;
 

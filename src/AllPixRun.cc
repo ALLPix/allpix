@@ -12,6 +12,7 @@
 
 // digits, frames
 #include "AllPix_Frames_WriteToEntuple.h"
+#include "AllPix_Frames_WriteToEntuple_RD53.h" //nalipour
 // hits
 #include "AllPix_Hits_WriteToEntuple.h"
 // dm
@@ -187,11 +188,19 @@ void AllPixRun::FillFramesNtuple(const G4Run* aRun){
 		m_frames[i]->SetAsMCData(); // <--- !! MC data !!
 
 		//cout << " AllPixRun::FillFramesNtuple " << m_frames[i]->GetDetectorId() << endl;
-
+		
+#ifdef _RD53
+		WriteToNtupleRD53::GetInstanceRD53(m_outputFilePrefix, m_datasetDigits,
+					       m_tempdir,
+					       m_nOfDetectors,
+					       m_frames[i]->GetDetectorId())->fillVarsRD53(m_frames[i]);
+		
+#else
 		WriteToNtuple::GetInstance(m_outputFilePrefix, m_datasetDigits,
-				m_tempdir,
-				m_nOfDetectors,
-				m_frames[i]->GetDetectorId())->fillVars(m_frames[i]);
+					   m_tempdir,
+					   m_nOfDetectors,
+					   m_frames[i]->GetDetectorId())->fillVars(m_frames[i]);
+#endif
 	}
 
 }
@@ -382,11 +391,23 @@ void AllPixRun::RecordHits(const G4Event* evt) {
 		G4int NbHits = m_hitsCollection->entries();
 		//G4cout << "Recording hits : " << NbHits <<  G4endl;
 
+		//nalipour
+		// Pickup the right index
+		TString theIndex_S = m_hitsCollection->GetName().c_str();
+		int lastpos = theIndex_S.Index("_HitsCollection", 15, 0, TString::kExact);
+		theIndex_S.Remove(lastpos, theIndex_S.Length()); // remove suffix
+		theIndex_S.Remove(0,6); // remove BoxSD_
+		int detId = atoi(theIndex_S.Data());
+
+
 		// rewind hits
 		m_storableHits[itrCol]->Rewind();
 
 		G4ThreeVector posTemp;
 		TVector3 posTempStorable;
+
+		map<pair<G4int, G4int>, G4double > pixelsContent; //nalipour
+		pair<G4int, G4int> posPixelsContent; //nalipour
 
 		for (G4int i = 0 ; i < NbHits ; i++) {
 
@@ -440,6 +461,19 @@ void AllPixRun::RecordHits(const G4Event* evt) {
 			m_storableHits[itrCol]->parentVolumeName.push_back(
 					(*m_hitsCollection)[i]->GetParentVolumeName()
 			);
+
+			//nalipour
+			posPixelsContent.first =(*m_hitsCollection)[i]->GetPixelNbX();
+			posPixelsContent.second=(*m_hitsCollection)[i]->GetPixelNbY();
+		    pixelsContent[posPixelsContent]+=(*m_hitsCollection)[i]->GetEdep()/keV;
+/*			G4cout << "[Nilou: AllPixRun.cc] x=" << posTemp.x() << ", y=" << posTemp.y() << ", z=" <<  posTemp.z() << G4endl;
+			//nalipour
+			m_frames[m_detIdToIndex[detId]]->LoadFramePixelRD53_MC(
+					(*m_hitsCollection)[i]->GetPixelNbX(),
+					(*m_hitsCollection)[i]->GetPixelNbY(),
+					((*m_hitsCollection)[i]->GetEdep())/keV
+			); */
+
 		}
 
 		// event id
@@ -458,6 +492,25 @@ void AllPixRun::RecordHits(const G4Event* evt) {
 				m_tempdir,
 				nHC, // here is the number of Hit Collections (SD), not detectors.
 				itrCol)->fillVars(m_storableHits[itrCol]);
+
+		G4cout << "[Nilou: AllPixRun.cc] x=" << posTemp.x() << ", y=" << posTemp.y() << ", z=" <<  posTemp.z() << G4endl;
+		//nalipour
+/*		m_frames[m_detIdToIndex[detId]]->LoadFramePixelRD53_MC(
+				(*m_hitsCollection)[i]->GetPixelNbX(),
+				(*m_hitsCollection)[i]->GetPixelNbY(),
+				((*m_hitsCollection)[i]->GetEdep())/keV
+		); */
+		//nalipour
+		Double_t MC_nHits=pixelsContent.size();
+		map<pair<Int_t, Int_t>, Double_t >::iterator pCItrMC = pixelsContent.begin();
+		for( ; pCItrMC != pixelsContent.end() ; pCItrMC++)
+		  {
+		    m_frames[m_detIdToIndex[detId]]->LoadFramePixelRD53_MC(
+		    		(*pCItrMC).first.first,
+		    		(*pCItrMC).first.second,
+		    		(*pCItrMC).second
+		    		);
+		  }
 
 	}
 
@@ -581,6 +634,9 @@ void AllPixRun::RecordDigits(const G4Event* evt){
 		theIndex_S.Remove(0,6); // remove BoxSD_
 		int detId = atoi(theIndex_S.Data());
 
+		//nalipour test
+		G4cout << "detId=" << detId << G4endl;
+
 		// Clean up matrix
 		//m_frames[m_detIdToIndex[detId]]->getFrameStructObject()->CleanUpMatrix();
 
@@ -592,12 +648,20 @@ void AllPixRun::RecordDigits(const G4Event* evt){
 		for (G4int itr  = 0 ; itr < nDigits ; itr++) {
 
 			// loading a frame
+			//nalipour ????? WHY 0 ??????
 			m_frames[m_detIdToIndex[detId]]->LoadFramePixel(
 					(*digitsCollection)[itr]->GetPixelIDX(),
 					(*digitsCollection)[itr]->GetPixelIDY(),
 					(*digitsCollection)[itr]->GetPixelCounts(),
 					(*digitsCollection)[itr]->GetPixelEnergyDep()/keV,
 					0.
+			);
+
+			//nalipour
+			m_frames[m_detIdToIndex[detId]]->LoadFramePixelRD53(
+					(*digitsCollection)[itr]->GetPixelIDX(),
+					(*digitsCollection)[itr]->GetPixelIDY(),
+					(*digitsCollection)[itr]->GetPixelEnergyDep()/keV
 			);
 
 			m_frames[m_detIdToIndex[detId]]->LoadPrimaryVertexInfo(
@@ -626,6 +690,18 @@ void AllPixRun::RecordDigits(const G4Event* evt){
 		if(detId >= 300) *m_lciobridge_f << endl;
 		if(detId < 300) *m_lciobridge_dut_f << endl;
 	}
+
+
+
+
+
+//	//nalipour ??????? TODO
+//	m_frames[m_detIdToIndex[detId]]->LoadFramePixelRD53_MC(
+//			(*m_storableHits)[itrCol]->pos[0],
+//			(*m_storableHits)[itrCol]->pos[1],
+//			(*m_storableHits)[itrCol]->edepTotal
+//	);
+
 }
 
 void AllPixRun::RecordTelescopeDigits(const G4Event* evt){

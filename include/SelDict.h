@@ -33,6 +33,7 @@ extern void G__set_cpp_environmentSelDict();
 #include "TMemberInspector.h"
 #include "AllPix_Hits_WriteToEntuple.h"
 #include "AllPix_Frames_WriteToEntuple.h"
+#include "AllPix_Frames_WriteToEntuple_RD53.h"
 #include "allpix_dm.h"
 #include "AllPixDigitAnimation.hh"
 #include <algorithm>
@@ -58,6 +59,7 @@ extern G__linked_taginfo G__SelDictLN_TFile;
 extern G__linked_taginfo G__SelDictLN_TTree;
 extern G__linked_taginfo G__SelDictLN_TBranch;
 extern G__linked_taginfo G__SelDictLN_maplEintcOintcOlesslEintgRcOallocatorlEpairlEconstsPintcOintgRsPgRsPgR;
+extern G__linked_taginfo G__SelDictLN_pairlEintcOintgR;
 extern G__linked_taginfo G__SelDictLN_maplElongcOintcOlesslElonggRcOallocatorlEpairlEconstsPlongcOintgRsPgRsPgR;
 extern G__linked_taginfo G__SelDictLN_maplEstringcOTObjArraymUcOlesslEstringgRcOallocatorlEpairlEconstsPstringcOTObjArraymUgRsPgRsPgR;
 extern G__linked_taginfo G__SelDictLN_TVectorTlEfloatgR;
@@ -92,7 +94,9 @@ extern G__linked_taginfo G__SelDictLN_reverse_iteratorlEvectorlEintcOallocatorlE
 extern G__linked_taginfo G__SelDictLN_FramesHandler;
 extern G__linked_taginfo G__SelDictLN_FrameStruct;
 extern G__linked_taginfo G__SelDictLN_WriteToNtuple;
+extern G__linked_taginfo G__SelDictLN_WriteToNtupleRD53;
 extern G__linked_taginfo G__SelDictLN_FrameContainer;
+extern G__linked_taginfo G__SelDictLN_maplEpairlEintcOintgRcOdoublecOlesslEpairlEintcOintgRsPgRcOallocatorlEpairlEconstsPpairlEintcOintgRcOdoublegRsPgRsPgR;
 extern G__linked_taginfo G__SelDictLN_maplEintcOTGeoElementRNmUcOlesslEintgRcOallocatorlEpairlEconstsPintcOTGeoElementRNmUgRsPgRsPgR;
 extern G__linked_taginfo G__SelDictLN_TGeoMedium;
 extern G__linked_taginfo G__SelDictLN_TGeoBBox;

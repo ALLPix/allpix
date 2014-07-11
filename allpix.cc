@@ -59,6 +59,7 @@ using namespace std;
 
 // digits, frames
 #include "AllPix_Frames_WriteToEntuple.h"
+#include "AllPix_Frames_WriteToEntuple_RD53.h" //nalipour
 // hits
 #include "AllPix_Hits_WriteToEntuple.h"
 
@@ -245,7 +246,11 @@ int main(int argc, char** argv)
 	// Frames ntuple closing
 	// G4int nDigitizers = event_action->GetNumberOfDigitizers();
 	for( detItr = geoMap->begin() ; detItr != geoMap->end() ; detItr++) {
+#ifdef _RD53 //nalipour
+	  WriteToNtupleRD53::GetInstanceRD53("", "", "", (int)geoMap->size(), (*detItr).first)->closeNtuple(); //nalipour
+#else
 	  WriteToNtuple::GetInstance("", "", "", (int)geoMap->size(), (*detItr).first)->closeNtuple();
+#endif
 	}
 
 	// hits ntuple closing

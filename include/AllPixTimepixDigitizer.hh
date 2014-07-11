@@ -47,6 +47,10 @@ public:
   void SetDetectorDigitInputs(G4double);
 
 private:
+
+  bool debug;
+
+
   digitInput m_digitIn;
   AllPixTimepixDigitsCollection * m_digitsCollection;
   vector<G4String> m_hitsColName;
@@ -201,6 +205,8 @@ private:
   G4double **RisingSlope; 
   G4double **FallingSlope; 
   G4double **ThresholdMatrix; 
+  G4double **MaskedPixels;
+
   // Digitizer precision related parameters
   //G4double maxIntegration = 5; //
 

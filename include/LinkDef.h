@@ -8,5 +8,6 @@
 #pragma link C++ class FrameStruct+;
 #pragma link C++ class FrameContainer+;
 #pragma link C++ class WriteToNtuple+;
+#pragma link C++ class WriteToNtupleRD53+;
 #pragma link C++ class SimpleHits;
 #pragma link C++ class AllPixDigitAnimation+;

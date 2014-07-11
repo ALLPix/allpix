@@ -36,6 +36,11 @@ private:
 	// Corrected MC charge (detector effects included, at Digitization step)
 	std::map<int, int> m_frameXC_E;
 
+
+	//nalipour
+	std::map<std::pair<Int_t, Int_t>, Double_t > RD53_E_MC; //True Monte Carlo energy
+	std::map<std::pair<Int_t, Int_t>, Double_t > RD53_E;    //Energy taking into account the 
+
 	// Counters
 	// The number of pixels ON
 	Int_t m_nEntriesPad;
@@ -54,6 +59,8 @@ public:
 	virtual ~FrameContainer(){};
 	void FillOneElement(Int_t, Int_t, Int_t, Int_t, Double_t, Double_t);
 	void FillOneElement(Int_t, Int_t, Int_t, Int_t);
+	void FillOneElementRD53_MC(Int_t xi, Int_t yi, Double_t truthE); //nalipour //MC
+	void FillOneElementRD53(Int_t xi, Int_t yi, Double_t E); //nalipour //Considering charge sharing
 	void SetLVL1(Int_t, Int_t, Int_t, Int_t);
 
 	void ResetCountersPad();
@@ -62,6 +69,8 @@ public:
 	Int_t GetEntriesPad(){return m_nEntriesPad;};
 	Int_t GetHitsInPad(){return m_nHitsInPad;};
 	Int_t GetChargeInPad(){return m_nChargeInPad;};
+	std::map<std::pair<Int_t, Int_t>, Double_t > return_RD53_E_MC(){return RD53_E_MC;}; //nalipour
+	std::map<std::pair<Int_t, Int_t>, Double_t > return_RD53_E(){return RD53_E;}; //nalipour
 
 	ClassDef(FrameContainer,3)
 };
@@ -176,6 +185,8 @@ public:
 	Bool_t LoadFramePixel(Int_t, Int_t, Int_t, Double_t, Double_t);
 	/* load a single frame pixel (X,Y,C), fills m_aFrame */
 	Bool_t LoadFramePixel(Int_t, Int_t, Int_t);
+	Bool_t LoadFramePixelRD53_MC(Int_t col, Int_t row, Double_t truthE);//nalipour
+	Bool_t LoadFramePixelRD53(Int_t col, Int_t row, Double_t E);//nalipour
 	/* load a lvl1 trigger */
 	void SetLVL1(Int_t, Int_t, Int_t);
 	/* load a single frame MetaData entry (METAString, Int_t metaCode)*/

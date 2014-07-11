@@ -5,7 +5,7 @@
 
 #include <fstream>
 #include <istream>
-
+#include <iostream> //nalipour nilou for tests
 #include <string>
 #include "TH2.h"
 
@@ -50,6 +50,33 @@ void FrameContainer::FillOneElement(Int_t xi, Int_t yi, Int_t width, Int_t count
 	m_frameXC_TruthE[X] += truthE; // Truth energy
 	m_frameXC_E[X] += E;           // Energy with detector effects
 
+	
+//	//nalipour
+//	std::cout << "Nilou: xi=" << xi << ", yi=" << yi << ", m_frameXC_TruthE[X] =" << m_frameXC_TruthE[X] << ", m_frameXC_E[X] =" << m_frameXC_E[X] << std::endl;
+//	std::pair<int, int> tempPixel;
+//	tempPixel.first=xi;
+//	tempPixel.second=yi;
+//
+//	RD53_E_MC[tempPixel]+=truthE;
+//	RD53_E[tempPixel]+=E;
+}
+
+//nalipour
+void FrameContainer::FillOneElementRD53_MC(Int_t xi, Int_t yi, Double_t truthE)
+{
+	std::pair<int, int> tempPixel;
+	tempPixel.first=xi;
+	tempPixel.second=yi;
+
+	RD53_E_MC[tempPixel]+=truthE;
+}
+//nalipour
+void FrameContainer::FillOneElementRD53(Int_t xi, Int_t yi, Double_t E)
+{std::pair<int, int> tempPixel;
+	tempPixel.first=xi;
+	tempPixel.second=yi;
+
+	RD53_E[tempPixel]+=E;
 }
 
 void FrameContainer::SetLVL1(Int_t xi, Int_t yi, Int_t width, Int_t lvl1){
@@ -309,6 +336,10 @@ void FrameContainer::CleanUpMatrix(){
 	m_lvl1.clear();
 	m_frameXC_TruthE.clear();
 	m_frameXC_E.clear();
+	
+	//nalipour
+	RD53_E_MC.clear();
+	RD53_E.clear();
 }
 
 /* Rewind frame and metadata */
@@ -660,6 +691,21 @@ void FramesHandler::push_back_nbytes(unsigned int * val, char * bytes, Int_t nby
 Bool_t FramesHandler::LoadFramePixel(Int_t col, Int_t row, Int_t counts, Double_t truthE, Double_t E){
 
 	m_aFrame->FillOneElement(col, row, m_width, counts, truthE, E);
+
+	return true;
+}
+
+//nalipour
+Bool_t FramesHandler::LoadFramePixelRD53_MC(Int_t col, Int_t row, Double_t truthE){
+
+	m_aFrame->FillOneElementRD53_MC(col, row, truthE);
+
+	return true;
+}
+//nalipour
+Bool_t FramesHandler::LoadFramePixelRD53(Int_t col, Int_t row, Double_t E){
+
+	m_aFrame->FillOneElementRD53(col, row, E);
 
 	return true;
 }

@@ -3,6 +3,8 @@
 # --------------------------------------------------------------
 
 #export EUTELESCOPE=1
+#Nilou
+export RD53=1
 
 name = allpix
 G4TARGET = $(name)
@@ -16,7 +18,7 @@ rootdict:	./include/*.hh ./include/*.h
 	@echo "Generating dictionary $@..."
 	rootcint -v0 -f SelDict.cc -c -p -I./include \
 		AllPix_Hits_WriteToEntuple.h \
-		AllPix_Frames_WriteToEntuple.h allpix_dm.h \
+		AllPix_Frames_WriteToEntuple.h AllPix_Frames_WriteToEntuple_RD53.h allpix_dm.h \
 		AllPixDigitAnimation.hh LinkDef.h
 	@mv SelDict.cc ./src
 	@mv SelDict.h ./include/
@@ -34,3 +36,7 @@ else
 	INCFLAGS += -D_SINGLE
 endif
 
+#Nilou
+ifdef RD53
+	INCFLAGS += -D_RD53
+endif
