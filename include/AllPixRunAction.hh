@@ -45,6 +45,7 @@
 #include <TChain.h>
 
 #include "AllPixPrimaryGeneratorAction.hh"
+#include "AllPixWriteROOTFile.hh" //nalipour
 
 #include <iostream>
 #include <fstream>
@@ -57,6 +58,7 @@ class G4Run;
 class AllPixRun;
 class AllPixDetectorConstruction;
 class AllPixPrimaryGeneratorMessenger;
+class AllPixWriteROOTFile; //nalipour
 //class FramesHandler;
 //class WriteToNtuple;
 
@@ -80,10 +82,13 @@ public:
   void BeginOfRunAction(const G4Run* aRun);
   void EndOfRunAction(const G4Run* aRun);
   G4Run * GenerateRun();
-  void GetPrimaryGeneratorMessenger(AllPixPrimaryGeneratorAction * AllPixAction) {
-	  this->AllPixMessenger = AllPixAction->GetPrimaryGeneratorMessenger();
-	  
+  void GetPrimaryGeneratorMessenger(AllPixPrimaryGeneratorAction * AllPixAction) 
+  {
+    this->AllPixMessenger = AllPixAction->GetPrimaryGeneratorMessenger();
   }
+  AllPixRun* ReturnAllPixRun(); //nalipour
+
+  AllPixWriteROOTFile** writeROOTFile; //nalipour: To write MC in a ROOT file
   
 private:
 
@@ -101,6 +106,7 @@ private:
   AllPixPrimaryGeneratorMessenger * AllPixMessenger;
 
   G4bool m_writeTPixTelescopeFilesFlag;
+  G4bool m_writeMCROOTFilesFlag; //nalipour: Flag to write MC hits in a ROOT file
 
 };
 

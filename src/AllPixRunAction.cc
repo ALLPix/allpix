@@ -55,15 +55,18 @@ using namespace std;
 AllPixRunAction::AllPixRunAction(AllPixDetectorConstruction * det, TString ds, TString td, TString lciofn, TString lciofn_dut)
 {
 
-	m_detectorPtr = det;
-	m_dataset = ds;
-	m_tempdir = td;
+  m_detectorPtr = det;
+  m_dataset = ds;
+  m_tempdir = td;
 
-	timer = new G4Timer;
+  timer = new G4Timer;
 
-	// file for lcio format conversion
-	m_lciobridge_f = new ofstream(lciofn);
-	m_lciobridge_dut_f = new ofstream(lciofn_dut);
+  // file for lcio format conversion
+  m_lciobridge_f = new ofstream(lciofn);
+  m_lciobridge_dut_f = new ofstream(lciofn_dut);
+
+  //nalipour: Initilise the ROOT files with the NULL pointer
+  writeROOTFile=NULL; 
 
 }
 
@@ -72,10 +75,10 @@ AllPixRunAction::AllPixRunAction(AllPixDetectorConstruction * det, TString ds, T
 AllPixRunAction::~AllPixRunAction()
 {
 
-	m_lciobridge_f->close();
-	m_lciobridge_dut_f->close();
+  m_lciobridge_f->close();
+  m_lciobridge_dut_f->close();
 
-	delete timer;
+  delete timer;
 }
 
 /**
@@ -84,20 +87,36 @@ AllPixRunAction::~AllPixRunAction()
 G4Run * AllPixRunAction::GenerateRun(){
 
 	
-	m_writeTPixTelescopeFilesFlag = AllPixMessenger->GetTimepixTelescopeWriteFlag(); //pass it to veto RecordTelescopeDigits
-	m_AllPixRun = new AllPixRun(m_detectorPtr, m_detectorPtr->GetOutputFilePrefix(),
-	m_dataset, m_tempdir, m_writeTPixTelescopeFilesFlag); // keep this pointer
-	m_AllPixRun->SetLCIOBridgeFileDsc(m_lciobridge_f, m_lciobridge_dut_f);
+  m_writeTPixTelescopeFilesFlag = AllPixMessenger->GetTimepixTelescopeWriteFlag(); //pass it to veto RecordTelescopeDigits
+  m_writeMCROOTFilesFlag = AllPixMessenger->GetWrite_MC_FilesFlag(); // nalipour: Flag to write the ROOT file
+  
+  m_AllPixRun = new AllPixRun(m_detectorPtr, m_detectorPtr->GetOutputFilePrefix(),
+			      m_dataset, m_tempdir, m_writeTPixTelescopeFilesFlag, m_writeMCROOTFilesFlag); // keep this pointer //nalipour: Add the flag for the ROOT files
+  m_AllPixRun->SetLCIOBridgeFileDsc(m_lciobridge_f, m_lciobridge_dut_f);
 
-	return m_AllPixRun;
+  if(m_writeMCROOTFilesFlag && writeROOTFile==NULL) //nalipour: Initialise the ROOT files (once in the whole program)
+    {
+      extern ReadGeoDescription * g_GeoDsc; // already loaded ! :)
+      map<int, AllPixGeoDsc *> * geoMap = g_GeoDsc->GetDetectorsMap();
+      map<int, AllPixGeoDsc *>::iterator detItr;
+	  
+      writeROOTFile=new AllPixWriteROOTFile* [(int)geoMap->size()];
+      for( detItr = geoMap->begin() ; detItr != geoMap->end() ; detItr++)
+	{
+	  G4cout << "nalipour ******" << (*detItr).first << G4endl;
+	  writeROOTFile[m_AllPixRun->return_detIdToIndex((*detItr).first)]=new AllPixWriteROOTFile((*detItr).first, AllPixMessenger->GetWrite_MC_FolderName());
+	}
+    }
+  
+  return m_AllPixRun;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 void AllPixRunAction::BeginOfRunAction(const G4Run* aRun)
 {
-	G4cout << "### Run " << aRun->GetRunID() << " start." << G4endl;
-	timer->Start();
+  G4cout << "### Run " << aRun->GetRunID() << " start." << G4endl;
+  timer->Start();
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -105,29 +124,37 @@ void AllPixRunAction::BeginOfRunAction(const G4Run* aRun)
 void AllPixRunAction::EndOfRunAction(const G4Run* aRun)
 {   
 
-	// at the end of the run
-	G4cout << "Filling frames ntuple" << G4endl;
-	m_AllPixRun->FillFramesNtuple(aRun);
+  // at the end of the run
+  G4cout << "Filling frames ntuple" << G4endl;
+  m_AllPixRun->FillFramesNtuple(aRun);
 
-	/*
-	 * write telescope files
-	 * these 4 variables are set via the /allpix/timepixtelescope messenger
-	 * in AllPixPrimaryGeneratorMessenger.cc
-	 * and passed here through Get methods
-	 */
-	G4bool writeFlag    = AllPixMessenger->GetTimepixTelescopeWriteFlag();
-	G4String folderName = AllPixMessenger->GetTimepixTelescopeFolderName();
-	G4bool eventIDflag  = AllPixMessenger->GetTimepixTelescopeDoEventFlag();
-	G4bool sumTOTflag   = AllPixMessenger->GetTimepixTelescopeSumTOTFlag();
-	if (writeFlag) {
-		G4cout << "Filling telescope files" << G4endl;
-		m_AllPixRun->FillTelescopeFiles(aRun,folderName,eventIDflag,sumTOTflag);
-	}
+  /*
+   * write telescope files
+   * these 4 variables are set via the /allpix/timepixtelescope messenger
+   * in AllPixPrimaryGeneratorMessenger.cc
+   * and passed here through Get methods
+   */
+  G4bool writeFlag    = AllPixMessenger->GetTimepixTelescopeWriteFlag();
+  G4String folderName = AllPixMessenger->GetTimepixTelescopeFolderName();
+  G4bool eventIDflag  = AllPixMessenger->GetTimepixTelescopeDoEventFlag();
+  G4bool sumTOTflag   = AllPixMessenger->GetTimepixTelescopeSumTOTFlag();
+  if (writeFlag) {
+    G4cout << "Filling telescope files" << G4endl;
+    m_AllPixRun->FillTelescopeFiles(aRun,folderName,eventIDflag,sumTOTflag);
+  }
 
-	timer->Stop();
-	G4cout << "event Id = " << aRun->GetNumberOfEvent()
-        				 << " " << *timer << G4endl;
+  if(m_writeMCROOTFilesFlag) //nalipour: Fill ROOT files
+    {
+      m_AllPixRun->FillROOTFiles(aRun, writeROOTFile); 
+    }
+  timer->Stop();
+  G4cout << "event Id = " << aRun->GetNumberOfEvent()
+	 << " " << *timer << G4endl;
 
 }
 
+AllPixRun* AllPixRunAction::ReturnAllPixRun()
+{
+  return m_AllPixRun;
+}
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
