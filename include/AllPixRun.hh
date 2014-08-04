@@ -65,6 +65,7 @@ public:
     return m_detIdToIndex[detId];
   }
   void RecordHitsForROOTFiles(const G4Event* evt); //Record the MC hits to save in the ROOT file
+  void RecordHitsForROOTFiles_withChargeSharing(const G4Event* evt); // Hits with charge sharing values
 
 private:
 
