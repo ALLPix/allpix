@@ -145,7 +145,7 @@ void AllPixRunAction::EndOfRunAction(const G4Run* aRun)
 
   if(m_writeMCROOTFilesFlag) //nalipour: Fill ROOT files
     {
-      m_AllPixRun->FillROOTFiles(aRun, writeROOTFile); 
+      m_AllPixRun->FillROOTFiles(writeROOTFile);
     }
   timer->Stop();
   G4cout << "event Id = " << aRun->GetNumberOfEvent()

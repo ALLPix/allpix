@@ -160,10 +160,13 @@ AllPixRun::~AllPixRun(){
 }
 
 
-void AllPixRun::FillROOTFiles(const G4Run* aRun, AllPixWriteROOTFile** rootFiles) //nalipour
+void AllPixRun::FillROOTFiles(AllPixWriteROOTFile** rootFiles) //nalipour
 {  
   for (int itr=0; itr<MC_ROOT_data.size(); ++itr)
     {
+	  (rootFiles[itr])->SetVectors(MC_ROOT_data[itr]);
+	  (rootFiles[itr])->AllPixWriteROOTFillTree();
+	  /*
       (rootFiles[itr])->posX_MC=MC_ROOT_data[itr]->get_posX_MC();
       (rootFiles[itr])->posY_MC=MC_ROOT_data[itr]->get_posY_MC();
       (rootFiles[itr])->energy_MC=MC_ROOT_data[itr]->get_energy_MC();
@@ -173,9 +176,11 @@ void AllPixRun::FillROOTFiles(const G4Run* aRun, AllPixWriteROOTFile** rootFiles
       (rootFiles[itr])->energy=MC_ROOT_data[itr]->get_energy();
       (rootFiles[itr])->TOT=MC_ROOT_data[itr]->get_TOT();
       (rootFiles[itr])->AllPixWriteROOTFillTree();
+      */
     }
   MC_ROOT_data.clear();
 }
+/*
 //nalipour
 void AllPixRun::RecordHitsForROOTFiles(const G4Event* evt) // Fill MC_ROOT_data
 {
@@ -188,7 +193,7 @@ void AllPixRun::RecordHitsForROOTFiles(const G4Event* evt) // Fill MC_ROOT_data
     {
       G4cout << "nalipour itrCol=" << itrCol << G4endl;
       m_hitsCollection = dynamic_cast<AllPixTrackerHitsCollection *> (HCe->GetHC(itrCol));
-      G4double energy=0;
+
       map<pair<G4int, G4int>, G4double > pixelsContent;
       pair<G4int, G4int> tempPixel;
       G4int NbHits = m_hitsCollection->entries();
@@ -196,19 +201,19 @@ void AllPixRun::RecordHitsForROOTFiles(const G4Event* evt) // Fill MC_ROOT_data
    	{
    	  tempPixel.first=(*m_hitsCollection)[i]->GetPixelNbX();
    	  tempPixel.second = (*m_hitsCollection)[i]->GetPixelNbY();
-   	  pixelsContent[tempPixel]+=(*m_hitsCollection)[i]->GetEdep()*keV;
+   	  pixelsContent[tempPixel]+=(*m_hitsCollection)[i]->GetEdep();
    	}
       
       map<pair<G4int, G4int>, G4double >::iterator pCItr = pixelsContent.begin();
       for( ; pCItr != pixelsContent.end() ; pCItr++)
-   	{
-   	  int x=(*pCItr).first.first;
-   	  int y=(*pCItr).first.second;
-   	  double energy=(*pCItr).second;
-	  MC_ROOT_data[itrCol]->add_posX_MC(x);
-	  MC_ROOT_data[itrCol]->add_posY_MC(y);
-	  MC_ROOT_data[itrCol]->add_energy_MC(energy);	  
-   	}
+      {
+    	  int x=(*pCItr).first.first;
+    	  int y=(*pCItr).first.second;
+    	  double energy=(*pCItr).second;
+    	  MC_ROOT_data[itrCol]->add_posX_MC(x);
+    	  MC_ROOT_data[itrCol]->add_posY_MC(y);
+    	  MC_ROOT_data[itrCol]->add_energy_MC(energy/keV);
+      }
     }
 }
 
@@ -243,6 +248,44 @@ void AllPixRun::RecordHitsForROOTFiles_withChargeSharing(const G4Event* evt) // 
     	MC_ROOT_data[i]->add_posY((*digitsCollection)[itr]->GetPixelIDY());
     	MC_ROOT_data[i]->add_energy((*digitsCollection)[itr]->GetPixelEnergyDep()/keV);
        	MC_ROOT_data[i]->add_TOT((*digitsCollection)[itr]->GetPixelCounts());
+      }
+  }
+}*/
+
+void AllPixRun::RecordDigits_all(const G4Event* evt) // Fill Data with charge sharing
+{
+  G4DCofThisEvent* DCe = evt->GetDCofThisEvent();
+  if(!DCe)
+    {
+      G4cout << "No digits in this event !" << G4endl;
+      return;
+    }
+  G4int nDC = DCe->GetNumberOfCollections();
+  if(m_nOfDetectors != nDC)
+    {
+      G4cout << "[ERROR] the number of Digit Collections should not" << G4endl
+	     << "        be found to be different than the number of" << G4endl
+	     << "        detectors. nDetectors = " << m_nOfDetectors << G4endl
+	     << "        nDC =  " << nDC <<  " ... Giving up." << G4endl;
+      exit(1);
+    }
+
+  for (G4int i = 0 ; i < nDC ; i++) {
+
+    // Get a hit in the Collection directly
+    AllPixDigitsCollectionInterface * digitsCollection =
+      static_cast<AllPixDigitsCollectionInterface *> (DCe->GetDC(i));
+    G4int nDigits = digitsCollection->entries();
+    for (G4int itr  = 0 ; itr < nDigits ; itr++)
+      {
+    	MC_ROOT_data[i]->add_posX((*digitsCollection)[itr]->GetPixelIDX());
+    	MC_ROOT_data[i]->add_posY((*digitsCollection)[itr]->GetPixelIDY());
+    	MC_ROOT_data[i]->add_energyTotal((*digitsCollection)[itr]->GetPixelEnergyDep());
+       	MC_ROOT_data[i]->add_TOT((*digitsCollection)[itr]->GetPixelCounts());
+       	MC_ROOT_data[i]->add_energyMC((*digitsCollection)[itr]->GetPixelEnergyMC());
+       	MC_ROOT_data[i]->add_posX_WithRespectToPixel((*digitsCollection)[itr]->Get_posX_WithRespectoToPixel());
+       	MC_ROOT_data[i]->add_posY_WithRespectToPixel((*digitsCollection)[itr]->Get_posY_WithRespectoToPixel());
+       	MC_ROOT_data[i]->add_posZ_WithRespectToPixel((*digitsCollection)[itr]->Get_posZ_WithRespectoToPixel());
       }
   }
 }
@@ -447,8 +490,9 @@ void AllPixRun::RecordEvent(const G4Event* evt) {
 
   if(m_writeMCFilesFlag) //nalipour: Record MC hits
     {
-      RecordHitsForROOTFiles(evt);
-      RecordHitsForROOTFiles_withChargeSharing(evt);
+	  RecordDigits_all(evt);
+      //RecordHitsForROOTFiles(evt);
+      //RecordHitsForROOTFiles_withChargeSharing(evt);
     }
 
 }
@@ -555,8 +599,6 @@ void AllPixRun::RecordHits(const G4Event* evt) {
 				    itrCol)->fillVars(m_storableHits[itrCol]);
 
   }
-
-
 }
 
 void AllPixRun::RecordDigits(const G4Event* evt){
