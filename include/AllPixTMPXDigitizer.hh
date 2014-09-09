@@ -34,7 +34,7 @@ public:
   void SetPrimaryVertex(G4PrimaryVertex * pv) {m_primaryVertex = pv;};
   void Digitize ();
   void SetDetectorDigitInputs(G4double){};
-
+  G4double IntegrateGaussian(G4double xhit, G4double yhit, G4double Sigma, G4double x1, G4double x2, G4double y1, G4double y2, G4double Energy);
 private:
 
   class MC_content
@@ -58,7 +58,11 @@ private:
   AllPixTMPXDigitsCollection * m_digitsCollection;
   vector<G4String> m_hitsColName;
   G4PrimaryVertex * m_primaryVertex; // information from EventAction
-
+  G4double thickness; //detector thickness
+  G4double pitchX;
+  G4double pitchY;
+  G4int nPixX;
+  G4int nPixY;
 };
 
 #endif

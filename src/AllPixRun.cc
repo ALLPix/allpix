@@ -459,13 +459,16 @@ void AllPixRun::FillTelescopeFiles(const G4Run* aRun, G4String folderName, G4boo
 		}
 
 	      // dump info in text file
-	      if ( eventIDflag )
+	      if(tot>=0) //nalipour not to write negative TOT 
 		{
-		  tpixtelescope_f << x << "\t" << y << "\t" << tot << "\t" << evID << endl;
-		}
-	      else
-		{
-		  tpixtelescope_f << x << "\t" << y << "\t" << tot << endl;
+		  if ( eventIDflag )
+		    {
+		      tpixtelescope_f << x << "\t" << y << "\t" << tot << "\t" << evID << endl;
+		    }
+		  else
+		    {
+		      tpixtelescope_f << x << "\t" << y << "\t" << tot << endl;
+		    }
 		}
 	    }
 	}

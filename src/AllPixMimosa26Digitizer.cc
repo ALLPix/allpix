@@ -140,7 +140,7 @@ void AllPixMimosa26Digitizer::Digitize(){
     G4double xpos = (*hitsCollection)[itr]->GetPosWithRespectToPixel().x();
     G4double ypos = (*hitsCollection)[itr]->GetPosWithRespectToPixel().y();
     G4double zpos = (*hitsCollection)[itr]->GetPosWithRespectToPixel().z();
-    G4cout << "nalipour: xpos=" << xpos << ", ypos=" << ypos << G4endl;
+    //G4cout << "nalipour: xpos=" << xpos << ", ypos=" << ypos << G4endl;
 
     //G4cout << "Hit position ib z : " << zpos << endl;
 
@@ -389,7 +389,7 @@ void AllPixMimosa26Digitizer::Digitize(){
 		
 		    pos1 = (G4int) CLHEP::RandFlat::shoot(7);
 		    pos2 = (G4int) CLHEP::RandFlat::shoot(7);
-		    G4cout << "Nilou: pos1 = " << pos1 << ", pos2=" << pos2 << G4endl;
+		    //G4cout << "Nilou: pos1 = " << pos1 << ", pos2=" << pos2 << G4endl;
 		    if (pos1 != 6)
 		      {
 			tempPixel.first  = (*hitsCollection)[itr]->GetPixelNbX()+noise_pos[pos1][0];
@@ -398,7 +398,7 @@ void AllPixMimosa26Digitizer::Digitize(){
 		      }
 		    else
 		      {
-			G4cout << "Nilou: pos1 NO" << G4endl;
+			//G4cout << "Nilou: pos1 NO" << G4endl;
 		      }
 		    if (pos2 != 6)
 		      {
@@ -408,7 +408,7 @@ void AllPixMimosa26Digitizer::Digitize(){
 		      }
 		    else
 		      {
-			G4cout << "Nilou: pos2 NO" << G4endl;
+			//G4cout << "Nilou: pos2 NO" << G4endl;
 		      }
 		  }
 		//End Nilou
@@ -458,7 +458,7 @@ void AllPixMimosa26Digitizer::Digitize(){
 	      
 		    pos1 = (G4int) CLHEP::RandFlat::shoot(7);
 		    pos2 = (G4int) CLHEP::RandFlat::shoot(7);
-		    G4cout << "Nilou: pos1 = " << pos1 << ", pos2=" << pos2 << G4endl;
+		    //G4cout << "Nilou: pos1 = " << pos1 << ", pos2=" << pos2 << G4endl;
 		    if (pos1 != 6)
 		      {
 			tempPixel.first  = (*hitsCollection)[itr]->GetPixelNbX()+noise_pos[pos1][0];
@@ -467,7 +467,7 @@ void AllPixMimosa26Digitizer::Digitize(){
 		      }
 		    else
 		      {
-			G4cout << "Nilou: pos1 NO" << G4endl;
+			//G4cout << "Nilou: pos1 NO" << G4endl;
 		      }
 		    if (pos2 != 6)
 		      {
@@ -477,7 +477,7 @@ void AllPixMimosa26Digitizer::Digitize(){
 		      }
 		    else
 		      {
-			G4cout << "Nilou: pos2 NO" << G4endl;
+			//G4cout << "Nilou: pos2 NO" << G4endl;
 		      }
 		  }
 		//End Nilou
@@ -532,7 +532,7 @@ void AllPixMimosa26Digitizer::Digitize(){
 	      
 		    pos1 = (G4int) CLHEP::RandFlat::shoot(7);
 		    pos2 = (G4int) CLHEP::RandFlat::shoot(7);
-		    G4cout << "Nilou: pos1 = " << pos1 << ", pos2=" << pos2 << G4endl;
+		    //G4cout << "Nilou: pos1 = " << pos1 << ", pos2=" << pos2 << G4endl;
 		    if (pos1 != 6)
 		      {
 			tempPixel.first  = (*hitsCollection)[itr]->GetPixelNbX()+noise_pos[pos1][0];
@@ -541,7 +541,7 @@ void AllPixMimosa26Digitizer::Digitize(){
 		      }
 		    else
 		      {
-			G4cout << "Nilou: pos1 NO" << G4endl;
+			//G4cout << "Nilou: pos1 NO" << G4endl;
 		      }
 		    if (pos2 != 6)
 		      {
@@ -551,7 +551,7 @@ void AllPixMimosa26Digitizer::Digitize(){
 		      }
 		    else
 		      {
-			G4cout << "Nilou: pos2 NO" << G4endl;
+			//G4cout << "Nilou: pos2 NO" << G4endl;
 		      }
 		  }
 		//End Nilou
@@ -611,7 +611,7 @@ void AllPixMimosa26Digitizer::Digitize(){
 	      
 		    pos1 = (G4int) CLHEP::RandFlat::shoot(7);
 		    pos2 = (G4int) CLHEP::RandFlat::shoot(7);
-		    G4cout << "Nilou: pos1 = " << pos1 << ", pos2=" << pos2 << G4endl;
+		    //G4cout << "Nilou: pos1 = " << pos1 << ", pos2=" << pos2 << G4endl;
 		    if (pos1 != 6)
 		      {
 			tempPixel.first  = (*hitsCollection)[itr]->GetPixelNbX()+noise_pos[pos1][0];
@@ -620,7 +620,7 @@ void AllPixMimosa26Digitizer::Digitize(){
 		      }
 		    else
 		      {
-			G4cout << "Nilou: pos1 NO" << G4endl;
+			//G4cout << "Nilou: pos1 NO" << G4endl;
 		      }
 		    if (pos2 != 6)
 		      {
@@ -630,7 +630,7 @@ void AllPixMimosa26Digitizer::Digitize(){
 		      }
 		    else
 		      {
-			G4cout << "Nilou: pos2 NO" << G4endl;
+			//G4cout << "Nilou: pos2 NO" << G4endl;
 		      }
 		  }
 		//End Nilou
