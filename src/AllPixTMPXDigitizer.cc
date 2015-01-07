@@ -16,6 +16,8 @@
 #include "TMath.h"
 #include "TF1.h"
 
+#include "CLHEP/Random/RandGauss.h"
+
 AllPixTMPXDigitizer::AllPixTMPXDigitizer(G4String modName, G4String hitsColName, G4String digitColName) 
   : AllPixDigitizerInterface (modName) {
 
@@ -24,8 +26,9 @@ AllPixTMPXDigitizer::AllPixTMPXDigitizer(G4String modName, G4String hitsColName,
   m_hitsColName.push_back(hitsColName);
 
   // threshold
-  m_digitIn.thl = 1026;// For L04-W0125 //800 electrons // TO DO from gear file
-  
+  //m_digitIn.thl = 1026;// For L04-W0125 //800 electrons // TO DO from gear file
+  //m_digitIn.thl = 973; //B06-W0125
+
   //Geometry description
   AllPixGeoDsc * gD = GetDetectorGeoDscPtr();
   thickness=gD->GetSensorZ(); //thickness[mm] 
@@ -33,9 +36,90 @@ AllPixTMPXDigitizer::AllPixTMPXDigitizer(G4String modName, G4String hitsColName,
   pitchY=gD->GetPixelY();
   nPixX=gD->GetNPixelsX();
   nPixY=gD->GetNPixelsY();
-  
 
-//G4cout << "nalipour detector thickness=" << thickness << G4endl;
+  // Parameters read from pixeldetector.xml:
+  resistivity=gD->GetResistivity();
+  V_B=gD->GetBiasVoltage();
+  SensorType=gD->GetSensorType();
+
+  //-------- Calibration --------//
+  CalibrationFile=gD->GetCalibrationFile();
+  if (CalibrationFile.find(".root")!= std::string::npos)
+    {
+      G4cout << "pixel-by-pixel calibration" << G4endl;
+      //Pixel-by-pixel calibration
+      size_calibX=nPixX;
+      size_calibY=nPixY;
+      TFile* file_calib=TFile::Open(CalibrationFile);
+      if (file_calib==0 || file_calib->IsZombie())
+	{
+	  G4cout << "Error opening calibration file!!! " << G4endl;
+	  //return -1; 
+	}
+      else
+	{
+	  initialise_calibrationMatrices(size_calibX, size_calibY);
+	  TTree* tree=(TTree*)file_calib->Get("fitPara"); 
+	  int pixx;
+	  int pixy;
+	  Float_t a;
+	  Float_t b;
+	  Float_t c;
+	  Float_t d;
+
+	  tree->SetBranchAddress("pixx", &pixx);
+	  tree->SetBranchAddress("pixy", &pixy);
+	  tree->SetBranchAddress("a", &a);
+	  tree->SetBranchAddress("b", &b);
+	  tree->SetBranchAddress("c", &c);
+	  tree->SetBranchAddress("d", &d);
+	  int nEntries = tree->GetEntries();
+	  for (int i=0; i<nEntries; ++i)
+	    {
+	      tree->GetEntry(i);
+	      SurrogateA[pixx][pixy]=a;
+	      SurrogateB[pixx][pixy]=b;
+	      SurrogateC[pixx][pixy]=c;
+	      SurrogateD[pixx][pixy]=d;
+	      G4cout << "a=" << a << G4endl;
+	      ThresholdMatrix[pixx][pixy]=(d*a-b+sqrt((b+d*a)*(b+d*a)+4*a*c))/(2*a);
+	    }
+	}
+    }
+  else if (CalibrationFile.find(".txt")!= std::string::npos)
+    {
+      G4cout << "Global calibration" << G4endl;
+      //Global calibration
+      size_calibX=1;
+      size_calibY=1;
+
+      initialise_calibrationMatrices(size_calibX, size_calibY);
+      ifstream in;
+      TString x;
+      in.open(CalibrationFile);
+
+      while (1) 
+	{
+	  in >> x;
+	  G4cout << x << G4endl;
+	  TObjArray* str = x.Tokenize(","); 
+	  if((TObjString*)str->At(0) && (TObjString*)str->At(1) && (TObjString*)str->At(2)  && (TObjString*)str->At(3))
+	    {
+	      double a=((TObjString*)str->At(0))->String().Atof();
+	      double b=((TObjString*)str->At(1))->String().Atof();
+	      double c=((TObjString*)str->At(2))->String().Atof();
+	      double d=((TObjString*)str->At(3))->String().Atof();
+	      SurrogateA[0][0]=a;
+	      SurrogateB[0][0]=b;
+	      SurrogateC[0][0]=c;
+	      SurrogateD[0][0]=d;
+	      ThresholdMatrix[0][0]=(d*a-b+sqrt((b+d*a)*(b+d*a)+4*a*c))/(2*a);
+	      G4cout << "ThresholdMatrix[0][0]=" << ThresholdMatrix[0][0] << endl;
+	    }      
+	  if (!in.good()) break;
+	}
+    }
+  //-------- End Calibration --------//
 }
 
 AllPixTMPXDigitizer::~AllPixTMPXDigitizer()
@@ -81,16 +165,17 @@ void AllPixTMPXDigitizer::Digitize()
 
 
   //// ============PARAMETERS TO ADJUST================
-  string sensorType="p-in-n"; // or n-in-p
+  //string sensorType="n-in-p"; // or n-in-p
+  
   //Double_t V_B=35; //[V] //Run 1189
-  Double_t V_B=35; //[V] //Run 2302 Vb=-35[V]
+  // Double_t V_B=35; //[V] //Run 2302 Vb=-35[V]
 
-  //-------L04-W0125-------// //100um p-in-n
-  G4double a=14.2;
-  G4double b=437.2;
-  G4double c=1830;
-  G4double t=-9.26e-7;
-  //-----------------------//
+  // //-------L04-W0125-------// //100um p-in-n
+  // G4double a=14.2;
+  // G4double b=437.2;
+  // G4double c=1830;
+  // G4double t=-9.26e-7;
+  // //-----------------------//
   // // //-------B06-W0125-------// //200um n-in-p
   // G4double a=29.8;
   // G4double b=534.1;
@@ -98,16 +183,17 @@ void AllPixTMPXDigitizer::Digitize()
   // G4double t=0.7;
   // // //-----------------------//
 
-  Double_t resistivity=5000; //[ohm cm] 
+  //Double_t resistivity=5000; //[ohm cm] 
+  G4cout << "nilou: resistivity= " << resistivity << G4endl;
   ///=================================================
   Double_t mobility_const=0.0;
   Double_t diffusion_const=0.0;
-  if (sensorType=="p-in-n")
+  if (SensorType=="p-in-n")
     {
       mobility_const=Default_Hole_Mobility;
       diffusion_const=Default_Hole_D;
     }
-  else if (sensorType=="n-in-p")
+  else if (SensorType=="n-in-p")
     {
       mobility_const=Default_Electron_Mobility;
       diffusion_const=Default_Electron_D;
@@ -140,10 +226,6 @@ void AllPixTMPXDigitizer::Digitize()
 
 
       //**************Charge sharing********************//
-
-      
- 
- 
       Double_t Neff=1.0/(resistivity*echarge*mobility_const); //[1/cm3]
       Double_t V_D=(echarge*Neff*(thickness/cm)*(thickness/cm))/(2*epsilon);
  
@@ -153,20 +235,17 @@ void AllPixTMPXDigitizer::Digitize()
       extraPixel = tempPixel;
       G4double hit_energy=(*hitsCollection)[itr]->GetEdep();
       
+      hit_energy=elec*CLHEP::RandGauss::shoot(hit_energy/elec, hit_energy/elec); //First noise
+      
       if(zpos<depletionWidth*10) // Only charge sharing for the depletion region //depletionWidth*10 [mm]
       	{
 	  Double_t electric_field=-((V_B-V_D)/(thickness/cm)+(1-(zpos/cm)/(thickness/cm))*2*V_D/(thickness/cm));
 	  
-	  //Double_t drift_time=(zpos/cm)/(mobility_const*TMath::Abs(electric_field)); //constant drift time
-	  Double_t drift_time=((thickness/cm)*(thickness/cm))/(2*mobility_const*V_D)*TMath::Log((V_B+V_D)/(V_B+V_D-2*V_D*(zpos/cm)/(thickness/cm))); // non-constant drift velocity
+	  Double_t drift_time=(zpos/cm)/(mobility_const*TMath::Abs(electric_field)); //constant drift time
+	  // Double_t drift_time=((thickness/cm)*(thickness/cm))/(2*mobility_const*V_D)*TMath::Log((V_B+V_D)/(V_B+V_D-2*V_D*(zpos/cm)/(thickness/cm))); // non-constant drift velocity
 	  Double_t diffusion_RMS=TMath::Sqrt(2.0*diffusion_const*drift_time); //[cm]
 	  diffusion_RMS=diffusion_RMS*10;//[mm]
-	  
-
-	  G4cout << "diffusion_RMS=" << diffusion_RMS << G4endl;
-	  G4cout << "pitchX/2.-3.0*diffusion_RMS=" << pitchX/2.-3.0*diffusion_RMS << G4endl;
-	  G4cout << "pitchY/2.-3.0*diffusion_RMS=" << pitchY/2.-3.0*diffusion_RMS << G4endl;
-	  
+	  	  
 	  if(fabs(xpos)>=pitchX/2.-3.0*diffusion_RMS || fabs(ypos)>=pitchY/2.-3.0*diffusion_RMS)
 	    {
 	      for(int i=-1; i<=1; i++)
@@ -213,30 +292,62 @@ void AllPixTMPXDigitizer::Digitize()
   map<pair<G4int, G4int>, G4double >::iterator pCItr = pixelsContent.begin();
   for( ; pCItr != pixelsContent.end() ; pCItr++)
     {
-      G4cout << "Before thresh: x=" << (*pCItr).first.first << ", y=" << (*pCItr).first.second << ", energy=" << (*pCItr).second << G4endl;
-      G4cout << "threshold=" <<  m_digitIn.thl*elec/keV << G4endl;
-      if((*pCItr).second > m_digitIn.thl*elec) // over threshold !
+      pair<G4int, G4int> tempPixel;
+      tempPixel.first=(*pCItr).first.first;
+      tempPixel.second=(*pCItr).first.second;
+
+      
+      G4double a=0.0;
+      G4double b=0.0;
+      G4double c=0.0;
+      G4double t=0.0;
+      
+      if (size_calibX==1 && size_calibY==1)
 	{
-	  pair<G4int, G4int> tempPixel;
-	  tempPixel.first=(*pCItr).first.first;
-	  tempPixel.second=(*pCItr).first.second;
+	  G4cout << "Test yes" << G4endl;
+	  m_digitIn.thl=ThresholdMatrix[0][0]; //keV
+	  a=SurrogateA[0][0];
+	  b=SurrogateB[0][0];
+	  c=SurrogateC[0][0];
+	  t=SurrogateD[0][0];
+	}
+      else
+	{
+	  m_digitIn.thl=ThresholdMatrix[tempPixel.first][tempPixel.second]; //keV
+	  a=SurrogateA[tempPixel.first][tempPixel.second];
+	  b=SurrogateB[tempPixel.first][tempPixel.second];
+	  c=SurrogateC[tempPixel.first][tempPixel.second];
+	  t=SurrogateD[tempPixel.first][tempPixel.second];
+	}
+      
+      G4cout << "Energy =" << (*pCItr).second/keV << " [keV]" << G4endl;
+      G4cout << "Threshold=" <<  m_digitIn.thl << " [keV]" << G4endl;
+      if((*pCItr).second/keV > m_digitIn.thl) // over threshold !
+	{
+	  G4int TOT=a*((*pCItr).second)/keV+b-c/(((*pCItr).second/keV)-t);
+	  G4cout << "a=" << a << ", b=" << b << ", c=" << c << ", t=" << t << G4endl;
 
-	  G4cout << "x=" << tempPixel.first << ", y=" << tempPixel.second << ", energy=" << (*pCItr).second/keV << G4endl;
-
+	  Double_t sigma_TOT=(TMath::Exp(-((*pCItr).second/keV-m_digitIn.thl)*2.66-0.7)+0.016)*TOT;
+	  G4cout << "sigma_TOT=" << sigma_TOT << ", TOT=" << TOT << G4endl;
+	  // Noise on TOT
+	  TOT=CLHEP::RandGauss::shoot(TOT, sigma_TOT);
+	  if(TOT<0)
+	    {
+	      G4cout<< "negative TOT" << G4endl;
+	      TOT=0;
+	    }
+	  G4cout << "Final TOT=" << TOT << G4endl;
+	  // End noise on TOT
+	  
 	  AllPixTMPXDigit * digit = new AllPixTMPXDigit;
 
 	  digit->SetPixelIDX((*pCItr).first.first);
 	  digit->SetPixelIDY((*pCItr).first.second);
 	  digit->SetPixelEnergyDep(((*pCItr).second)/keV); //Energy with charge sharing
-
-
-
-
-	  G4int TOT=a*((*pCItr).second)/keV+b-c/(((*pCItr).second/keV)-t);
 	  digit->SetPixelCounts(TOT); //TOT value
 	  if (pixelsContent_MC.count(tempPixel))
 	    {
-	      G4cout << "x=" << tempPixel.first << ", y=" << tempPixel.second << ", energyMC=" << (pixelsContent_MC[tempPixel].MC_energy)/keV << G4endl;
+	      //G4cout << "x=" << tempPixel.first << ", y=" << tempPixel.second << ", energyMC=" << (pixelsContent_MC[tempPixel].MC_energy)/keV << G4endl;
 	      digit->SetPixelEnergyMC((pixelsContent_MC[tempPixel].MC_energy)/keV); //MC value
 	      digit->Set_posX_WithRespectoToPixel(pixelsContent_MC[tempPixel].posX_WithRespectToPixel);
 	      digit->Set_posY_WithRespectoToPixel(pixelsContent_MC[tempPixel].posY_WithRespectToPixel);
@@ -294,9 +405,39 @@ void AllPixTMPXDigitizer::Digitize()
  G4double AllPixTMPXDigitizer::IntegrateGaussian(G4double xhit,G4double yhit,G4double Sigma, G4double x1, G4double x2, G4double y1, G4double y2, G4double Energy)
  {
    G4double Integral=(-TMath::Erf((x1-xhit)/(TMath::Sqrt(2.)*Sigma))+TMath::Erf((x2-xhit)/(TMath::Sqrt(2.)*Sigma)))*(-TMath::Erf((y1-yhit)/(TMath::Sqrt(2.)*Sigma))+TMath::Erf((y2-yhit)/(TMath::Sqrt(2.0)*Sigma)));
-   //G4cout << "integral=" << Integral << G4endl;
+   
    G4double energybis=Integral*Energy/4.0; //*(TMath::Pi())*(TMath::Pi());
    // G4double energybis= (Energy*(-TMath::Erf((x1-xhit)/(TMath::Sqrt(2.)*Sigma))+TMath::Erf((x2-xhit)/(TMath::Sqrt(2.)*Sigma)))
    // 			*(-TMath::Erf((y1-yhit)/(TMath::Sqrt(2.)*Sigma))+TMath::Erf((y2-yhit)/(TMath::Sqrt(2.0)*Sigma))))/4.0*(TMath::Pi())*(TMath::Pi());
    return energybis;
+}
+
+
+void AllPixTMPXDigitizer::initialise_calibrationMatrices(int size_calibX, int size_calibY)
+{
+  ThresholdMatrix = new G4double*[size_calibX];
+  for(int i=0;i<size_calibX;i++)
+    {
+      ThresholdMatrix[i] = new G4double[size_calibY];
+    }
+  SurrogateA = new G4double*[size_calibX];
+  for(int i=0;i<size_calibX;i++)
+    {
+      SurrogateA[i] = new G4double[size_calibY];
+    }
+  SurrogateB = new G4double*[size_calibX];
+  for(int i=0;i<size_calibX;i++)
+    {
+      SurrogateB[i] = new G4double[size_calibY];
+    }
+  SurrogateC = new G4double*[size_calibX];
+  for(int i=0;i<size_calibX;i++)
+    {
+      SurrogateC[i] = new G4double[size_calibY];
+    }
+  SurrogateD = new G4double*[size_calibX];
+  for(int i=0;i<size_calibX;i++)
+    {
+      SurrogateD[i] = new G4double[size_calibY];
+    }
 }
