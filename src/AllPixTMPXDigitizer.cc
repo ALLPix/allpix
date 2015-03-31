@@ -21,13 +21,20 @@
 AllPixTMPXDigitizer::AllPixTMPXDigitizer(G4String modName, G4String hitsColName, G4String digitColName) 
   : AllPixDigitizerInterface (modName) {
 
+  epsilon = 11.8*8.854187817e-14; // [F/cm] -> F=As/V (silicon)
+  echarge=1.60217646e-19; //[C=As]
+  Default_Hole_Mobility=480.0; //[cm2/Vs] Hole mobility
+  Default_Hole_D=12; //;// Hole diffusion [cm2/s]
+
+  Default_Electron_Mobility=1415.0; //[cm2/Vs] Electron mobility
+  Default_Electron_D=36; //;// Electron diffusion [cm2/s]
+  temperature_T=300.0;
+  elec=3.6*eV;
+
   // Registration of digits collection name
   collectionName.push_back(digitColName);
   m_hitsColName.push_back(hitsColName);
 
-  // threshold
-  //m_digitIn.thl = 1026;// For L04-W0125 //800 electrons // TO DO from gear file
-  //m_digitIn.thl = 973; //B06-W0125
 
   //Geometry description
   AllPixGeoDsc * gD = GetDetectorGeoDscPtr();
@@ -41,6 +48,8 @@ AllPixTMPXDigitizer::AllPixTMPXDigitizer(G4String modName, G4String hitsColName,
   resistivity=gD->GetResistivity();
   V_B=gD->GetBiasVoltage();
   SensorType=gD->GetSensorType();
+  Threshold=gD->GetThreshold()*elec;
+
 
   //-------- Calibration --------//
   CalibrationFile=gD->GetCalibrationFile();
@@ -120,6 +129,42 @@ AllPixTMPXDigitizer::AllPixTMPXDigitizer(G4String modName, G4String hitsColName,
 	}
     }
   //-------- End Calibration --------//
+  G4cout << "nilou: resistivity= " << resistivity << G4endl;
+
+  ///=========== Mobility calculation =============///
+  if (SensorType=="p-in-n")
+    {
+      mobility_const=Default_Hole_Mobility;
+      diffusion_const=Default_Hole_D;
+
+      
+      //non const mobility
+      vm=1.62*TMath::Power(10, 8)*TMath::Power(temperature_T, -0.52);
+      Ec=1.24*TMath::Power(temperature_T, 1.68);
+      beta=0.46*TMath::Power(temperature_T, 0.17);
+    }
+  else if (SensorType=="n-in-p")
+    {
+      mobility_const=Default_Electron_Mobility;
+      diffusion_const=Default_Electron_D;
+
+      //non const mobility
+      vm=1.53*TMath::Power(10, 9)*TMath::Power(temperature_T, -0.87);
+      Ec=1.01*TMath::Power(temperature_T, 1.55);
+      beta=2.57*TMath::Power(10, -2)*TMath::Power(temperature_T, 1.55);
+    }
+  G4cout << "mobility_const=" << mobility_const << G4endl;
+  G4cout << "diffusion_const=" << diffusion_const << G4endl;
+  ///=================================================///
+
+  //**************Charge sharing********************//
+  V_D=((thickness/cm)*(thickness/cm))/(2*epsilon*mobility_const*resistivity);
+  depletionWidth=TMath::Sqrt(2*V_B*(thickness/cm)*(thickness/cm)/(2*V_D));      
+  
+  G4cout << "V_D=" << V_D << G4endl;
+  G4cout << "depletionWidth=" << depletionWidth*10 << "[mm]" << G4endl;
+  G4cout << "V bias=" << V_B << G4endl;
+ 
 }
 
 AllPixTMPXDigitizer::~AllPixTMPXDigitizer()
@@ -128,7 +173,6 @@ AllPixTMPXDigitizer::~AllPixTMPXDigitizer()
 
 void AllPixTMPXDigitizer::Digitize()
 {
-  G4double elec=3.64*eV;
   m_digitsCollection = new AllPixTMPXDigitsCollection("AllPixTMPXDigitizer", collectionName[0] );
 
   // get the digiManager
@@ -143,70 +187,20 @@ void AllPixTMPXDigitizer::Digitize()
   // temporary data structure
   map<pair<G4int, G4int>, MC_content> pixelsContent_MC; //contains information with only MC
   map<pair<G4int, G4int>, G4double > pixelsContent; //contains information with charge sharing
+  
   pair<G4int, G4int> tempPixel;
   G4int nEntries = hitsCollection->entries();
 
-  // AllPixGeoDsc * gD = GetDetectorGeoDscPtr();
-  // nPixX=gD->GetNPixelsX();
-  // nPixY=gD->GetNPixelsY();
-
-
-
-
-  //Parameters for Charge sharing and TOT!!!!!!
-  // BE careful
-  const Double_t epsilon = 11.8*8.854187817e-14; // [F/cm] -> F=As/V (silicon)
-  const Double_t echarge=1.60217646e-19; //[C=As]
-  const Double_t Default_Hole_Mobility=480.0; //[cm2/Vs] Hole mobility
-  const Double_t Default_Hole_D=12; //;// Hole diffusion [cm2/s]
-
-  const Double_t Default_Electron_Mobility=1415.0; //[cm2/Vs] Electron mobility
-  const Double_t Default_Electron_D=36; //;// Electron diffusion [cm2/s]
-
-
-  //// ============PARAMETERS TO ADJUST================
-  //string sensorType="n-in-p"; // or n-in-p
-  
-  //Double_t V_B=35; //[V] //Run 1189
-  // Double_t V_B=35; //[V] //Run 2302 Vb=-35[V]
-
-  // //-------L04-W0125-------// //100um p-in-n
-  // G4double a=14.2;
-  // G4double b=437.2;
-  // G4double c=1830;
-  // G4double t=-9.26e-7;
-  // //-----------------------//
-  // // //-------B06-W0125-------// //200um n-in-p
-  // G4double a=29.8;
-  // G4double b=534.1;
-  // G4double c=1817;
-  // G4double t=0.7;
-  // // //-----------------------//
-
-  //Double_t resistivity=5000; //[ohm cm] 
-  G4cout << "nilou: resistivity= " << resistivity << G4endl;
-  ///=================================================
-  Double_t mobility_const=0.0;
-  Double_t diffusion_const=0.0;
-  if (SensorType=="p-in-n")
-    {
-      mobility_const=Default_Hole_Mobility;
-      diffusion_const=Default_Hole_D;
-    }
-  else if (SensorType=="n-in-p")
-    {
-      mobility_const=Default_Electron_Mobility;
-      diffusion_const=Default_Electron_D;
-    }
-  ///=================================================
-
-
+  // =========== To Correct later: If there is only one particle per frame ======
+  G4double AvgPosX=0.0;
+  G4double AvgPosY=0.0;
+  //=====================================================================
 
 
   for(G4int itr  = 0 ; itr < nEntries ; itr++)
     {
       G4cout << "=================itr: " << itr << G4endl;
-      //G4cout << "Thickness=" << thickness << G4endl;
+
       tempPixel.first  = (*hitsCollection)[itr]->GetPixelNbX();
       tempPixel.second = (*hitsCollection)[itr]->GetPixelNbY();
       
@@ -214,80 +208,125 @@ void AllPixTMPXDigitizer::Digitize()
       G4double ypos=(*hitsCollection)[itr]->GetPosWithRespectToPixel().y();
       G4double zpos=(*hitsCollection)[itr]->GetPosWithRespectToPixel().z()+thickness/2.0; // [mm]; zpos=thickness corresponds to the sensor side and zpos=0 corresponds to the pixel side
 
-      //**************MC********************//
-      if(pixelsContent_MC[tempPixel].MC_energy==0.0 && pixelsContent_MC[tempPixel].posX_WithRespectToPixel == -11.0 && pixelsContent_MC[tempPixel].posY_WithRespectToPixel == -11.0)
-	{
-	  G4cout << "nalipour set MC" << endl;
-	  pixelsContent_MC[tempPixel].posX_WithRespectToPixel=xpos;//(*hitsCollection)[itr]->GetPosWithRespectToPixel().x();
-	  pixelsContent_MC[tempPixel].posY_WithRespectToPixel=ypos;//(*hitsCollection)[itr]->GetPosWithRespectToPixel().y();
-	  pixelsContent_MC[tempPixel].posZ_WithRespectToPixel=zpos;//(*hitsCollection)[itr]->GetPosWithRespectToPixel().z();
-	}
-      pixelsContent_MC[tempPixel].MC_energy+=(*hitsCollection)[itr]->GetEdep(); //MC
+      AvgPosX+=tempPixel.first*pitchX+xpos+pitchX/2.0;
+      AvgPosY+=tempPixel.second*pitchY+ypos+pitchY/2.0;
+      G4cout << "posX=" << tempPixel.first*pitchX+xpos+pitchX/2.0 << ", posY=" << tempPixel.second*pitchY+ypos+pitchY/2.0 << ", zpos=" << zpos << G4endl;
+      // //**************MC********************//
+      // // if(pixelsContent_MC[tempPixel].MC_energy==0.0 && pixelsContent_MC[tempPixel].posX_WithRespectToPixel == -11.0 && pixelsContent_MC[tempPixel].posY_WithRespectToPixel == -11.0)
+      // if(itr==0)
+      // 	{
+      // 	  pixelsContent_MC[tempPixel].posX_WithRespectToPixel=tempPixel.first*pitchX+xpos+pitchX/2.0;
+      // 	  pixelsContent_MC[tempPixel].posY_WithRespectToPixel=tempPixel.second*pitchY+ypos+pitchY/2.0;
+      // 	  pixelsContent_MC[tempPixel].posZ_WithRespectToPixel=zpos;
+
+      // 	  G4cout << "TMPX: nalipour set MC" << endl;
+      // 	  G4cout << "pitchX=" << pitchX << ", pitchY=" << pitchY << endl; 
+      // 	  G4cout << "xpos=" << xpos << ", ypos=" << ypos << endl; 
+      // 	  G4cout << "posX=" << tempPixel.first*pitchX+xpos+pitchX/2.0 << ", posY=" << tempPixel.second*pitchY+ypos+pitchY/2.0 << G4endl;
+      // 	}
+      // pixelsContent_MC[tempPixel].MC_energy+=(*hitsCollection)[itr]->GetEdep(); //MC
+      
 
 
-      //**************Charge sharing********************//
-      Double_t Neff=1.0/(resistivity*echarge*mobility_const); //[1/cm3]
-      Double_t V_D=(echarge*Neff*(thickness/cm)*(thickness/cm))/(2*epsilon);
- 
-      Double_t depletionWidth=TMath::Sqrt(2*epsilon*V_B/(echarge*Neff)); //[cm]
-   
       pair<G4int, G4int> extraPixel;
       extraPixel = tempPixel;
       G4double hit_energy=(*hitsCollection)[itr]->GetEdep();
-      
-      hit_energy=elec*CLHEP::RandGauss::shoot(hit_energy/elec, hit_energy/elec); //First noise
+      // //------- noise 1 ------- // //NOT CORRECT
+      // G4cout << "hit_energy before=" << hit_energy/keV << "[keV]" << G4endl;
+      // hit_energy = elec*CLHEP::RandGauss::shoot(hit_energy/elec,3*TMath::Sqrt(hit_energy/elec));
+      // G4cout << "hit_energy after=" << hit_energy/keV << "[keV]" << G4endl;
+      // // hit_energy=CLHEP::RandGauss::shoot(hit_energy, 2.35*TMath::Sqrt(0.1*hit_energy*elec*10e-6)); //intrinsic resolution of semiconductor detectors
+      // //hit_energy+=elec*CLHEP::RandGauss::shoot(hit_energy/elec, hit_energy/elec);
+      // //Double_t noise=elec*CLHEP::RandGauss::shoot(0, 3*TMath::Sqrt(hit_energy/elec));
+      // // G4cout << "hit_energy=" << hit_energy << ", noise=" << noise << G4endl;
+      // //hit_energy+=noise;
+      // //------- End noise 1 ------- //
+
+
+      // G4cout << "hit_energy=" << hit_energy << G4endl;
+      // hit_energy = hit_energy+CLHEP::RandGauss::shoot(0, TMath::Sqrt(0.1*hit_energy*elec));//noise
+      // hit_energy = hit_energy+CLHEP::RandGauss::shoot(0, 0.00572);//noise
+      // G4cout << "hit_energy 2=" << hit_energy << G4endl;
       
       if(zpos<depletionWidth*10) // Only charge sharing for the depletion region //depletionWidth*10 [mm]
       	{
 	  Double_t electric_field=-((V_B-V_D)/(thickness/cm)+(1-(zpos/cm)/(thickness/cm))*2*V_D/(thickness/cm));
 	  
-	  Double_t drift_time=(zpos/cm)/(mobility_const*TMath::Abs(electric_field)); //constant drift time
-	  // Double_t drift_time=((thickness/cm)*(thickness/cm))/(2*mobility_const*V_D)*TMath::Log((V_B+V_D)/(V_B+V_D-2*V_D*(zpos/cm)/(thickness/cm))); // non-constant drift velocity
+	  Double_t non_const_mobility=(vm/Ec)/(TMath::Power((1+TMath::Power(TMath::Abs(electric_field)/Ec, beta)), 1.0/beta));
+	  //G4cout << "non_const_mobility=" << non_const_mobility << G4endl;
+	  Double_t drift_time=((thickness/cm)*(thickness/cm))/(2*non_const_mobility*V_D)*TMath::Log((V_B+V_D)/(V_B+V_D-2*V_D*(zpos/cm)/(thickness/cm))); // non-constant drift velocity + non-constant drift velocity
 	  Double_t diffusion_RMS=TMath::Sqrt(2.0*diffusion_const*drift_time); //[cm]
-	  diffusion_RMS=diffusion_RMS*10;//[mm]
+	  diffusion_RMS=diffusion_RMS*10;//[mm] 
+	  G4cout << "diffusion_RMS=" << diffusion_RMS << " [mm]" << G4endl;
 	  	  
-	  if(fabs(xpos)>=pitchX/2.-3.0*diffusion_RMS || fabs(ypos)>=pitchY/2.-3.0*diffusion_RMS)
+	  for(int i=-1; i<=1; i++)
 	    {
-	      for(int i=-1; i<=1; i++)
+	      for(int j=-1; j<=1; j++)
 		{
-		  for(int j=-1; j<=1; j++)
+		  extraPixel=tempPixel;
+		  extraPixel.first +=i;
+		  extraPixel.second+=j;
+		  if(extraPixel.first >= 0 && extraPixel.second>=0 && extraPixel.first < nPixX && extraPixel.second < nPixY)
 		    {
-		      extraPixel=tempPixel;
-		      extraPixel.first +=i;
-		      extraPixel.second+=j;
-		      if(extraPixel.first >= 0 && extraPixel.second>=0 && extraPixel.first < nPixX && extraPixel.second < nPixY)
-			{		      
-			  G4double Etemp = IntegrateGaussian(xpos/nm, ypos/nm, diffusion_RMS/nm, (-pitchX/2.0 + i*pitchX)/nm, (-pitchX/2.+(i+1)*pitchX)/nm, (-pitchY/2 + j*pitchY)/nm, (-pitchY/2+(j+1)*pitchY)/nm, hit_energy);
-			  //G4cout << "i=" << i << ", j=" << j << ", hit_energy=" << hit_energy << ", Etemp=" << Etemp << G4endl;
-			  pixelsContent[extraPixel]+=Etemp;
-			}
+		      G4double Etemp = IntegrateGaussian(xpos/nm, ypos/nm, diffusion_RMS/nm, (-pitchX/2.0 + i*pitchX)/nm, (-pitchX/2.+(i+1)*pitchX)/nm, (-pitchY/2 + j*pitchY)/nm, (-pitchY/2+(j+1)*pitchY)/nm, hit_energy);
+		      pixelsContent[extraPixel]+=Etemp;
 		    }
 		}
 	    }
-	  else
-	    {
-	      G4cout << "No charge sharing: hit_energy=" << hit_energy << G4endl;
-	      pixelsContent[extraPixel]+=hit_energy; ///////ADD ENERGY
-	    }
 	}
-      // else
-      // 	{
-      // 	  G4cout << "No charge sharing: hit_energy=" << hit_energy << G4endl;
-      // 	  pixelsContent[extraPixel]+=hit_energy; ///////ADD ENERGY
-      // 	}
-      // 	}
-      // else // No charge sharing
-      // 	{
-      // 	  pixelsContent[extraPixel]+=hit_energy;
-      // 	}
-      //pixelsContent[tempPixel] = pixelsContent_MC[tempPixel].MC_energy; //+ charge sharing + noise
-
-      // ///===============TEST===============///
-      // pixelsContent[extraPixel]+=hit_energy;
-      // ///===============END TEST===============///
     }
 
+  // ------------ Add gaussian noise ------------ //
+  map<pair<G4int, G4int>, G4double >::iterator pCItr1 = pixelsContent.begin();
+  for( ; pCItr1 != pixelsContent.end() ; pCItr1++)
+    {
+      pair<G4int, G4int> tempPixel;
+      tempPixel.first=(*pCItr1).first.first;
+      tempPixel.second=(*pCItr1).first.second;
+      G4cout << "*********before noise: E=" << pixelsContent[tempPixel]/keV << "[keV]" << G4endl;
+      Double_t noise=CLHEP::RandGauss::shoot(0, 200);//electrons
+      G4cout << "noise=" << noise << G4endl;
+      G4cout << "noise 2=" << noise*elec/MeV << G4endl;
+      pixelsContent[tempPixel]+=noise*elec/MeV;
+      G4cout << "after noise=" << pixelsContent[tempPixel]/keV << "[keV]" << G4endl;
+
+      // TOT resolution:
+      // pixelsContent[tempPixel]+=CLHEP::RandGauss::shoot(0, 5./100.*pixelsContent[tempPixel]); //5% noise due to TOT resolution
+    }
+  // ------------ End Add gaussian noise ------------ //
+  // // ------------ Capacitive coupling ------------ //
+  // pair<G4int, G4int> extraPixel;
+  // extraPixel = tempPixel;
+  // G4double coupling_percentage=0.05;//TMath::Abs(CLHEP::RandGauss::shoot(0.05, 0.05));
+  // G4cout << "coupling_percentage=" << coupling_percentage << G4endl;
+  // // if (coupling_percentage<0)
+  // //   {
+  // //     G4cout << "coupling percentage negative" << G4endl;
+  // //   }
+  // G4double couplingEnergy=coupling_percentage*(G4double)pixelsContent[tempPixel];
+  // G4cout << "couplingEnergy=" << couplingEnergy << G4endl;
+
+  // pixelsContent[tempPixel]-=couplingEnergy;
+  // for(int i=-1; i<=1; i++)
+  //   {
+  //     for(int j=-1; j<=1; j++)
+  // 	{
+  // 	  if(i!=0 && j!=0 && i*j==0)
+  // 	    {
+  // 	      extraPixel=tempPixel;
+  // 	      extraPixel.first +=i;
+  // 	      extraPixel.second+=j;
+  // 	      pixelsContent[extraPixel]+=couplingEnergy/4.0;
+  // 	    }
+  // 	}
+  //   }
+  // // ------------ End capacitive coupling ------------ //
+
+
+
   //------------------ RECORD DIGITS ------------------//
+  G4cout << "Threshold=" <<  Threshold/keV << " [keV]" << G4endl;
+  G4cout << "AvgPosX=" << AvgPosX/nEntries << ", AvgPosY=" << AvgPosY/nEntries << G4endl;
   // With charge sharing
   map<pair<G4int, G4int>, G4double >::iterator pCItr = pixelsContent.begin();
   for( ; pCItr != pixelsContent.end() ; pCItr++)
@@ -304,8 +343,7 @@ void AllPixTMPXDigitizer::Digitize()
       
       if (size_calibX==1 && size_calibY==1)
 	{
-	  G4cout << "Test yes" << G4endl;
-	  m_digitIn.thl=ThresholdMatrix[0][0]; //keV
+	  // m_digitIn.thl=ThresholdMatrix[0][0]; //keV
 	  a=SurrogateA[0][0];
 	  b=SurrogateB[0][0];
 	  c=SurrogateC[0][0];
@@ -313,31 +351,16 @@ void AllPixTMPXDigitizer::Digitize()
 	}
       else
 	{
-	  m_digitIn.thl=ThresholdMatrix[tempPixel.first][tempPixel.second]; //keV
+	  // m_digitIn.thl=ThresholdMatrix[tempPixel.first][tempPixel.second]; //keV
 	  a=SurrogateA[tempPixel.first][tempPixel.second];
 	  b=SurrogateB[tempPixel.first][tempPixel.second];
 	  c=SurrogateC[tempPixel.first][tempPixel.second];
 	  t=SurrogateD[tempPixel.first][tempPixel.second];
 	}
       
-      G4cout << "Energy =" << (*pCItr).second/keV << " [keV]" << G4endl;
-      G4cout << "Threshold=" <<  m_digitIn.thl << " [keV]" << G4endl;
-      if((*pCItr).second/keV > m_digitIn.thl) // over threshold !
+      if((*pCItr).second/keV > Threshold/keV) // over threshold !
 	{
 	  G4int TOT=a*((*pCItr).second)/keV+b-c/(((*pCItr).second/keV)-t);
-	  G4cout << "a=" << a << ", b=" << b << ", c=" << c << ", t=" << t << G4endl;
-
-	  Double_t sigma_TOT=(TMath::Exp(-((*pCItr).second/keV-m_digitIn.thl)*2.66-0.7)+0.016)*TOT;
-	  G4cout << "sigma_TOT=" << sigma_TOT << ", TOT=" << TOT << G4endl;
-	  // Noise on TOT
-	  TOT=CLHEP::RandGauss::shoot(TOT, sigma_TOT);
-	  if(TOT<0)
-	    {
-	      G4cout<< "negative TOT" << G4endl;
-	      TOT=0;
-	    }
-	  G4cout << "Final TOT=" << TOT << G4endl;
-	  // End noise on TOT
 	  
 	  AllPixTMPXDigit * digit = new AllPixTMPXDigit;
 
@@ -345,41 +368,41 @@ void AllPixTMPXDigitizer::Digitize()
 	  digit->SetPixelIDY((*pCItr).first.second);
 	  digit->SetPixelEnergyDep(((*pCItr).second)/keV); //Energy with charge sharing
 	  digit->SetPixelCounts(TOT); //TOT value
-	  if (pixelsContent_MC.count(tempPixel))
-	    {
-	      //G4cout << "x=" << tempPixel.first << ", y=" << tempPixel.second << ", energyMC=" << (pixelsContent_MC[tempPixel].MC_energy)/keV << G4endl;
-	      digit->SetPixelEnergyMC((pixelsContent_MC[tempPixel].MC_energy)/keV); //MC value
-	      digit->Set_posX_WithRespectoToPixel(pixelsContent_MC[tempPixel].posX_WithRespectToPixel);
-	      digit->Set_posY_WithRespectoToPixel(pixelsContent_MC[tempPixel].posY_WithRespectToPixel);
-	      digit->Set_posZ_WithRespectoToPixel(pixelsContent_MC[tempPixel].posZ_WithRespectToPixel);
-	      pixelsContent_MC.erase(tempPixel);
-	    }
-	  //digit->IncreasePixelCounts(); // Counting mode
 
+	  // ====== TO be corrected later==================== //
+	  digit->Set_posX_WithRespectoToPixel(AvgPosX/nEntries);
+	  digit->Set_posY_WithRespectoToPixel(AvgPosY/nEntries);
+	  //===================================================//
+	  // if (pixelsContent_MC.count(tempPixel))
+	  //   {
+	  //     digit->SetPixelEnergyMC((pixelsContent_MC[tempPixel].MC_energy)/keV); //MC value
+	  //     digit->Set_posX_WithRespectoToPixel(pixelsContent_MC[tempPixel].posX_WithRespectToPixel);
+	  //     digit->Set_posY_WithRespectoToPixel(pixelsContent_MC[tempPixel].posY_WithRespectToPixel);
+	  //     digit->Set_posZ_WithRespectoToPixel(pixelsContent_MC[tempPixel].posZ_WithRespectToPixel);
+	  //     pixelsContent_MC.erase(tempPixel);
+	  //   }
 	  m_digitsCollection->insert(digit);
 	}
     }
-  //MC only
-  map<pair<G4int, G4int>, MC_content >::iterator pCItr_MC = pixelsContent_MC.begin();
-  for( ; pCItr_MC != pixelsContent_MC.end() ; pCItr_MC++)
-    {
-      G4cout << "x=" << tempPixel.first << ", y=" << tempPixel.second << ", energyMC=" << (pixelsContent_MC[tempPixel].MC_energy)/keV << G4endl;
-      pair<G4int, G4int> tempPixel;
-      tempPixel.first=(*pCItr_MC).first.first;
-      tempPixel.second=(*pCItr_MC).first.second;
+  // //MC only or under-threshold pixels
+  // map<pair<G4int, G4int>, MC_content >::iterator pCItr_MC = pixelsContent_MC.begin();
+  // for( ; pCItr_MC != pixelsContent_MC.end() ; pCItr_MC++)
+  //   {
+  //     G4cout << "x=" << tempPixel.first << ", y=" << tempPixel.second << ", energyMC=" << (pixelsContent_MC[tempPixel].MC_energy)/keV << G4endl;
+  //     pair<G4int, G4int> tempPixel;
+  //     tempPixel.first=(*pCItr_MC).first.first;
+  //     tempPixel.second=(*pCItr_MC).first.second;
 
-      AllPixTMPXDigit * digit = new AllPixTMPXDigit;
+  //     AllPixTMPXDigit * digit = new AllPixTMPXDigit;
 
-      digit->SetPixelIDX((*pCItr_MC).first.first);
-      digit->SetPixelIDY((*pCItr_MC).first.second);
-      digit->SetPixelEnergyMC(pixelsContent_MC[tempPixel].MC_energy/keV); //MC value
-      digit->Set_posX_WithRespectoToPixel(pixelsContent_MC[tempPixel].posX_WithRespectToPixel);
-      digit->Set_posY_WithRespectoToPixel(pixelsContent_MC[tempPixel].posY_WithRespectToPixel);
-      digit->Set_posZ_WithRespectoToPixel(pixelsContent_MC[tempPixel].posZ_WithRespectToPixel);
-      //digit->IncreasePixelCounts(); // Counting mode
-
-      m_digitsCollection->insert(digit);
-    }
+  //     digit->SetPixelIDX((*pCItr_MC).first.first);
+  //     digit->SetPixelIDY((*pCItr_MC).first.second);
+  //     digit->SetPixelEnergyMC(pixelsContent_MC[tempPixel].MC_energy/keV); //MC value
+  //     digit->Set_posX_WithRespectoToPixel(pixelsContent_MC[tempPixel].posX_WithRespectToPixel);
+  //     digit->Set_posY_WithRespectoToPixel(pixelsContent_MC[tempPixel].posY_WithRespectToPixel);
+  //     digit->Set_posZ_WithRespectoToPixel(pixelsContent_MC[tempPixel].posZ_WithRespectToPixel);
+  //     m_digitsCollection->insert(digit);
+  //   }
   //----------------------------------------------------//
 
 
@@ -405,6 +428,8 @@ void AllPixTMPXDigitizer::Digitize()
  G4double AllPixTMPXDigitizer::IntegrateGaussian(G4double xhit,G4double yhit,G4double Sigma, G4double x1, G4double x2, G4double y1, G4double y2, G4double Energy)
  {
    G4double Integral=(-TMath::Erf((x1-xhit)/(TMath::Sqrt(2.)*Sigma))+TMath::Erf((x2-xhit)/(TMath::Sqrt(2.)*Sigma)))*(-TMath::Erf((y1-yhit)/(TMath::Sqrt(2.)*Sigma))+TMath::Erf((y2-yhit)/(TMath::Sqrt(2.0)*Sigma)));
+
+   //G4cout << "Integral=" << Integral/4.0 << G4endl;
    
    G4double energybis=Integral*Energy/4.0; //*(TMath::Pi())*(TMath::Pi());
    // G4double energybis= (Energy*(-TMath::Erf((x1-xhit)/(TMath::Sqrt(2.)*Sigma))+TMath::Erf((x2-xhit)/(TMath::Sqrt(2.)*Sigma)))
