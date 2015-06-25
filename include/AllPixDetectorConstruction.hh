@@ -144,6 +144,7 @@ private:
 	G4int m_nPositions;
 	G4int m_nRotations;
 	G4int m_nIds;
+	G4Region *pixelDetectorRegion;
 
 	vector<G4double>           m_lowThlVector; // lowTHL
 	// for user information.  Absolute position (center) of the Si wafers

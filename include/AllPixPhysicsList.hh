@@ -44,6 +44,7 @@
 
 #include "G4VModularPhysicsList.hh"
 #include "globals.hh"
+#include "G4EmConfigurator.hh"
 
 class G4VPhysicsConstructor;
 class AllPixPhysicsListMessenger;
@@ -78,6 +79,10 @@ private:
   void SetBuilderList3();
   void SetBuilderList4();
 
+  void AddPAIModel(const G4String& modname);
+  void NewPAIModel(const G4ParticleDefinition* part,const G4String& modname,const G4String& procname);
+
+
   G4double cutForGamma;
   G4double cutForElectron;
   G4double cutForPositron;
@@ -86,6 +91,11 @@ private:
   G4VPhysicsConstructor*  emAllPixPhysicsList;
   G4VPhysicsConstructor*  particleList;
   std::vector<G4VPhysicsConstructor*>  hadronPhys;
+  
+  
+  G4EmConfigurator* fConfig;
+  G4String fEmName;
+  
     
   AllPixPhysicsListMessenger* pMessenger;
   G4bool dump;

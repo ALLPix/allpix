@@ -46,7 +46,7 @@
 <!-- FEI3 -->
 <pixeldet id="100,101,102,103,104">
 
-<digitizer>FEI3Standard</digitizer>
+<digitizer>MCTruth</digitizer>
 
 <npix_x>18</npix_x>
 <npix_y>164</npix_y>
@@ -95,17 +95,17 @@
 
 <pcb_hx units="mm">26.5</pcb_hx>
 <pcb_hy units="mm">47.0</pcb_hy>
-<pcb_hz units="mm">0.80</pcb_hz>
+<pcb_hz units="mm">0</pcb_hz>
 
 </pixeldet>
 
 <!-- FEI4 -->
-<pixeldet id="200,201">
+<pixeldet id="200,201,202,203,204,205,206,207">
 
 <digitizer>FEI3Standard</digitizer>
 
 <npix_x>80</npix_x>
-<npix_y>360</npix_y>
+<npix_y>336</npix_y>
 <npix_z>0</npix_z>
 
 <pixsize_x units="um">125.</pixsize_x>
@@ -215,7 +215,7 @@
 <!-- Timepix -->
 <pixeldet id="500,501,502,503,504,505,506,507,508,509,510">
 
-<digitizer>Timepix</digitizer>
+<digitizer>MCTruth</digitizer>
 
 <npix_x>256</npix_x>
 <npix_y>256</npix_y>
@@ -235,7 +235,7 @@
 
 <sensor_hx units="um">7040.</sensor_hx>
 <sensor_hy units="um">7040.</sensor_hy>
-<sensor_hz units="um">10.0</sensor_hz>
+<sensor_hz units="um">150.0</sensor_hz>
 
 <sensor_gr_excess_htop units="um">500.0</sensor_gr_excess_htop>
 <sensor_gr_excess_hbottom units="um">500.0</sensor_gr_excess_hbottom>

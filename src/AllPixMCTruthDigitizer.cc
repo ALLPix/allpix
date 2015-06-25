@@ -89,9 +89,9 @@ void AllPixMCTruthDigitizer::Digitize(){
 			AllPixMCTruthDigit * digit = new AllPixMCTruthDigit;
 			digit->SetPixelIDX((*pCItr).first.first);
 			digit->SetPixelIDY((*pCItr).first.second);
-			digit->SetPixelCounts((*pCItr).second/keV);
+			digit->SetPixelCounts(((*pCItr).second/(eV))/3.64);
 
-			G4cout << "dEdX : " << (*pCItr).second/keV << endl;
+			G4cout << "dEdX : " << (*pCItr).second/keV  << " " << "Signal : " << ((*pCItr).second/(eV))/3.64 << " electrons"<< endl;
 
 			m_digitsCollection->insert(digit);
 		}

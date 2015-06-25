@@ -117,7 +117,8 @@ AllPixDetectorConstruction::AllPixDetectorConstruction()
 	gD = 0;
 	m_maxStepLengthSensor = 10.0*um;
 	m_ulim = 0x0;
-
+	
+	pixelDetectorRegion = new G4Region("PixelRegion");
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -457,6 +458,9 @@ void AllPixDetectorConstruction::BuildPixelDevices(map<int, AllPixGeoDsc *> geoM
 	///////////////////////////////////////////////////////////
 	// The pixel detector !
 	//
+	
+	
+	
 	pair<G4String, G4String> wrapperName = make_pair("wrapper", "");
 	pair<G4String, G4String> PCBName = make_pair("PCB", "");
 	pair<G4String, G4String> BoxName = make_pair("Box", "");
@@ -671,6 +675,8 @@ void AllPixDetectorConstruction::BuildPixelDevices(map<int, AllPixGeoDsc *> geoM
 		m_Chip_log[(*detItr)]->SetVisAttributes(ChipVisAtt);
 
 		if(geoMap[*detItr]->GetBumpHeight()!=0.0){
+		
+		
 		///////////////////////////////////////////////////////////
 		// Bumps
 		m_Bumps_log[(*detItr)] = new G4LogicalVolume(Bump_Box,
@@ -693,6 +699,7 @@ void AllPixDetectorConstruction::BuildPixelDevices(map<int, AllPixGeoDsc *> geoM
 				BoxName.second+"_log");
 
 		m_Box_log[(*detItr)]->SetVisAttributes(BoxVisAtt);
+		
 
 		G4ThreeVector posDevice(0,0,0);
 		G4ThreeVector posBumps(0,0,0);
@@ -883,6 +890,7 @@ void AllPixDetectorConstruction::BuildPixelDevices(map<int, AllPixGeoDsc *> geoM
 		geoMap[*detItr]->SetHitsCollectionName( aTrackerSD->GetHitsCollectionName() );
 
 		G4cout << "          detector " << (*detItr) << " ... done" << G4endl;
+		pixelDetectorRegion->AddRootLogicalVolume(m_Box_log[(*detItr)]);
 
 		//m_wrapper_phys[(*detItr)]->SetTranslation(posWrapper-posDevice);
 

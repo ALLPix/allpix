@@ -79,6 +79,9 @@
 #include "HadronPhysicsQGSP_FTFP_BERT.hh"
 #include "HadronPhysicsQGS_BIC.hh"
 
+#include "G4PAIModel.hh"
+
+
 #include "G4IonPhysics.hh"
 
 #include "G4LossTableManager.hh"
@@ -93,7 +96,8 @@
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo.....
 
-AllPixPhysicsList::AllPixPhysicsList() : G4VModularPhysicsList()
+AllPixPhysicsList::AllPixPhysicsList() : G4VModularPhysicsList(),
+fConfig(0)
 {
   G4LossTableManager::Instance();
   defaultCutValue = 0.010*mm;
@@ -102,6 +106,8 @@ AllPixPhysicsList::AllPixPhysicsList() : G4VModularPhysicsList()
   cutForPositron  = defaultCutValue;
   cutForProton    = defaultCutValue;
   verboseLevel    = 1;
+  
+  fConfig = G4LossTableManager::Instance()->EmConfigurator();
 
   pMessenger = new AllPixPhysicsListMessenger(this);
 
@@ -302,9 +308,13 @@ void AllPixPhysicsList::AddAllPixPhysicsList(const G4String& name)
     SetBuilderList0(true);
     hadronPhys.push_back( new HadronPhysicsQGSP_BIC_HP());
 
+  } else if (name == "pai") {
+
+    fEmName = name;
+    AddPAIModel(name);
+
   } 
-  
-  
+     
   else if (name == "LIVERMORE_FTFP_BERT") {
 
     SetBuilderList1();
@@ -386,6 +396,50 @@ void AllPixPhysicsList::SetBuilderList4()
   hadronPhys.push_back( new G4IonPhysics(verboseLevel));
   hadronPhys.push_back( new G4NeutronTrackingCut(verboseLevel));
 }
+
+
+
+void AllPixPhysicsList::AddPAIModel(const G4String& modname)
+{
+  theParticleIterator->reset();
+  while ((*theParticleIterator)())
+  {
+    G4ParticleDefinition* particle = theParticleIterator->value();
+    G4String partname = particle->GetParticleName();
+    if(partname == "e-" || partname == "e+") {
+      NewPAIModel(particle, modname, "eIoni");
+
+    } else if(partname == "mu-" || partname == "mu+") {
+      NewPAIModel(particle, modname, "muIoni");
+
+    } else if(partname == "proton" ||
+              partname == "pi+" ||
+              partname == "pi-"   
+              ) {
+      NewPAIModel(particle, modname, "hIoni");
+    }
+  }
+}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
+void AllPixPhysicsList::NewPAIModel(const G4ParticleDefinition* part, 
+                              const G4String& modname,
+                              const G4String& procname)
+{
+  G4String partname = part->GetParticleName();
+  if(modname == "pai") {
+    G4PAIModel* pai = new G4PAIModel(part,"PAIModel");
+    fConfig->SetExtraEmModel(partname,procname,pai,"PixelRegion",0.0,100.*TeV,pai);
+  } 
+}
+
+
+
+
+
+
+
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo.....
 
