@@ -1,6 +1,6 @@
 
 # Detector 
-/allpix/det/setId        800
+/allpix/det/setId        500
 /allpix/det/setPosition   0.0 0.0  0.0  mm
 /allpix/det/setRotation   0.0 0.0  0.0 deg
 /allpix/det/setLowTHL 13. keV

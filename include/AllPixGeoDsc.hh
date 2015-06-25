@@ -12,6 +12,8 @@
 #include <fstream>
 #include <string>
 
+#include "CLHEP/Units/SystemOfUnits.h"
+
 using namespace std;
 using namespace CLHEP;
 

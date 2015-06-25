@@ -46,7 +46,9 @@
 #include "G4HEPEvtInterface.hh"
 
 #include "G4RunManager.hh"
+#include "CLHEP/Units/SystemOfUnits.h"
 
+using namespace CLHEP;
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 

@@ -1222,7 +1222,7 @@ G4double  AllPixTimepixDigitizer::SetDt(G4double dt, G4double ErreurMoy)
 {
 
 	double Dt=dt;
-	if(isnan(ErreurMoy)){Dt=tup;}
+	if(std::isnan(ErreurMoy)){Dt=tup;}
 	else if(ErreurMoy > Target){ Dt*=0.9;}
 	else if(ErreurMoy < Target){ Dt*=1.1;};
 

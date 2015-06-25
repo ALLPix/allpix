@@ -17,6 +17,8 @@
 #include "TROOT.h"
 #include "TBuffer.h"
 #include "TMemberInspector.h"
+#include "TInterpreter.h"
+#include "TVirtualMutex.h"
 #include "TError.h"
 
 #ifndef G__ROOT
@@ -194,7 +196,7 @@ namespace ROOT {
 } // end of namespace ROOT
 
 //______________________________________________________________________________
-TClass *FrameStruct::fgIsA = 0;  // static to hold class pointer
+atomic_TClass_ptr FrameStruct::fgIsA(0);  // static to hold class pointer
 
 //______________________________________________________________________________
 const char *FrameStruct::Class_Name()
@@ -215,20 +217,21 @@ int FrameStruct::ImplFileLine()
 }
 
 //______________________________________________________________________________
-void FrameStruct::Dictionary()
+TClass *FrameStruct::Dictionary()
 {
    fgIsA = ::ROOT::GenerateInitInstanceLocal((const ::FrameStruct*)0x0)->GetClass();
+   return fgIsA;
 }
 
 //______________________________________________________________________________
 TClass *FrameStruct::Class()
 {
-   if (!fgIsA) fgIsA = ::ROOT::GenerateInitInstanceLocal((const ::FrameStruct*)0x0)->GetClass();
+   if (!fgIsA.load()) { R__LOCKGUARD2(gInterpreterMutex); fgIsA = ::ROOT::GenerateInitInstanceLocal((const ::FrameStruct*)0x0)->GetClass(); }
    return fgIsA;
 }
 
 //______________________________________________________________________________
-TClass *FrameContainer::fgIsA = 0;  // static to hold class pointer
+atomic_TClass_ptr FrameContainer::fgIsA(0);  // static to hold class pointer
 
 //______________________________________________________________________________
 const char *FrameContainer::Class_Name()
@@ -249,20 +252,21 @@ int FrameContainer::ImplFileLine()
 }
 
 //______________________________________________________________________________
-void FrameContainer::Dictionary()
+TClass *FrameContainer::Dictionary()
 {
    fgIsA = ::ROOT::GenerateInitInstanceLocal((const ::FrameContainer*)0x0)->GetClass();
+   return fgIsA;
 }
 
 //______________________________________________________________________________
 TClass *FrameContainer::Class()
 {
-   if (!fgIsA) fgIsA = ::ROOT::GenerateInitInstanceLocal((const ::FrameContainer*)0x0)->GetClass();
+   if (!fgIsA.load()) { R__LOCKGUARD2(gInterpreterMutex); fgIsA = ::ROOT::GenerateInitInstanceLocal((const ::FrameContainer*)0x0)->GetClass(); }
    return fgIsA;
 }
 
 //______________________________________________________________________________
-TClass *WriteToNtuple::fgIsA = 0;  // static to hold class pointer
+atomic_TClass_ptr WriteToNtuple::fgIsA(0);  // static to hold class pointer
 
 //______________________________________________________________________________
 const char *WriteToNtuple::Class_Name()
@@ -283,20 +287,21 @@ int WriteToNtuple::ImplFileLine()
 }
 
 //______________________________________________________________________________
-void WriteToNtuple::Dictionary()
+TClass *WriteToNtuple::Dictionary()
 {
    fgIsA = ::ROOT::GenerateInitInstanceLocal((const ::WriteToNtuple*)0x0)->GetClass();
+   return fgIsA;
 }
 
 //______________________________________________________________________________
 TClass *WriteToNtuple::Class()
 {
-   if (!fgIsA) fgIsA = ::ROOT::GenerateInitInstanceLocal((const ::WriteToNtuple*)0x0)->GetClass();
+   if (!fgIsA.load()) { R__LOCKGUARD2(gInterpreterMutex); fgIsA = ::ROOT::GenerateInitInstanceLocal((const ::WriteToNtuple*)0x0)->GetClass(); }
    return fgIsA;
 }
 
 //______________________________________________________________________________
-TClass *SimpleHits::fgIsA = 0;  // static to hold class pointer
+atomic_TClass_ptr SimpleHits::fgIsA(0);  // static to hold class pointer
 
 //______________________________________________________________________________
 const char *SimpleHits::Class_Name()
@@ -317,20 +322,21 @@ int SimpleHits::ImplFileLine()
 }
 
 //______________________________________________________________________________
-void SimpleHits::Dictionary()
+TClass *SimpleHits::Dictionary()
 {
    fgIsA = ::ROOT::GenerateInitInstanceLocal((const ::SimpleHits*)0x0)->GetClass();
+   return fgIsA;
 }
 
 //______________________________________________________________________________
 TClass *SimpleHits::Class()
 {
-   if (!fgIsA) fgIsA = ::ROOT::GenerateInitInstanceLocal((const ::SimpleHits*)0x0)->GetClass();
+   if (!fgIsA.load()) { R__LOCKGUARD2(gInterpreterMutex); fgIsA = ::ROOT::GenerateInitInstanceLocal((const ::SimpleHits*)0x0)->GetClass(); }
    return fgIsA;
 }
 
 //______________________________________________________________________________
-TClass *AllPixDigitAnimation::fgIsA = 0;  // static to hold class pointer
+atomic_TClass_ptr AllPixDigitAnimation::fgIsA(0);  // static to hold class pointer
 
 //______________________________________________________________________________
 const char *AllPixDigitAnimation::Class_Name()
@@ -351,15 +357,16 @@ int AllPixDigitAnimation::ImplFileLine()
 }
 
 //______________________________________________________________________________
-void AllPixDigitAnimation::Dictionary()
+TClass *AllPixDigitAnimation::Dictionary()
 {
    fgIsA = ::ROOT::GenerateInitInstanceLocal((const ::AllPixDigitAnimation*)0x0)->GetClass();
+   return fgIsA;
 }
 
 //______________________________________________________________________________
 TClass *AllPixDigitAnimation::Class()
 {
-   if (!fgIsA) fgIsA = ::ROOT::GenerateInitInstanceLocal((const ::AllPixDigitAnimation*)0x0)->GetClass();
+   if (!fgIsA.load()) { R__LOCKGUARD2(gInterpreterMutex); fgIsA = ::ROOT::GenerateInitInstanceLocal((const ::AllPixDigitAnimation*)0x0)->GetClass(); }
    return fgIsA;
 }
 
@@ -567,7 +574,7 @@ void SimpleHits::Streamer(TBuffer &R__b)
       R__b << edepTotal;
       {
          vector<string> &R__stl =  interactions;
-         int R__n=(&R__stl) ? int(R__stl.size()) : 0;
+         int R__n=int(R__stl.size());
          R__b << R__n;
          if(R__n) {
             vector<string>::iterator R__k;
@@ -579,7 +586,7 @@ void SimpleHits::Streamer(TBuffer &R__b)
       }
       {
          vector<TVector3> &R__stl =  pos;
-         int R__n=(&R__stl) ? int(R__stl.size()) : 0;
+         int R__n=int(R__stl.size());
          R__b << R__n;
          if(R__n) {
             vector<TVector3>::iterator R__k;
@@ -590,7 +597,7 @@ void SimpleHits::Streamer(TBuffer &R__b)
       }
       {
          vector<int> &R__stl =  pdgId;
-         int R__n=(&R__stl) ? int(R__stl.size()) : 0;
+         int R__n=int(R__stl.size());
          R__b << R__n;
          if(R__n) {
             vector<int>::iterator R__k;
@@ -601,7 +608,7 @@ void SimpleHits::Streamer(TBuffer &R__b)
       }
       {
          vector<float> &R__stl =  edep;
-         int R__n=(&R__stl) ? int(R__stl.size()) : 0;
+         int R__n=int(R__stl.size());
          R__b << R__n;
          if(R__n) {
             vector<float>::iterator R__k;
@@ -612,7 +619,7 @@ void SimpleHits::Streamer(TBuffer &R__b)
       }
       {
          vector<int> &R__stl =  trackId;
-         int R__n=(&R__stl) ? int(R__stl.size()) : 0;
+         int R__n=int(R__stl.size());
          R__b << R__n;
          if(R__n) {
             vector<int>::iterator R__k;
@@ -623,7 +630,7 @@ void SimpleHits::Streamer(TBuffer &R__b)
       }
       {
          vector<int> &R__stl =  parentId;
-         int R__n=(&R__stl) ? int(R__stl.size()) : 0;
+         int R__n=int(R__stl.size());
          R__b << R__n;
          if(R__n) {
             vector<int>::iterator R__k;
@@ -634,7 +641,7 @@ void SimpleHits::Streamer(TBuffer &R__b)
       }
       {
          vector<string> &R__stl =  trackVolumeName;
-         int R__n=(&R__stl) ? int(R__stl.size()) : 0;
+         int R__n=int(R__stl.size());
          R__b << R__n;
          if(R__n) {
             vector<string>::iterator R__k;
@@ -646,7 +653,7 @@ void SimpleHits::Streamer(TBuffer &R__b)
       }
       {
          vector<string> &R__stl =  parentVolumeName;
-         int R__n=(&R__stl) ? int(R__stl.size()) : 0;
+         int R__n=int(R__stl.size());
          R__b << R__n;
          if(R__n) {
             vector<string>::iterator R__k;
@@ -714,7 +721,7 @@ namespace ROOT {
 } // end of namespace ROOT for class ::AllPixDigitAnimation
 
 namespace ROOT {
-   static void vectorlEstringgR_Dictionary();
+   static TClass *vectorlEstringgR_Dictionary();
    static void vectorlEstringgR_TClassManip(TClass*);
    static void *new_vectorlEstringgR(void *p = 0);
    static void *newArray_vectorlEstringgR(Long_t size, void *p);
@@ -726,7 +733,7 @@ namespace ROOT {
    static TGenericClassInfo *GenerateInitInstanceLocal(const vector<string>*)
    {
       vector<string> *ptr = 0;
-      static ::TVirtualIsAProxy* isa_proxy = new ::TIsAProxy(typeid(vector<string>),0);
+      static ::TVirtualIsAProxy* isa_proxy = new ::TIsAProxy(typeid(vector<string>));
       static ::ROOT::TGenericClassInfo 
          instance("vector<string>", -2, "vector", 210,
                   typeid(vector<string>), DefineBehavior(ptr, ptr),
@@ -744,9 +751,10 @@ namespace ROOT {
    static ::ROOT::TGenericClassInfo *_R__UNIQUE_(Init) = GenerateInitInstanceLocal((const vector<string>*)0x0); R__UseDummy(_R__UNIQUE_(Init));
 
    // Dictionary for non-ClassDef classes
-   static void vectorlEstringgR_Dictionary() {
+   static TClass *vectorlEstringgR_Dictionary() {
       TClass* theClass =::ROOT::GenerateInitInstanceLocal((const vector<string>*)0x0)->GetClass();
       vectorlEstringgR_TClassManip(theClass);
+   return theClass;
    }
 
    static void vectorlEstringgR_TClassManip(TClass* ){
@@ -776,7 +784,7 @@ namespace ROOT {
 } // end of namespace ROOT for class vector<string>
 
 namespace ROOT {
-   static void vectorlEintgR_Dictionary();
+   static TClass *vectorlEintgR_Dictionary();
    static void vectorlEintgR_TClassManip(TClass*);
    static void *new_vectorlEintgR(void *p = 0);
    static void *newArray_vectorlEintgR(Long_t size, void *p);
@@ -788,7 +796,7 @@ namespace ROOT {
    static TGenericClassInfo *GenerateInitInstanceLocal(const vector<int>*)
    {
       vector<int> *ptr = 0;
-      static ::TVirtualIsAProxy* isa_proxy = new ::TIsAProxy(typeid(vector<int>),0);
+      static ::TVirtualIsAProxy* isa_proxy = new ::TIsAProxy(typeid(vector<int>));
       static ::ROOT::TGenericClassInfo 
          instance("vector<int>", -2, "vector", 210,
                   typeid(vector<int>), DefineBehavior(ptr, ptr),
@@ -806,9 +814,10 @@ namespace ROOT {
    static ::ROOT::TGenericClassInfo *_R__UNIQUE_(Init) = GenerateInitInstanceLocal((const vector<int>*)0x0); R__UseDummy(_R__UNIQUE_(Init));
 
    // Dictionary for non-ClassDef classes
-   static void vectorlEintgR_Dictionary() {
+   static TClass *vectorlEintgR_Dictionary() {
       TClass* theClass =::ROOT::GenerateInitInstanceLocal((const vector<int>*)0x0)->GetClass();
       vectorlEintgR_TClassManip(theClass);
+   return theClass;
    }
 
    static void vectorlEintgR_TClassManip(TClass* ){
@@ -838,7 +847,7 @@ namespace ROOT {
 } // end of namespace ROOT for class vector<int>
 
 namespace ROOT {
-   static void vectorlEfloatgR_Dictionary();
+   static TClass *vectorlEfloatgR_Dictionary();
    static void vectorlEfloatgR_TClassManip(TClass*);
    static void *new_vectorlEfloatgR(void *p = 0);
    static void *newArray_vectorlEfloatgR(Long_t size, void *p);
@@ -850,7 +859,7 @@ namespace ROOT {
    static TGenericClassInfo *GenerateInitInstanceLocal(const vector<float>*)
    {
       vector<float> *ptr = 0;
-      static ::TVirtualIsAProxy* isa_proxy = new ::TIsAProxy(typeid(vector<float>),0);
+      static ::TVirtualIsAProxy* isa_proxy = new ::TIsAProxy(typeid(vector<float>));
       static ::ROOT::TGenericClassInfo 
          instance("vector<float>", -2, "vector", 210,
                   typeid(vector<float>), DefineBehavior(ptr, ptr),
@@ -868,9 +877,10 @@ namespace ROOT {
    static ::ROOT::TGenericClassInfo *_R__UNIQUE_(Init) = GenerateInitInstanceLocal((const vector<float>*)0x0); R__UseDummy(_R__UNIQUE_(Init));
 
    // Dictionary for non-ClassDef classes
-   static void vectorlEfloatgR_Dictionary() {
+   static TClass *vectorlEfloatgR_Dictionary() {
       TClass* theClass =::ROOT::GenerateInitInstanceLocal((const vector<float>*)0x0)->GetClass();
       vectorlEfloatgR_TClassManip(theClass);
+   return theClass;
    }
 
    static void vectorlEfloatgR_TClassManip(TClass* ){
@@ -900,7 +910,7 @@ namespace ROOT {
 } // end of namespace ROOT for class vector<float>
 
 namespace ROOT {
-   static void vectorlEdoublegR_Dictionary();
+   static TClass *vectorlEdoublegR_Dictionary();
    static void vectorlEdoublegR_TClassManip(TClass*);
    static void *new_vectorlEdoublegR(void *p = 0);
    static void *newArray_vectorlEdoublegR(Long_t size, void *p);
@@ -912,7 +922,7 @@ namespace ROOT {
    static TGenericClassInfo *GenerateInitInstanceLocal(const vector<double>*)
    {
       vector<double> *ptr = 0;
-      static ::TVirtualIsAProxy* isa_proxy = new ::TIsAProxy(typeid(vector<double>),0);
+      static ::TVirtualIsAProxy* isa_proxy = new ::TIsAProxy(typeid(vector<double>));
       static ::ROOT::TGenericClassInfo 
          instance("vector<double>", -2, "vector", 210,
                   typeid(vector<double>), DefineBehavior(ptr, ptr),
@@ -930,9 +940,10 @@ namespace ROOT {
    static ::ROOT::TGenericClassInfo *_R__UNIQUE_(Init) = GenerateInitInstanceLocal((const vector<double>*)0x0); R__UseDummy(_R__UNIQUE_(Init));
 
    // Dictionary for non-ClassDef classes
-   static void vectorlEdoublegR_Dictionary() {
+   static TClass *vectorlEdoublegR_Dictionary() {
       TClass* theClass =::ROOT::GenerateInitInstanceLocal((const vector<double>*)0x0)->GetClass();
       vectorlEdoublegR_TClassManip(theClass);
+   return theClass;
    }
 
    static void vectorlEdoublegR_TClassManip(TClass* ){
@@ -962,7 +973,7 @@ namespace ROOT {
 } // end of namespace ROOT for class vector<double>
 
 namespace ROOT {
-   static void vectorlETVector3gR_Dictionary();
+   static TClass *vectorlETVector3gR_Dictionary();
    static void vectorlETVector3gR_TClassManip(TClass*);
    static void *new_vectorlETVector3gR(void *p = 0);
    static void *newArray_vectorlETVector3gR(Long_t size, void *p);
@@ -974,7 +985,7 @@ namespace ROOT {
    static TGenericClassInfo *GenerateInitInstanceLocal(const vector<TVector3>*)
    {
       vector<TVector3> *ptr = 0;
-      static ::TVirtualIsAProxy* isa_proxy = new ::TIsAProxy(typeid(vector<TVector3>),0);
+      static ::TVirtualIsAProxy* isa_proxy = new ::TIsAProxy(typeid(vector<TVector3>));
       static ::ROOT::TGenericClassInfo 
          instance("vector<TVector3>", -2, "vector", 210,
                   typeid(vector<TVector3>), DefineBehavior(ptr, ptr),
@@ -992,9 +1003,10 @@ namespace ROOT {
    static ::ROOT::TGenericClassInfo *_R__UNIQUE_(Init) = GenerateInitInstanceLocal((const vector<TVector3>*)0x0); R__UseDummy(_R__UNIQUE_(Init));
 
    // Dictionary for non-ClassDef classes
-   static void vectorlETVector3gR_Dictionary() {
+   static TClass *vectorlETVector3gR_Dictionary() {
       TClass* theClass =::ROOT::GenerateInitInstanceLocal((const vector<TVector3>*)0x0)->GetClass();
       vectorlETVector3gR_TClassManip(theClass);
+   return theClass;
    }
 
    static void vectorlETVector3gR_TClassManip(TClass* ){
@@ -1024,7 +1036,7 @@ namespace ROOT {
 } // end of namespace ROOT for class vector<TVector3>
 
 namespace ROOT {
-   static void maplEintcOintgR_Dictionary();
+   static TClass *maplEintcOintgR_Dictionary();
    static void maplEintcOintgR_TClassManip(TClass*);
    static void *new_maplEintcOintgR(void *p = 0);
    static void *newArray_maplEintcOintgR(Long_t size, void *p);
@@ -1036,7 +1048,7 @@ namespace ROOT {
    static TGenericClassInfo *GenerateInitInstanceLocal(const map<int,int>*)
    {
       map<int,int> *ptr = 0;
-      static ::TVirtualIsAProxy* isa_proxy = new ::TIsAProxy(typeid(map<int,int>),0);
+      static ::TVirtualIsAProxy* isa_proxy = new ::TIsAProxy(typeid(map<int,int>));
       static ::ROOT::TGenericClassInfo 
          instance("map<int,int>", -2, "map", 96,
                   typeid(map<int,int>), DefineBehavior(ptr, ptr),
@@ -1054,9 +1066,10 @@ namespace ROOT {
    static ::ROOT::TGenericClassInfo *_R__UNIQUE_(Init) = GenerateInitInstanceLocal((const map<int,int>*)0x0); R__UseDummy(_R__UNIQUE_(Init));
 
    // Dictionary for non-ClassDef classes
-   static void maplEintcOintgR_Dictionary() {
+   static TClass *maplEintcOintgR_Dictionary() {
       TClass* theClass =::ROOT::GenerateInitInstanceLocal((const map<int,int>*)0x0)->GetClass();
       maplEintcOintgR_TClassManip(theClass);
+   return theClass;
    }
 
    static void maplEintcOintgR_TClassManip(TClass* ){
@@ -1096,29 +1109,48 @@ namespace {
     };
     static const char* includePaths[] = {
 "./include",
-"/afs/cern.ch/eng/clic/TBData/software/ROOT6_gcc48_python2.7/root/include",
+"/home/mbenoit/workspace/GEANT4/root-6.04.00/include",
 "/home/mbenoit/workspace/oldallpix/allpix-git/",
 0
     };
-    static const char* payloadCode = 
-"\n"
-"#ifndef G__VECTOR_HAS_CLASS_ITERATOR\n"
-"  #define G__VECTOR_HAS_CLASS_ITERATOR\n"
-"#endif\n"
-"\n"
-;
+    static const char* fwdDeclCode = 
+R"DICTFWDDCLS(
+#pragma clang diagnostic ignored "-Wkeyword-compat"
+#pragma clang diagnostic ignored "-Wignored-attributes"
+#pragma clang diagnostic ignored "-Wreturn-type-c-linkage"
+extern int __Cling_Autoloading_Map;
+class __attribute__((annotate("$clingAutoload$allpix_dm.h")))  FrameStruct;
+class __attribute__((annotate("$clingAutoload$allpix_dm.h")))  FrameContainer;
+class __attribute__((annotate("$clingAutoload$AllPix_Frames_WriteToEntuple.h")))  WriteToNtuple;
+class __attribute__((annotate("$clingAutoload$AllPix_Hits_WriteToEntuple.h")))  SimpleHits;
+class __attribute__((annotate(R"ATTRDUMP(A geometry and event track visualization class)ATTRDUMP"))) __attribute__((annotate("$clingAutoload$AllPixDigitAnimation.hh")))  AllPixDigitAnimation;
+)DICTFWDDCLS";
+    static const char* payloadCode = R"DICTPAYLOAD(
+
+#ifndef G__VECTOR_HAS_CLASS_ITERATOR
+  #define G__VECTOR_HAS_CLASS_ITERATOR 1
+#endif
+
+#define _BACKWARD_BACKWARD_WARNING_H
+#include "AllPix_Hits_WriteToEntuple.h"
+#include "AllPix_Frames_WriteToEntuple.h"
+#include "allpix_dm.h"
+#include "AllPixDigitAnimation.hh"
+
+#undef  _BACKWARD_BACKWARD_WARNING_H
+)DICTPAYLOAD";
     static const char* classesHeaders[]={
-"AllPixDigitAnimation", "AllPixDigitAnimation.hh", "@",
-"FrameContainer", "allpix_dm.h", "@",
-"FrameStruct", "allpix_dm.h", "@",
-"SimpleHits", "AllPix_Hits_WriteToEntuple.h", "@",
-"WriteToNtuple", "AllPix_Frames_WriteToEntuple.h", "@",
+"AllPixDigitAnimation", payloadCode, "@",
+"FrameContainer", payloadCode, "@",
+"FrameStruct", payloadCode, "@",
+"SimpleHits", payloadCode, "@",
+"WriteToNtuple", payloadCode, "@",
 nullptr};
 
     static bool isInitialized = false;
     if (!isInitialized) {
       TROOT::RegisterModule("SelDict",
-        headers, includePaths, payloadCode,
+        headers, includePaths, payloadCode, fwdDeclCode,
         TriggerDictionaryInitialization_SelDict_Impl, {}, classesHeaders);
       isInitialized = true;
     }
