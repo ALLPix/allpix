@@ -13,6 +13,7 @@
 #include <string>
 
 using namespace std;
+using namespace CLHEP;
 
 class AllPixGeoDsc {
 
