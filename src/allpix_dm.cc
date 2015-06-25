@@ -11,6 +11,8 @@
 
 #include "allpix_dm.h"
 
+using namespace std;
+
 ClassImp(FrameContainer)
 ClassImp(FrameStruct)
 

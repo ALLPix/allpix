@@ -1,15 +1,9 @@
 
 # Detector 
-/allpix/det/setId        500
+/allpix/det/setId         20100
 /allpix/det/setPosition   0.0 0.0  0.0  mm
 /allpix/det/setRotation   0.0 0.0  0.0 deg
 /allpix/det/setLowTHL 13. keV
-
-# Detector J03 - Flight Unit
-#/allpix/det/setId        801
-#/allpix/det/setPosition   0.0 0.0  30.0  mm
-#/allpix/det/setRotation   0.0 0.0  0.0 deg
-#/allpix/det/setLowTHL 13. keV
 
 
 # Appliances
@@ -24,10 +18,11 @@
 #         z coordinate = 0 --> (on top of the PCB)
 #         z coordinate = -1* (PCB + appliance) --> behind the PCB
 
-/control/alias appPosZ -3.750
-/control/alias enhanceZ 5.0
+#/control/alias appPosZ -3.750
+#/control/alias enhanceZ 5.0
 
-#/allpix/extras/setTestStructurePosition 0. 0.  0. mm
+/allpix/extras/setTestStructurePosition 0. 0.  50. mm
+/allpix/extras/setTestStructureType      200
 #/allpix/extras/setAppliancePosition     0  0   0  mm
 #/allpix/extras/setWrapperEnhancement    0. 0. {enhanceZ} mm
 
@@ -37,19 +32,20 @@
 ################################################
 # initialize
 /run/initialize
+
 ################################################
 # Build detectors
 /allpix/det/update
 
 ####################################################################
 # prefix for output filename (string) Don't use quotation marks \"
-/allpix/config/setOutputPrefixWithPath dataprefix
+/allpix/config/setOutputPrefixWithPath test
 
 ########################################################################
 ########################################################################
 # vis
 /vis/scene/create
-/vis/scene/add/axes 0. 0. 0. 10. cm
+#/vis/scene/add/axes 0. 0. 0. 10. cm
 /vis/scene/add/volume World -1 2
 /vis/viewer/set/style s
 
@@ -92,23 +88,22 @@
 
 #########################
 # GPS
-/gps/particle e-
+/gps/particle gamma
 /gps/pos/type Plane
 #/gps/pos/rot1 0 0 1
 #/gps/pos/rot2 1 0 0
 /gps/pos/shape Rectangle
-/gps/pos/centre 0.0 16.896 50.0 mm
-/gps/pos/halfy 14080. um
-/gps/pos/halfx 14080. um
+/gps/pos/centre 0.0 0.0 100.0 mm
+/gps/pos/halfy 7040. um
+/gps/pos/halfx 7040. um
 /gps/direction  0 0 -1
 /gps/ene/type User
 /gps/hist/type energy
 # spectra
-/gps/hist/point 2.2 1
-
+/control/execute macros/gps_source_ASI_50kVp_XRayTube.mac
 /gps/source/list
 
-/run/beamOn 1
+/run/beamOn 100
 
 # video
 #/control/alias phi 50
