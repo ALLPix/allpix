@@ -206,8 +206,8 @@ void AllPixDetectorConstruction::BuildTestStructure(int){
 
 			//eud_log->SetVisAttributes(AlFoilVisAtt);
 		}
-		
-		
+
+
 #endif
 		break;
 	}
@@ -328,7 +328,7 @@ void AllPixDetectorConstruction::BuildTestStructure(int){
 			}
 
 		}
-		
+
 		break;
 	}
 	case 3:
@@ -654,7 +654,7 @@ void AllPixDetectorConstruction::BuildTestStructure(int){
 		parser.Read("models/clicpix_box.gdml");
 		world_log = parser.GetVolume("Structure_11624736");
 
-		G4VisAttributes * visAtt = new G4VisAttributes(G4Color(0.5, 0.5, 0.5,0.25));
+		G4VisAttributes * visAtt = new G4VisAttributes( G4Color(0.5, 0.5, 0.5,0.25) );
 		visAtt->SetLineWidth(1);
 		visAtt->SetForceSolid(true);
 
@@ -666,13 +666,13 @@ void AllPixDetectorConstruction::BuildTestStructure(int){
 			string name = temp_phys->GetName();
 			G4LogicalVolume * temp_log = temp_phys->GetLogicalVolume();
 			new G4PVPlacement(0,
-					  temp_phys->GetObjectTranslation(), // Position of physical volume
-					  temp_log,               // Logical volume
-					  name,                   // Name
-					  expHall_log,            // Mother volume logical
-					  false,                  // Unused boolean
-					  0,                      // copy number
-					  true);                  // overlap
+					temp_phys->GetObjectTranslation(), // Position of physical volume
+					temp_log,               // Logical volume
+					name,                   // Name
+					expHall_log,            // Mother volume logical
+					false,                  // Unused boolean
+					0,                      // copy number
+					true);                  // overlap
 			temp_log->SetVisAttributes(visAtt);
 		}
 
@@ -698,85 +698,158 @@ void AllPixDetectorConstruction::BuildTestStructure(int){
 
 
 
-			map<int, G4ThreeVector>::iterator testStructItr = m_posVectorTestStructure.begin();
+		map<int, G4ThreeVector>::iterator testStructItr = m_posVectorTestStructure.begin();
 
-			for( ; testStructItr != m_posVectorTestStructure.end() ; testStructItr++){
+		for( ; testStructItr != m_posVectorTestStructure.end() ; testStructItr++){
 
-				G4ThreeVector posRel = (*testStructItr).second;
+			G4ThreeVector posRel = (*testStructItr).second;
 
-				fr_name = "fr_box_";
-				fr_name += (*testStructItr).first;
+			fr_name = "fr_box_";
+			fr_name += (*testStructItr).first;
 
-				G4Box* FrontWindow = new G4Box(fr_name.Data(),
-						22.5*mm,
-						32.5*mm,
-						25*um);
+			G4Box* FrontWindow = new G4Box(fr_name.Data(),
+					22.5*mm,
+					32.5*mm,
+					25*um);
 
-				bk_name = "bk_box_";
-				bk_name += (*testStructItr).first;
+			bk_name = "bk_box_";
+			bk_name += (*testStructItr).first;
 
-				G4Box* BackWindow = new G4Box(bk_name.Data(),
-						22.5*mm,
-						32.5*mm,
-						25*um);
-
-
-
-				// logical
-				fr_name_log = "fr_log_";
-				fr_name_log += (*testStructItr).first;
-
-				G4LogicalVolume * window_log_fr = new G4LogicalVolume(
-						FrontWindow,
-						mylar,
-						fr_name_log.Data());
-				window_log_fr->SetVisAttributes(scintAtt);
+			G4Box* BackWindow = new G4Box(bk_name.Data(),
+					22.5*mm,
+					32.5*mm,
+					25*um);
 
 
-				bk_name_log = "fr_log_";
-				bk_name_log += (*testStructItr).first;
 
-				G4LogicalVolume * window_log_bk = new G4LogicalVolume(
-						BackWindow,
-						mylar,
-						bk_name_log.Data());
-				window_log_bk->SetVisAttributes(scintAtt);
+			// logical
+			fr_name_log = "fr_log_";
+			fr_name_log += (*testStructItr).first;
 
-
-				//Phyisical
-
-				physName = "test_fr_phys_";
-				physName += (*testStructItr).first;
-
-				new G4PVPlacement( 0,
-						G4ThreeVector(posRel[0],posRel[1],posRel[2]-3.0125*mm),
-						window_log_fr,
-						physName.Data(),
-						expHall_log,
-						false,
-						0,
-						true);
+			G4LogicalVolume * window_log_fr = new G4LogicalVolume(
+					FrontWindow,
+					mylar,
+					fr_name_log.Data());
+			window_log_fr->SetVisAttributes(scintAtt);
 
 
-				physName = "test_bk_phys_";
-				physName += (*testStructItr).first;
+			bk_name_log = "fr_log_";
+			bk_name_log += (*testStructItr).first;
 
-				new G4PVPlacement( 0,
-						G4ThreeVector(posRel[0],posRel[1],posRel[2]+12.0125*mm),
-						window_log_bk,
-						physName.Data(),
-						expHall_log,
-						false,
-						0,
-						true);
-			}
+			G4LogicalVolume * window_log_bk = new G4LogicalVolume(
+					BackWindow,
+					mylar,
+					bk_name_log.Data());
+			window_log_bk->SetVisAttributes(scintAtt);
+
+
+			//Phyisical
+
+			physName = "test_fr_phys_";
+			physName += (*testStructItr).first;
+
+			new G4PVPlacement( 0,
+					G4ThreeVector(posRel[0],posRel[1],posRel[2]-3.0125*mm),
+					window_log_fr,
+					physName.Data(),
+					expHall_log,
+					false,
+					0,
+					true);
+
+
+			physName = "test_bk_phys_";
+			physName += (*testStructItr).first;
+
+			new G4PVPlacement( 0,
+					G4ThreeVector(posRel[0],posRel[1],posRel[2]+12.0125*mm),
+					window_log_bk,
+					physName.Data(),
+					expHall_log,
+					false,
+					0,
+					true);
+		}
 
 
 		break;
 	}
 
+	case 9:
+	{
 
+		map<int, G4ThreeVector>::iterator testStructItr = m_posVectorTestStructure.begin();
+		G4ThreeVector posRel = (*testStructItr).second;
 
+		///////////////////////////////////////////////////////////
+		// Collimator
+		BuildCollimator( expHall_log, posRel );
+
+		///////////////////////////////////////////////////////////
+		// Box
+		G4NistManager* nistManager = G4NistManager::Instance();
+		G4Material * Pb = nistManager->FindOrBuildMaterial("G4_Pb");
+		G4Material * Ca = nistManager->FindOrBuildMaterial("G4_Ca");
+
+		double boxThickness = 3*mm;
+		double h_box_x = 15*cm;
+		double h_box_y = 15*cm;
+		double h_box_z = 25*cm;
+
+		G4Box * theBox_1 = new G4Box("XRayBox", h_box_x, h_box_y, h_box_z);
+		G4Box * theBox_2 = new G4Box("XRayBox",
+				h_box_x - boxThickness,
+				h_box_y - boxThickness,
+				h_box_z - boxThickness);
+		G4SubtractionSolid * theBox = new G4SubtractionSolid("XRayBox", theBox_1, theBox_2, 0x0, G4ThreeVector(0,0,0) );
+		G4LogicalVolume * theBoxLogic = new G4LogicalVolume(
+				theBox,    				// its solid
+				Pb,      						// its material
+				"XRayBoxLogic");  				// its name
+		new G4PVPlacement(
+				0,					// no rotation
+				G4ThreeVector(0,0,20*cm),
+				theBoxLogic,	// its logical volume
+				"XRayBox",        // its name
+				expHall_log,            // its mother  volume
+				false,           	// no boolean operations
+				0,               	// copy number
+				true); 				// checking overlaps
+
+		// mass of this box
+		G4double boxVolume = theBox->GetCubicVolume() / cm3;
+		G4double leadDensity = 1.13500E+01; // g/cm^3
+		G4double boxMass = boxVolume * leadDensity;
+		G4cout << "Box mass = " << boxMass/1000.0 << " kilograms" << G4endl;
+
+		///////////////////////////////////////////////////////////
+		// Test object
+		G4Tubs * testObj = new G4Tubs("testObj", 0, 2*cm, 5*cm, pi, 2*pi);
+		G4LogicalVolume * testObjLogic = new G4LogicalVolume(
+				testObj,    				// its solid
+				Ca,      					// its material
+				"testObjLogic");
+		G4RotationMatrix * pRot = new G4RotationMatrix;
+		pRot->rotateX( 90*deg );
+
+		new G4PVPlacement(
+				pRot,					// no rotation
+				G4ThreeVector(0,0,0*cm),
+				testObjLogic,		// its logical volume
+				"testObj",       	// its name
+				theBoxLogic,        // its mother  volume
+				false,           	// no boolean operations
+				0,               	// copy number
+				true); 				// checking overlaps
+
+		G4VisAttributes* visAtt = new G4VisAttributes( G4Colour(1,0.5,1, 1) );
+		visAtt->SetForceSolid( true );
+		//CollVisAtt->SetForceWireframe( true );
+		//visAtt->SetForceAuxEdgeVisible( true );
+		testObjLogic->SetVisAttributes( visAtt );
+
+		break;
+	}
 
 	default:
 	{
@@ -784,84 +857,84 @@ void AllPixDetectorConstruction::BuildTestStructure(int){
 		break;
 	}
 	}
-	
+
 #ifdef _EUTELESCOPE
-	
-		//////////////////////////////////////////////////////////
-		// Scintillators for EUDET
-		// Materials
 
-		if( m_scintPos.empty() ) {
-			G4cout << "[ERROR] no scintillators defined.  In the macro use the command"
-					<< "       /allpix/eudet/scint1Pos 0.0  0.0  -24.0 mm"
-					<< "       Can't recover ... giving up."
-					<< G4endl;
-			exit(1);
-		}else{
-			G4cout << "Building scintillators..." << G4endl;
-		}
+	//////////////////////////////////////////////////////////
+	// Scintillators for EUDET
+	// Materials
 
-		// first plane at 0. mm
-		//	G4double z1 = -24*mm;
-		//	G4double z2 = -18*mm;
-		// last plane at 490 mm
-		//	G4double z3 = 523*mm;
-		// G4double z4 = 529*mm;
+	if( m_scintPos.empty() ) {
+		G4cout << "[ERROR] no scintillators defined.  In the macro use the command"
+				<< "       /allpix/eudet/scint1Pos 0.0  0.0  -24.0 mm"
+				<< "       Can't recover ... giving up."
+				<< G4endl;
+		exit(1);
+	}else{
+		G4cout << "Building scintillators..." << G4endl;
+	}
 
-		G4NistManager * nistman = G4NistManager::Instance();
-		// Scintillator
-		G4Material * scplastic = nistman->FindOrBuildMaterial("G4_POLYSTYRENE");
-		// Scintillators
-		G4Box* scintb = new G4Box("scintb",
-				11.0*mm,
-				5.4*mm,
-				3*mm); // scintillators 6mm thick
+	// first plane at 0. mm
+	//	G4double z1 = -24*mm;
+	//	G4double z2 = -18*mm;
+	// last plane at 490 mm
+	//	G4double z3 = 523*mm;
+	// G4double z4 = 529*mm;
 
-		G4VisAttributes * scintAtt = new G4VisAttributes(G4Color(1,0,1,1));
-		scintAtt->SetLineWidth(1);
-		scintAtt->SetForceSolid(true);
+	G4NistManager * nistman = G4NistManager::Instance();
+	// Scintillator
+	G4Material * scplastic = nistman->FindOrBuildMaterial("G4_POLYSTYRENE");
+	// Scintillators
+	G4Box* scintb = new G4Box("scintb",
+			11.0*mm,
+			5.4*mm,
+			3*mm); // scintillators 6mm thick
 
-		// Place scintillators
-		vector<G4ThreeVector>::iterator scintItr = m_scintPos.begin();
+	G4VisAttributes * scintAtt = new G4VisAttributes(G4Color(1,0,1,1));
+	scintAtt->SetLineWidth(1);
+	scintAtt->SetForceSolid(true);
 
-		TString labelLog = "";
-		TString labelPlacement = "";
-		TString labelSD = "";
-		Int_t cntr = 1;
-		G4SDManager * SDman = G4SDManager::GetSDMpointer();
+	// Place scintillators
+	vector<G4ThreeVector>::iterator scintItr = m_scintPos.begin();
 
-		for( ; scintItr != m_scintPos.end() ; scintItr++) {
-			labelLog = "scint";
-			labelLog += cntr;
-			labelLog += "_log";
+	TString labelLog = "";
+	TString labelPlacement = "";
+	TString labelSD = "";
+	Int_t cntr = 1;
+	G4SDManager * SDman = G4SDManager::GetSDMpointer();
 
-			labelPlacement = "Scint";
-			labelPlacement += cntr;
+	for( ; scintItr != m_scintPos.end() ; scintItr++) {
+		labelLog = "scint";
+		labelLog += cntr;
+		labelLog += "_log";
 
-			G4LogicalVolume * scint_log = new G4LogicalVolume(
-					scintb,
-					scplastic,
-					labelLog.Data());
-			scint_log->SetVisAttributes(scintAtt);
-			G4RotationMatrix* matrix_s = new G4RotationMatrix();
-			matrix_s->rotateX(0.*deg);
+		labelPlacement = "Scint";
+		labelPlacement += cntr;
 
-			new G4PVPlacement( matrix_s,
-					(*scintItr),
-					scint_log,
-					labelPlacement.Data(),
-					expHall_log,
-					false,
-					0,
-					true);
+		G4LogicalVolume * scint_log = new G4LogicalVolume(
+				scintb,
+				scplastic,
+				labelLog.Data());
+		scint_log->SetVisAttributes(scintAtt);
+		G4RotationMatrix* matrix_s = new G4RotationMatrix();
+		matrix_s->rotateX(0.*deg);
 
-			labelSD = "sdscint";
-			labelSD += cntr;
-			AllPixTrackerSD * scintTrack = new AllPixTrackerSD( labelSD.Data(), (*scintItr), 0);
-			SDman->AddNewDetector( scintTrack );
-			scint_log->SetSensitiveDetector( scintTrack );
-			cntr++;
-			}
+		new G4PVPlacement( matrix_s,
+				(*scintItr),
+				scint_log,
+				labelPlacement.Data(),
+				expHall_log,
+				false,
+				0,
+				true);
+
+		labelSD = "sdscint";
+		labelSD += cntr;
+		AllPixTrackerSD * scintTrack = new AllPixTrackerSD( labelSD.Data(), (*scintItr), 0);
+		SDman->AddNewDetector( scintTrack );
+		scint_log->SetSensitiveDetector( scintTrack );
+		cntr++;
+	}
 #endif
 
 }

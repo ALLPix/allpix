@@ -35,10 +35,19 @@ public:
 
 	virtual void SetPixelIDX(G4int) = 0;
 	virtual void SetPixelIDY(G4int) = 0;
-	virtual void SetPixelCounts(G4int) = 0;
-	virtual void SetPixelEnergyDep(G4double) = 0;     // MC //
 	virtual void SetPrimaryVertex(G4ThreeVector) = 0; // MC //
+
+	virtual void SetPixelCounts(G4int) = 0;
+	virtual void SetPixelCountsMultiTHL(G4int, G4int);
+
+	virtual void SetPixelEnergyDep(G4double) = 0;     // MC //
+	virtual void SetPixelEnergyDepMultiTHL(G4double, G4double);     // MC
+
+	virtual G4int GetPixelCounts() = 0;
+	virtual G4int GetPixelCountsMultiTHL(G4int);
+
 	virtual void IncreasePixelCounts() = 0;
+	virtual void IncreasePixelCountsMultiTHL(G4int);
 
 	virtual G4int GetPixelIDX() = 0;
 	virtual G4int GetPixelIDY() = 0;
