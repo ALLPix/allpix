@@ -1109,8 +1109,8 @@ namespace {
     };
     static const char* includePaths[] = {
 "./include",
-"/home/mbenoit/workspace/GEANT4/root-6.04.00/include",
-"/home/mbenoit/workspace/allpix/",
+"/afs/cern.ch/eng/clic/TBData/software/ROOT6_gcc48_python2.7/geant4/root-6.04.00/include",
+"/afs/cern.ch/user/m/mbenoit/tmp/allpix/",
 0
     };
     static const char* fwdDeclCode = 
