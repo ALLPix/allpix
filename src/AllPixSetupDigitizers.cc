@@ -15,6 +15,8 @@
 #include "AllPixMCTruthDigitizer.hh"
 #include "AllPixLETCalculatorDigitizer.hh"
 
+// Included by newdigitizer.sh script --> FEI4RadDamage
+#include "AllPixFEI4RadDamageDigitizer.hh"
 // __endofheader__
 
 // geometry
@@ -132,6 +134,13 @@ void AllPixEventAction::SetupDigitizers(){
 					dmPtr = static_cast<AllPixDigitizerInterface *> (dp);
 					cout << "    Setting up a " << digitizerName << " digitizer for det : " << detectorId << endl;
 				}
+ 
+// Included by newdigitizer.sh script --> FEI4RadDamage
+else if (digitizerName == "FEI4RadDamage") {
+			AllPixFEI4RadDamageDigitizer * dp = new AllPixFEI4RadDamageDigitizer(digitizerModulesNames[itr] , hcName, digitColectionName);
+			dmPtr = static_cast<AllPixDigitizerInterface *> (dp);
+			cout << "    Setting up a " << digitizerName << " digitizer for det : " << detectorId << endl;
+		}
  
         // __endofdigitlist__
    	    else {

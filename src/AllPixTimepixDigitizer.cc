@@ -70,7 +70,7 @@ AllPixTimepixDigitizer::AllPixTimepixDigitizer(G4String modName, G4String hitsCo
 	// Bias and Temperature //
 	//////////////////////////
 
-	biasVoltage=80.0; //[V]
+	biasVoltage=50.0; //[V]
 	Temperature = 300.0;
 	detectorThickness = gD->GetSensorZ();
 	resistivity=gD->GetResistivity();
@@ -97,7 +97,7 @@ AllPixTimepixDigitizer::AllPixTimepixDigitizer(G4String modName, G4String hitsCo
 	/////////////////////////////////
 	// Magnetic Field 			   //
 	////////////////////////////////
-	B_Field = 5.0;
+	B_Field = 0.0;
 	r_H_e = 1.1;
 	r_H_h=0.7;	
 

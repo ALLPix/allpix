@@ -37,7 +37,7 @@ AllPixFEI4RadDamageDigitizer::AllPixFEI4RadDamageDigitizer(G4String modName, G4S
 
 	// Get ramo potential mapping
 	ramoPotentialMap=0;
-	TFile* file=new TFile("/nfs/slac/g/atlas/u01/AllPix/work/AllPix_v1.0/share/absRamo3D-map-200um-output.root");
+	TFile* file=new TFile("./share/absRamo3D-map-200um-output.root");
         ramoPotentialMap=(TH3F*)file->Get("hramomap1");
 	if (ramoPotentialMap == 0){
 		G4cout << "Unsuccessful picking up histogram: ramoPotentialMap" << G4endl;
@@ -45,7 +45,7 @@ AllPixFEI4RadDamageDigitizer::AllPixFEI4RadDamageDigitizer(G4String modName, G4S
 
 	// Get electric field mapping
 	eFieldMap=0;
-	TFile* efile=new TFile("/nfs/slac/g/atlas/u01/AllPix/work/AllPix_v1.0/share/eField-fei4-200um-fl0-100V-output.root");
+	TFile* efile=new TFile("./share/eField-fei4-200um-fl0-100V-output.root");
         eFieldMap=(TH1F*)efile->Get("hefieldz");
 	if (eFieldMap == 0){
 		G4cout << "Unsuccessful picking up histogram: eFieldMap" << G4endl;
@@ -54,7 +54,7 @@ AllPixFEI4RadDamageDigitizer::AllPixFEI4RadDamageDigitizer(G4String modName, G4S
 	// Get time to electrode mapping (derived from electric field)
 	timeMap_e=0;
 	timeMap_h=0;
-	TFile* tfile=new TFile("/nfs/slac/g/atlas/u01/AllPix/work/AllPix_v1.0/share/timeZ-fei4-200um-fl0-100V-output.root");
+	TFile* tfile=new TFile("./share/timeZ-fei4-200um-fl0-100V-output.root");
 	timeMap_e=(TH1F*)tfile->Get("etimes");
 	timeMap_h=(TH1F*)tfile->Get("htimes");
 	if (timeMap_e == 0 || timeMap_h == 0){
