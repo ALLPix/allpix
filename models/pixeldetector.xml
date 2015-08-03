@@ -102,7 +102,7 @@
 <!-- FEI4 -->
 <pixeldet id="200,201">
 
-<digitizer>FEI3Standard</digitizer>
+<digitizer>FEI4RadDamage</digitizer>
 
 <npix_x>80</npix_x>
 <npix_y>336</npix_y>
@@ -113,7 +113,7 @@
 <pixsize_z units="um">125.</pixsize_z>
 
 <chip_hx units="um">10000</chip_hx>
-<chip_hy units="um">9000</chip_hy>
+<chip_hy units="um">8400</chip_hy>
 <chip_hz units="um">195.0</chip_hz>
 
 
@@ -136,7 +136,7 @@
 <chip_posz units="um">0.</chip_posz>
 
 <sensor_hx units="um">10000</sensor_hx>
-<sensor_hy units="um">9000</sensor_hy>
+<sensor_hy units="um">8400</sensor_hy>
 <sensor_hz units="um">125.0</sensor_hz>
 
 <sensor_gr_excess_htop units="um">100.0</sensor_gr_excess_htop>
@@ -223,7 +223,7 @@
 
 <pixsize_x units="um">27.5.</pixsize_x>
 <pixsize_y units="um">27.5.</pixsize_y>
-<pixsize_z units="um">10.</pixsize_z>
+<pixsize_z units="um">150.</pixsize_z>
 
 <chip_hx units="um">7055.5</chip_hx>
 <chip_hy units="um">8060</chip_hy>
@@ -235,7 +235,7 @@
 
 <sensor_hx units="um">7040.</sensor_hx>
 <sensor_hy units="um">7040.</sensor_hy>
-<sensor_hz units="um">10.0</sensor_hz>
+<sensor_hz units="um">150.0</sensor_hz>
 
 <sensor_gr_excess_htop units="um">500.0</sensor_gr_excess_htop>
 <sensor_gr_excess_hbottom units="um">500.0</sensor_gr_excess_hbottom>
@@ -264,7 +264,7 @@
 <Counter_Depth> 65536 </Counter_Depth>
 <Clock_Unit> 25e-9 </Clock_Unit>
 
-<Chip_Noise>300.</Chip_Noise>
+<Chip_Noise>125</Chip_Noise>
 <Chip_Threshold> 800. </Chip_Threshold>
 <Cross_Talk>0.001</Cross_Talk>
 <Saturation_Energy>350.</Saturation_Energy>
