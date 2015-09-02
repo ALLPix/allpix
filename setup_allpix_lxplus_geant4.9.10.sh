@@ -35,4 +35,7 @@ export OIVHOME=/afs/cern.ch/eng/clic/software/Pixel_TestBeam_Software/OpenInvent
 export OIVLIBS=/afs/cern.ch/eng/clic/software/Pixel_TestBeam_Software/OpenInventor/OIV_Install/lib/libSoXt.so
 
 
+export G4WORKDIR=MYDIR
+
+
 source /afs/cern.ch/eng/clic/TBData/software/ROOT6_gcc48_python2.7/geant4/4.9.10.1p02/share/Geant4-10.1.2/geant4make/geant4make.sh
