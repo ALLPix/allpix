@@ -43,6 +43,9 @@
 
 #include "globals.hh"
 
+#include "CLHEP/Units/SystemOfUnits.h"
+using namespace CLHEP;
+
 #include <vector>
 
 using namespace std;

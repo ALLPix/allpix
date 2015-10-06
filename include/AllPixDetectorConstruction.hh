@@ -84,6 +84,7 @@ public:
 	// test structures
 	void SetBuildTestStructure(bool flg){m_buildTestStructureFlag = flg;};
 	void SetBuildAppliances(bool flg){m_buildAppliancesFlag = flg;};
+	G4LogicalVolume * BuildCollimator(G4LogicalVolume * motherL, G4ThreeVector collPos);
 
 	void SetTestStructureType(int type){m_TestStructure_type = type;};
 	void SetAppliancesType(int type){m_Appliances_type = type;};

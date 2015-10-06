@@ -12,6 +12,10 @@
 #include <fstream>
 #include <string>
 
+#include "CLHEP/Units/SystemOfUnits.h"
+using namespace CLHEP;
+
+
 using namespace std;
 
 class AllPixGeoDsc {
