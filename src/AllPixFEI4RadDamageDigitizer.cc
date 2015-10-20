@@ -81,7 +81,6 @@ AllPixFEI4RadDamageDigitizer::AllPixFEI4RadDamageDigitizer(G4String modName, G4S
 	// true = p-type
 	// false = n-type
 
-
 	////////////////////////////////
 	// Geometry Related constants //
 	////////////////////////////////
@@ -102,7 +101,7 @@ AllPixFEI4RadDamageDigitizer::AllPixFEI4RadDamageDigitizer(G4String modName, G4S
 	fluence = 0;					// neq/cm^2
 	betaElectrons = 5.1E-16*cm2/ns;			// cm^2/ns
 	betaHoles = 7.1E-16*cm2/ns;			// cm^2/ns
-	bField = 1.6; 				// Tesla = V*s/m^2
+	bField = 0;//1.6; 				// Tesla = V*s/m^2
 
 	if(fluence!=0.0)
 	{
@@ -122,8 +121,8 @@ AllPixFEI4RadDamageDigitizer::AllPixFEI4RadDamageDigitizer(G4String modName, G4S
  	// physics switches //
 	//////////////////////
 
- 	doTrapping = true;
-	doRamo = true;
+ 	doTrapping = false;//true;
+	doRamo = false;//true;
   	
  	precision = 250;
 
@@ -131,53 +130,15 @@ AllPixFEI4RadDamageDigitizer::AllPixFEI4RadDamageDigitizer(G4String modName, G4S
  	// Detector Chip Selection //
  	/////////////////////////////
 
- 	FEIX = 4;
-
- 	switch (FEIX) {
-
- 	case 3 : // FEI3 (default)
- 		MipTOT=60;
- 		MipCharge=19200;
- 		CounterDepth=255;
- 		Lv1Unit = 25*ns;
- 		chipNoise = 300;
- 		m_digitIn.thl = 3500;
- 		chargeSharingConstant = 0.0;
- 		break;
-
- 	case 4 : // FEI4
- 		MipTOT=10;
- 		MipCharge=40000;
- 		//MipCharge=20000;
- 		CounterDepth=15;
- 		Lv1Unit = 25*ns;
- 		chipNoise = 125*elec;
- 		m_digitIn.thl = 3200*elec;
- 		chargeSharingConstant = 0.0;
- 		break;
-
- 	case 666 : // Omegapix2
- 		MipTOT=5;
- 		MipCharge=12000;
- 		CounterDepth=32;
- 		Lv1Unit = 25*ns;
- 		chipNoise = 20*elec;
- 		m_digitIn.thl = 800*elec;
- 		chargeSharingConstant =0.01;
- 		break;
-
- 	default :
- 		MipTOT=60;
- 		MipCharge=22000;
- 		CounterDepth=255;
- 		Lv1Unit = 25*ns;
- 		chipNoise = 300*elec;
- 		m_digitIn.thl = 3500*elec;
- 		chargeSharingConstant =0.01;
-
- 	}
-
-
+	MipTOT=10;
+	MipCharge=40000;
+	//MipCharge=20000;
+	CounterDepth=15;
+	Lv1Unit = 25*ns;
+	chipNoise = 125*elec;
+	m_digitIn.thl = 3200*elec;
+	chargeSharingConstant = 0.0;
+	
  	//////////////////////
  	// Sensor Selection //
  	//////////////////////
@@ -330,6 +291,7 @@ void AllPixFEI4RadDamageDigitizer::Digitize(){
 	pair<G4int, G4int> tempPixel;					// (countx,county) which pixel
 
 
+	bool dodebug = false;
 	// Loop over the whole Hits Collection - this spreads out the effect of the hit over its path through the pixel 
 	G4int nEntries = hitsCollection->entries();
 	for(G4int itr  = 0 ; itr < nEntries ; itr++) {
@@ -343,9 +305,7 @@ void AllPixFEI4RadDamageDigitizer::Digitize(){
 		G4double eHitTotal = (*hitsCollection)[itr]->GetEdep(); // Energy deposition for the hit, internal unit
 		tempPixel.first  = (*hitsCollection)[itr]->GetPixelNbX();
 		tempPixel.second = (*hitsCollection)[itr]->GetPixelNbY();
-
-		//G4cout << "x : " << tempPixel.first << " ,  y : " << tempPixel.second << ", E = " << eHitTotal/keV << G4endl;
-
+		
 		// In case the charge moves into a neighboring pixel
 		pair<G4int, G4int> extraPixel;
 		extraPixel = tempPixel;
@@ -354,12 +314,15 @@ void AllPixFEI4RadDamageDigitizer::Digitize(){
 		for(G4int nQ  = 0 ; nQ < precision ; nQ++) {
 				
 			G4double eHit = G4double(eHitTotal)/(2*precision); // eV; divide in half because we are treating holes separately	
+			G4double eHitbefore = eHit;
 
 			// Not sure if we should do slim edge, but we are using FEI4 sensors
+			/*
 			if(doSlimEdge){
-				if (isSlimEdge(tempPixel.first,tempPixel.second)) eHit = SlimEdgeEffect(tempPixel.first,xpos,eHit);
+			  if (isSlimEdge(tempPixel.first,tempPixel.second)) eHit = SlimEdgeEffect(tempPixel.first,xpos,eHit);
 			}
-
+			*/
+			
 			// Loop over everything following twice, once for holes and once for electrons
 			for(G4int eholes=0 ; eholes<2 ; eholes++) { // Loop over everything twice, once for electrons and once for holes
 
@@ -386,9 +349,9 @@ void AllPixFEI4RadDamageDigitizer::Digitize(){
 				G4double driftTime = GetDriftTime(isHole);
 
 				// Set up variables for diffusion, per current pixel code process (I have not seen the origin of these equations)
-				G4double hallEffect = 1.13 + 0.0008*(temperature - 273.0);
-				G4double tanLorentz = hallEffect*mobility*bField*(1.0E-3);	// unit conversion 
-				G4double coLorentz = sqrt(1+pow(tanLorentz,2));			// from pre-rad damage code: acode-browser2.usatlas.bnl.gov/lxr-rel17
+				G4double hallEffect = 1.13 + 0.0008*(temperature - 273.0);      //Hall Scattering Factor - taken from https://cds.cern.ch/record/684187/files/indet-2001-004.pdf
+				G4double tanLorentz = hallEffect*mobility*bField*(1.0E-3);	//unit conversion 
+				G4double coLorentz = sqrt(1+pow(tanLorentz,2));			//This is the sec(LorentzAngle) which used to be used in the diffusion equation, but has been dropped (for now and maybe forever)
 
 				/////////////////
 				// Now process the event according to whether trapping and/or ramo are included
@@ -396,205 +359,208 @@ void AllPixFEI4RadDamageDigitizer::Digitize(){
 
 				// Trapping and ramo potential turned off
 				if (!doTrapping && !doRamo){
-
-						G4double rdif=0.007*sqrt(zpos*coLorentz/0.3); 
-						// Using RandGauss for now as RandGaussZiggurat is not accessible
-						G4double xposD=xpos+zpos*tanLorentz+rdif*CLHEP::RandGauss::shoot(0,1); // Is it still +zpos in the case of the holes?
-						G4double yposD=ypos+rdif*CLHEP::RandGauss::shoot(0,1); 
-
-						// Account for drifting into another pixel
-						while (fabs(xposD) >= pitchX/2){
-							G4double sign = xposD/(fabs(xposD)); 			// returns +1 or -1 depending on + or - x value
-							extraPixel.first = extraPixel.first + 1*sign;		// increments or decrements pixel count in x
-							xposD = xposD - (pitchX*sign);				// moves xpos coordinate 1 pixel over in x
-						}
-						while (fabs(yposD) >= pitchY/2){
-							G4double sign = yposD/(fabs(yposD)); 			// returns +1 or -1 depending on + or - y value
-							extraPixel.second = extraPixel.second + 1*sign;		// increments or decrements pixel count in y
-							yposD = yposD - (pitchY*sign);				// moves xpos coordinate 1 pixel over in y
-						}
-
-						// Record deposit
-						pixelsContent[extraPixel] += eHit; // eV
+				  
+				  G4double rdif=0.007;//*sqrt(zpos*coLorentz/0.3); We should modify with e.g. the Einstein relation
+				  G4double xposD=xpos+zpos*tanLorentz+rdif*CLHEP::RandGauss::shoot(0,1); // Is it still +zpos in the case of the holes?
+				  G4double yposD=ypos+rdif*CLHEP::RandGauss::shoot(0,1); 
+				  
+				  // Account for drifting into another pixel
+				  while (fabs(xposD) >= pitchX/2){
+				    G4double sign = xposD/(fabs(xposD)); 			// returns +1 or -1 depending on + or - x value
+				    extraPixel.first = extraPixel.first + 1*sign;		// increments or decrements pixel count in x
+				    xposD = xposD - (pitchX*sign);				// moves xpos coordinate 1 pixel over in x
+				  }
+				  while (fabs(yposD) >= pitchY/2){
+				    G4double sign = yposD/(fabs(yposD)); 			// returns +1 or -1 depending on + or - y value
+				    extraPixel.second = extraPixel.second + 1*sign;		// increments or decrements pixel count in y
+				    yposD = yposD - (pitchY*sign);				// moves xpos coordinate 1 pixel over in y
+				  }
+				  
+				  // Record deposit
+				  pixelsContent[extraPixel] += eHit; // eV
 				}
-
+				
 				// Only trapping
 				if (doTrapping && !doRamo){
-
-					if (driftTime >= timeToElectrode){ 	// charge wasn't trapped - record energy deposit at electrode
-
-						// Diffusion
-						G4double rdif=0.007*sqrt(zpos*coLorentz/0.3); 
-						G4double xposD=xpos+zpos*tanLorentz+rdif*CLHEP::RandGauss::shoot(0,1); // Is it still +zpos in the case of the holes?
-						G4double yposD=ypos+rdif*CLHEP::RandGauss::shoot(0,1); 
-
-						// Account for drifting into another pixel
-						while (fabs(xposD) >= pitchX/2){
-							G4double sign = xposD/(fabs(xposD)); 			// returns +1 or -1 depending on + or - x value
-							extraPixel.first = extraPixel.first + 1*sign;		// increments or decrements pixel count in x
-							xposD = xposD - (pitchX*sign);				// moves xpos coordinate 1 pixel over in x
-						}
-						while (fabs(yposD) >= pitchY/2){
-							G4double sign = yposD/(fabs(yposD)); 			// returns +1 or -1 depending on + or - y value
-							extraPixel.second = extraPixel.second + 1*sign;		// increments or decrements pixel count in y
-							yposD = yposD - (pitchY*sign);				// moves xpos coordinate 1 pixel over in y
-						}
-
-						// Record deposit
-						pixelsContent[extraPixel] += eHit; // eV
-
-					} // end if charge not trapped
-					
-					// else, charge is trapped - no energy deposit, do nothing (since no ramo)
-
+				  
+				  if (driftTime >= timeToElectrode){ 	// charge wasn't trapped - record energy deposit at electrode
+				    
+				    // Diffusion
+				    G4double rdif=0.007;//*sqrt(zpos*coLorentz/0.3); We should modify with e.g. the Einstein relation 
+				    G4double xposD=xpos+zpos*tanLorentz+rdif*CLHEP::RandGauss::shoot(0,1); // Is it still +zpos in the case of the holes?
+				    G4double yposD=ypos+rdif*CLHEP::RandGauss::shoot(0,1); 
+				    
+				    // Account for drifting into another pixel
+				    while (fabs(xposD) >= pitchX/2){
+				      G4double sign = xposD/(fabs(xposD)); 			// returns +1 or -1 depending on + or - x value
+				      extraPixel.first = extraPixel.first + 1*sign;		// increments or decrements pixel count in x
+				      xposD = xposD - (pitchX*sign);				// moves xpos coordinate 1 pixel over in x
+				    }
+				    while (fabs(yposD) >= pitchY/2){
+				      G4double sign = yposD/(fabs(yposD)); 			// returns +1 or -1 depending on + or - y value
+				      extraPixel.second = extraPixel.second + 1*sign;		// increments or decrements pixel count in y
+				      yposD = yposD - (pitchY*sign);				// moves xpos coordinate 1 pixel over in y
+				    }
+				    
+				    // Record deposit
+				    pixelsContent[extraPixel] += eHit; // eV
+				    
+				  } // end if charge not trapped
+				  
+				  // else, charge is trapped - no energy deposit, do nothing (since no ramo)
+				  
 				} // end (doTrapping && !doRamo)
-
+				
 				// Trapping and Ramo Potential
 				if (doTrapping && doRamo){
 
-					if (driftTime >= timeToElectrode){	// charge wasn't trapped - record energy deposit at electrode
-
-						// Diffusion
-						G4double rdif=0.007*sqrt(zpos*coLorentz/0.3); 
-						G4double xposD=xpos+zpos*tanLorentz+rdif*CLHEP::RandGauss::shoot(0,1); // Is it still +zpos in the case of the holes?
-						G4double yposD=ypos+rdif*CLHEP::RandGauss::shoot(0,1); 
-
-						// Account for drifting into another pixel
-						while (fabs(xposD) >= pitchX/2){
-							G4double sign = xposD/(fabs(xposD)); 			// returns +1 or -1 depending on + or - x value
-							extraPixel.first = extraPixel.first + 1*sign;		// increments or decrements pixel count in x
-							xposD = xposD - (pitchX*sign);				// moves xpos coordinate 1 pixel over in x
-						}
-						while (fabs(yposD) >= pitchY/2){
-							G4double sign = yposD/(fabs(yposD)); 			// returns +1 or -1 depending on + or - y value
-							extraPixel.second = extraPixel.second + 1*sign;		// increments or decrements pixel count in y
-							yposD = yposD - (pitchY*sign);				// moves xpos coordinate 1 pixel over in y
-						}
-
-						// Record deposit
-						pixelsContent[extraPixel] += eHit; // eV
-						//G4cout << "Recorded hit: " << pixelsContent[extraPixel] << G4endl;
-
-						// Also record deposit due to diff in ramo potential between (xposD, yposD, electrode) and (xpos, ypos, zpos)
-						// Initial ramo potential based on (x,y,z) position in micrometers
-						int nbin = 0;
-						if(!isHole) nbin = ramoPotentialMap->FindBin(fabs(ypos*1000),fabs(xpos*1000),zpos*1000);
-						if(isHole) nbin = ramoPotentialMap->FindBin(fabs(ypos*1000),fabs(xpos*1000),200-zpos*1000);
-						G4double ramo_i = ramoPotentialMap->GetBinContent(nbin);
-
-						// ramo potential at electrode based on (x,y,z) position in micrometers						// -- loop in the x-coordinate
-						for (int i=-1; i<=1; i++){
-							G4double x_neighbor = xposD + i*pitchX;
-							extraPixel.first += i;
-							if (i == 0){
-								extraPixel.first += 1; // For the middle neighbor, still have to add one to get back to zero
-							}
-							extraPixel.second = extraPixel.second - 1; // to start the y-pixel count in the middle pixel each time
-	  
-							// -- loop in the y-coordinate							
-							for (int j=-1; j<=1; j++){
-								G4double y_neighbor = yposD + j*pitchY;
-								extraPixel.second += j;
-								if (j == 0){
-									extraPixel.second += 1; // For the middle neighbor, add one to get back to zero
-								}								
-								// Return ramo potential based on (x,y,z) position in micrometers; in z is at electrode
-								int nbin = ramoPotentialMap->FindBin(fabs(y_neighbor*1000),fabs(x_neighbor*1000),0); 
-								G4double ramo = ramoPotentialMap->GetBinContent(nbin);	
-
-								// Record deposit
-								G4double eHitRamo = eHit*(ramo - ramo_i); // eV
-								//G4cout << "ramodiff: " << ramo-ramo_i << G4endl;
-								//pixelsContent[extraPixel] += eHitRamo; // eV
-							} // end loop over y-coordinate
-						} // end loop over x-coordinate
-					} // end trapped charge
-
-					else if (driftTime < timeToElectrode){	// charge is trapped - just do ramo potential calculation
-
-						// -- Calculate trapping position taking into account diffusion in the XY plane
-						// rdif/coLorentz source: acode-browser2.usatlas.bnl.gov/lxr-rel17
-						
-						// Review diffusion_trap and rdif_trap calculations
-						// diffusion_trap varies from ~0.005 to 0.034 depending on time spent drifting in the pixel...
-						G4double mu_0 = 1923.*temperature*temperature; //cm^2*(V*s)^-1
-						G4double diffusion_trap = sqrt(2.*mu_0*8.62E-5*driftTime*1.0E-9);
-						G4double rdif_trap = diffusion_trap*sqrt(zpos*coLorentz/0.3); 
-						
-						// z position is distance to readout side									
-						G4double z_trap = zpos - driftTime*driftVelocity; // estimate; integral would be better...
-						G4double x_trap = xpos + z_trap*tanLorentz + rdif_trap*CLHEP::RandGauss::shoot(0,1); 
-						G4double y_trap = ypos + rdif_trap*CLHEP::RandGauss::shoot(0,1); 
-          	  
-						// Account for drifting into another pixel
-						while (fabs(x_trap) >= pitchX/2){
-							G4double sign = x_trap/(fabs(x_trap)); 			// returns +1 or -1 depending on + or - x value
-							extraPixel.first = extraPixel.first + 1*sign;		// increments or decrements pixel count in x
-							x_trap = x_trap - (pitchX*sign);			// moves xpos coordinate 1 pixel over in x
-							G4cout << "Drifted to another pixel in x" << G4endl;
-						}
-						while (fabs(y_trap) >= pitchY/2){
-							G4double sign = y_trap/(fabs(y_trap)); 			// returns +1 or -1 depending on + or - y value
-							extraPixel.second = extraPixel.second + 1*sign;		// increments or decrements pixel count in y
-							y_trap = y_trap - (pitchY*sign);			// moves xpos coordinate 1 pixel over in y
-							G4cout << "Drifted to another pixel in y" << G4endl;
-						}
-
-						// Record deposit due to ramo potential
-						// Ramo of initial position (xpos,ypos,zpos) in micrometers. Note that x and y are reversed in the TCAD ramo mappings
-						int nbin = 0;						
-						if(!isHole) nbin = ramoPotentialMap->FindBin(fabs(ypos*1000),fabs(xpos*1000),zpos*1000);
-						if(isHole) nbin = ramoPotentialMap->FindBin(fabs(ypos*1000),fabs(xpos*1000),200-zpos*1000);
- 						G4double ramo_i = ramoPotentialMap->GetBinContent(nbin);
-						if(ramo_i == 0){
-							G4cout << "ramo_i = 0; xpos, ypos, zpos: " << fabs(xpos*1000) << ", " << fabs(ypos*1000) << ", " << zpos*1000 << endl;
-						}
-
-						// -- Calculate signal induced in pixel where trapped as well as the 8 pixel neighbors						// -- loop in the x-coordinate
-						for (int i=-1; i<=1; i++){
-							G4double x_neighbor = x_trap + i*pitchX;
-							extraPixel.first += i;
-							if (i == 0){
-								extraPixel.first += 1; // For the middle neighbor, still have to add one to get back to zero
-							}
-	  						extraPixel.second = extraPixel.second - 1; // to start the y-pixel count in the middle pixel each time
-
-							// -- loop in the y-coordinate	
-							for (int j=-1; j<=1; j++){
-								G4double y_neighbor = y_trap + j*pitchY;
-								extraPixel.second += j;
-								if (j == 0){
-									extraPixel.second += 1; // For the middle neighbor, add one to get back to zero
-								}
-								// Return ramo potential based on (x,y,z) position in micrometers
-								// Note that in ramo mapping, x and y are reversed!!!
-								int nbin = ramoPotentialMap->FindBin(fabs(y_neighbor*1000),fabs(x_neighbor*1000),z_trap);
- 								G4double ramo = ramoPotentialMap->GetBinContent(nbin);		
-								if(ramo == 0){
-									G4cout << "ramo = 0; x,y,z: " << y_neighbor*1000 << ", " << x_neighbor*1000 << ", " << z_trap*1000 << G4endl;
-								}
-
-								// Calculate charge contribution
-								G4double eHitRamo = eHit*(ramo - ramo_i); // eV
-								//G4cout << "ramodiff: " << ramo-ramo_i << G4endl;
-
-								// Record deposit
-								//pixelsContent[extraPixel] += eHitRamo; // eV
-							} // end loop over y-coordinate
-						} // end loop over x-coordinate
-					} // end if charge trapped
-
+				  if (driftTime >= timeToElectrode){	// charge wasn't trapped - record energy deposit at electrode
+				    
+				    // Diffusion
+				    G4double rdif=0.007;//*sqrt(zpos*coLorentz/0.3); We should modify with e.g. the Einstein relation 
+				    G4double xposD=xpos+zpos*tanLorentz+rdif*CLHEP::RandGauss::shoot(0,1); // Is it still +zpos in the case of the holes?
+				    G4double yposD=ypos+rdif*CLHEP::RandGauss::shoot(0,1); 
+				    
+				    // Account for drifting into another pixel
+				    while (fabs(xposD) >= pitchX/2){
+				      G4double sign = xposD/(fabs(xposD)); 			// returns +1 or -1 depending on + or - x value
+				      extraPixel.first = extraPixel.first + 1*sign;		// increments or decrements pixel count in x
+				      xposD = xposD - (pitchX*sign);				// moves xpos coordinate 1 pixel over in x
+				    }
+				    while (fabs(yposD) >= pitchY/2){
+				      G4double sign = yposD/(fabs(yposD)); 			// returns +1 or -1 depending on + or - y value
+				      extraPixel.second = extraPixel.second + 1*sign;		// increments or decrements pixel count in y
+				      yposD = yposD - (pitchY*sign);				// moves xpos coordinate 1 pixel over in y
+				    }
+				    
+				    // Record deposit
+				    pixelsContent[extraPixel] += eHit; // eV
+				    //G4cout << "Recorded hit: " << pixelsContent[extraPixel] << G4endl;
+				    
+				    // Also record deposit due to diff in ramo potential between (xposD, yposD, electrode) and (xpos, ypos, zpos)
+				    // Initial ramo potential based on (x,y,z) position in micrometers
+				    int nbin = 0;
+				    if(!isHole) nbin = ramoPotentialMap->FindBin(fabs(ypos*1000),fabs(xpos*1000),zpos*1000);
+				    if(isHole) nbin = ramoPotentialMap->FindBin(fabs(ypos*1000),fabs(xpos*1000),200-zpos*1000);
+				    G4double ramo_i = ramoPotentialMap->GetBinContent(nbin);
+				    
+				    // ramo potential at electrode based on (x,y,z) position in micrometers						// -- loop in the x-coordinate
+				    for (int i=-1; i<=1; i++){
+				      G4double x_neighbor = xposD + i*pitchX;
+				      extraPixel.first += i;
+				      if (i == 0){
+					extraPixel.first += 1; // For the middle neighbor, still have to add one to get back to zero
+				      }
+				      extraPixel.second = extraPixel.second - 1; // to start the y-pixel count in the middle pixel each time
+				      
+				      // -- loop in the y-coordinate							
+				      for (int j=-1; j<=1; j++){
+					G4double y_neighbor = yposD + j*pitchY;
+					extraPixel.second += j;
+					if (j == 0){
+					  extraPixel.second += 1; // For the middle neighbor, add one to get back to zero
+					}								
+					// Return ramo potential based on (x,y,z) position in micrometers; in z is at electrode
+					int nbin = ramoPotentialMap->FindBin(fabs(y_neighbor*1000),fabs(x_neighbor*1000),0); 
+					G4double ramo = ramoPotentialMap->GetBinContent(nbin);	
+					
+					// Record deposit
+					G4double eHitRamo = eHit*(ramo - ramo_i); // eV
+					//G4cout << "ramodiff: " << ramo-ramo_i << G4endl;
+					//pixelsContent[extraPixel] += eHitRamo; // eV
+				      } // end loop over y-coordinate
+				    } // end loop over x-coordinate
+				  } // end trapped charge
+				  
+				  else if (driftTime < timeToElectrode){	// charge is trapped - just do ramo potential calculation
+				    
+				    // -- Calculate trapping position taking into account diffusion in the XY plane
+				    // rdif/coLorentz source: acode-browser2.usatlas.bnl.gov/lxr-rel17
+				    
+				    // Review diffusion_trap and rdif_trap calculations
+				    // diffusion_trap varies from ~0.005 to 0.034 depending on time spent drifting in the pixel...
+				    G4double mu_0 = 1923.*temperature*temperature; //cm^2*(V*s)^-1
+				    G4double diffusion_trap = sqrt(2.*mu_0*8.62E-5*driftTime*1.0E-9);
+				    G4double rdif_trap = diffusion_trap*sqrt(zpos*coLorentz/0.3); 
+				    
+				    // z position is distance to readout side									
+				    G4double z_trap = zpos - driftTime*driftVelocity; // estimate; integral would be better...
+				    G4double x_trap = xpos + z_trap*tanLorentz + rdif_trap*CLHEP::RandGauss::shoot(0,1); 
+				    G4double y_trap = ypos + rdif_trap*CLHEP::RandGauss::shoot(0,1); 
+				    
+				    // Account for drifting into another pixel
+				    while (fabs(x_trap) >= pitchX/2){
+				      G4double sign = x_trap/(fabs(x_trap)); 			// returns +1 or -1 depending on + or - x value
+				      extraPixel.first = extraPixel.first + 1*sign;		// increments or decrements pixel count in x
+				      x_trap = x_trap - (pitchX*sign);			// moves xpos coordinate 1 pixel over in x
+				      G4cout << "Drifted to another pixel in x" << G4endl;
+				    }
+				    while (fabs(y_trap) >= pitchY/2){
+				      G4double sign = y_trap/(fabs(y_trap)); 			// returns +1 or -1 depending on + or - y value
+				      extraPixel.second = extraPixel.second + 1*sign;		// increments or decrements pixel count in y
+				      y_trap = y_trap - (pitchY*sign);			// moves xpos coordinate 1 pixel over in y
+				      G4cout << "Drifted to another pixel in y" << G4endl;
+				    }
+				    
+				    // Record deposit due to ramo potential
+				    // Ramo of initial position (xpos,ypos,zpos) in micrometers. Note that x and y are reversed in the TCAD ramo mappings
+				    int nbin = 0;						
+				    if(!isHole) nbin = ramoPotentialMap->FindBin(fabs(ypos*1000),fabs(xpos*1000),zpos*1000);
+				    if(isHole) nbin = ramoPotentialMap->FindBin(fabs(ypos*1000),fabs(xpos*1000),200-zpos*1000);
+				    G4double ramo_i = ramoPotentialMap->GetBinContent(nbin);
+				    if(ramo_i == 0){
+				      G4cout << "ramo_i = 0; xpos, ypos, zpos: " << fabs(xpos*1000) << ", " << fabs(ypos*1000) << ", " << zpos*1000 << endl;
+				    }
+				    
+				    // -- Calculate signal induced in pixel where trapped as well as the 8 pixel neighbors						// -- loop in the x-coordinate
+				    for (int i=-1; i<=1; i++){
+				      G4double x_neighbor = x_trap + i*pitchX;
+				      extraPixel.first += i;
+				      if (i == 0){
+					extraPixel.first += 1; // For the middle neighbor, still have to add one to get back to zero
+				      }
+				      extraPixel.second = extraPixel.second - 1; // to start the y-pixel count in the middle pixel each time
+				      
+				      // -- loop in the y-coordinate	
+				      for (int j=-1; j<=1; j++){
+					G4double y_neighbor = y_trap + j*pitchY;
+					extraPixel.second += j;
+					if (j == 0){
+					  extraPixel.second += 1; // For the middle neighbor, add one to get back to zero
+					}
+					// Return ramo potential based on (x,y,z) position in micrometers
+					// Note that in ramo mapping, x and y are reversed!!!
+					int nbin = ramoPotentialMap->FindBin(fabs(y_neighbor*1000),fabs(x_neighbor*1000),z_trap);
+					G4double ramo = ramoPotentialMap->GetBinContent(nbin);		
+					if(ramo == 0){
+					  G4cout << "ramo = 0; x,y,z: " << y_neighbor*1000 << ", " << x_neighbor*1000 << ", " << z_trap*1000 << G4endl;
+					}
+					
+					// Calculate charge contribution
+					G4double eHitRamo = eHit*(ramo - ramo_i); // eV
+					//G4cout << "ramodiff: " << ramo-ramo_i << G4endl;
+					
+					// Record deposit
+					//pixelsContent[extraPixel] += eHitRamo; // eV
+				      } // end loop over y-coordinate
+				    } // end loop over x-coordinate
+				  } // end if charge trapped
+				  
 				} // end (doTrapping && doRamo)
-
-		} // end loop over nQ charges
-
+				
+			} // end loop over nQ charges
+			
 		} // end loop over nEntries
-
+		
 	} // end loop over charges/holes
+	
+	if (dodebug){
+	  std::cout << "okay, now what happend to that guy ??? " << std::endl;
+	}
 				
 	// Now that pixelContent is filled, create one digit per pixel
 	map<pair<G4int, G4int>, G4double >::iterator pCItr = pixelsContent.begin();
-				
+
 	  for( ; pCItr != pixelsContent.end() ; pCItr++)
 	    {
 	      G4double deposited_energy = (*pCItr).second;
@@ -614,6 +580,9 @@ void AllPixFEI4RadDamageDigitizer::Digitize(){
 	      }
 	      if (deposited_energy >= threshold && TOT > 0){
 		m_digitsCollection->insert(digit);
+		if (dodebug){
+		  std::cout << "inserted a digit! " << std::endl;
+		}
 	      }
 	    }
 
@@ -628,6 +597,9 @@ void AllPixFEI4RadDamageDigitizer::Digitize(){
 
 	StoreDigiCollection(m_digitsCollection);
 
+	if (dodebug){
+	  std::cout << "\n\n\n\n\n\n\n\n\n\n squirrel \n\n\n\n\n\n\n" << std::endl;
+	}
 
 } // end Digitize function
 
