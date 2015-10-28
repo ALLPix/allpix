@@ -45,24 +45,16 @@ AllPixFEI4RadDamageDigitizer::AllPixFEI4RadDamageDigitizer(G4String modName, G4S
 	}
 
 	//////////////////////////////////////////////////////////////////
-	/////NeED TO CHANGE THESE THREE LINES BY HAND (at the moment)/////
+	/////NEED TO CHANGE THESE THREE LINES BY HAND (at the moment)/////
 	////////////////////////////////////////////////////////////////// 
 	fluence = 0.; // neq/cm^2
 	TFile* efile=new TFile("/afs/cern.ch/work/b/bnachman/public/TCAD_maps/efieldmapping/Converted_TCAD/eFieldfl3.8e15v400_out.root");
 	TFile* tfile=new TFile("/afs/cern.ch/work/b/bnachman/public/TCAD_maps/efieldmapping/Time_Maps/timeZ_fl3.8e15v400.root");
-	//20: no rad, with ramo
-	//21: 6e14150, with ramo
-	//22: 6e14150, no ramo
-	//23: no rad, no ramo
-	//24: 3.8e15, no ramo
 	//////////////////////////////////////////////////////////////////
 	//////////////////////////////////////////////////////////////////
 
 	// Get electric field mapping
 	eFieldMap=0;
-	//TFile* efile=new TFile("./share/eField-fei4-200um-fl0-100V-output.root");
-        //TFile* efile=new TFile("/afs/cern.ch/work/b/bnachman/public/TCAD_maps/efieldmapping/Converted_TCAD/eFieldfl1e14v200_out.root");
-	//TFile* efile=new TFile("/afs/cern.ch/work/b/bnachman/public/TCAD_maps/efieldmapping/Converted_TCAD/eFieldfl0v150_out.root");
 	eFieldMap=(TH1F*)efile->Get("hefieldz");
 	if (eFieldMap == 0){
 		G4cout << "Unsuccessful picking up histogram: eFieldMap" << G4endl;
@@ -71,9 +63,6 @@ AllPixFEI4RadDamageDigitizer::AllPixFEI4RadDamageDigitizer(G4String modName, G4S
 	// Get time to electrode mapping (derived from electric field)
 	timeMap_e=0;
 	timeMap_h=0;
-	//TFile* tfile=new TFile("./share/timeZ-fei4-200um-fl0-100V-output.root");
-	//TFile* tfile=new TFile("/afs/cern.ch/work/b/bnachman/public/TCAD_maps/efieldmapping/Time_Maps/timeZ_fl1e14v200.root");
-	//TFile* tfile=new TFile("/afs/cern.ch/work/b/bnachman/public/TCAD_maps/efieldmapping/Time_Maps/timeZ_fl0v150.root");
 	timeMap_e=(TH1F*)tfile->Get("etimes");
 	timeMap_h=(TH1F*)tfile->Get("htimes");
 	if (timeMap_e == 0 || timeMap_h == 0){
