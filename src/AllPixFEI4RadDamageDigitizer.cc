@@ -303,7 +303,7 @@ void AllPixFEI4RadDamageDigitizer::Digitize(){
 			// Initial ramo potential based on (x,y,z) position in micrometers
 			int nbin = 0;
 			if(!isHole) nbin = ramoPotentialMap->FindBin(fabs(ypos*1000),fabs(xpos*1000),zpos*1000);
-			if(isHole) nbin = ramoPotentialMap->FindBin(fabs(ypos*1000),fabs(xpos*1000),200-zpos*1000);
+			if(isHole) nbin = ramoPotentialMap->FindBin(fabs(ypos*1000),fabs(xpos*1000),250-zpos*1000);
 			G4double ramo_i = ramoPotentialMap->GetBinContent(nbin);
 			
 			// ramo potential at electrode based on (x,y,z) position in micrometers
