@@ -1,4 +1,4 @@
-/**
+/*
  *  Authors:
  *    Callie Bertsche <c.bertsche@cern.ch>
  *    Benjamin Nachman <bnachman@cern.ch>
@@ -44,10 +44,25 @@ AllPixFEI4RadDamageDigitizer::AllPixFEI4RadDamageDigitizer(G4String modName, G4S
 		G4cout << "Unsuccessful picking up histogram: ramoPotentialMap" << G4endl;
 	}
 
+	//////////////////////////////////////////////////////////////////
+	/////NeED TO CHANGE THESE THREE LINES BY HAND (at the moment)/////
+	////////////////////////////////////////////////////////////////// 
+	fluence = 0.; // neq/cm^2
+	TFile* efile=new TFile("/afs/cern.ch/work/b/bnachman/public/TCAD_maps/efieldmapping/Converted_TCAD/eFieldfl3.8e15v400_out.root");
+	TFile* tfile=new TFile("/afs/cern.ch/work/b/bnachman/public/TCAD_maps/efieldmapping/Time_Maps/timeZ_fl3.8e15v400.root");
+	//20: no rad, with ramo
+	//21: 6e14150, with ramo
+	//22: 6e14150, no ramo
+	//23: no rad, no ramo
+	//24: 3.8e15, no ramo
+	//////////////////////////////////////////////////////////////////
+	//////////////////////////////////////////////////////////////////
+
 	// Get electric field mapping
 	eFieldMap=0;
 	//TFile* efile=new TFile("./share/eField-fei4-200um-fl0-100V-output.root");
-        TFile* efile=new TFile("/afs/cern.ch/work/b/bnachman/public/TCAD_maps/efieldmapping/Converted_TCAD/eFieldfl0v150_out.root");
+        //TFile* efile=new TFile("/afs/cern.ch/work/b/bnachman/public/TCAD_maps/efieldmapping/Converted_TCAD/eFieldfl1e14v200_out.root");
+	//TFile* efile=new TFile("/afs/cern.ch/work/b/bnachman/public/TCAD_maps/efieldmapping/Converted_TCAD/eFieldfl0v150_out.root");
 	eFieldMap=(TH1F*)efile->Get("hefieldz");
 	if (eFieldMap == 0){
 		G4cout << "Unsuccessful picking up histogram: eFieldMap" << G4endl;
@@ -57,7 +72,8 @@ AllPixFEI4RadDamageDigitizer::AllPixFEI4RadDamageDigitizer(G4String modName, G4S
 	timeMap_e=0;
 	timeMap_h=0;
 	//TFile* tfile=new TFile("./share/timeZ-fei4-200um-fl0-100V-output.root");
-	TFile* tfile=new TFile("/afs/cern.ch/work/b/bnachman/public/TCAD_maps/efieldmapping/Time_Maps/Ez_fl0v150.root");
+	//TFile* tfile=new TFile("/afs/cern.ch/work/b/bnachman/public/TCAD_maps/efieldmapping/Time_Maps/timeZ_fl1e14v200.root");
+	//TFile* tfile=new TFile("/afs/cern.ch/work/b/bnachman/public/TCAD_maps/efieldmapping/Time_Maps/timeZ_fl0v150.root");
 	timeMap_e=(TH1F*)tfile->Get("etimes");
 	timeMap_h=(TH1F*)tfile->Get("htimes");
 	if (timeMap_e == 0 || timeMap_h == 0){
@@ -100,8 +116,8 @@ AllPixFEI4RadDamageDigitizer::AllPixFEI4RadDamageDigitizer(G4String modName, G4S
 
 	// Customize for different fluence/voltage combinations
 
-//	fluence = 3.8e15;				// neq/cm^2
-	fluence = 0;					// neq/cm^2
+	//fluence = 3.8e15;				// neq/cm^2
+	//fluence = 0;					// neq/cm^2
 	betaElectrons = 5.1E-16*cm2/ns;			// cm^2/ns
 	betaHoles = 7.1E-16*cm2/ns;			// cm^2/ns
 	bField = 0;//1.6; 				// Tesla = V*s/m^2
@@ -124,7 +140,7 @@ AllPixFEI4RadDamageDigitizer::AllPixFEI4RadDamageDigitizer(G4String modName, G4S
  	// physics switches //
 	//////////////////////
 
- 	doTrapping = false;//true;
+ 	doTrapping = true;//true;
 	doRamo = false;//true;
   	
  	precision = 250;
@@ -351,6 +367,9 @@ void AllPixFEI4RadDamageDigitizer::Digitize(){
 				G4double timeToElectrode = GetTimeToElectrode(zpos, isHole);
 				G4double driftTime = GetDriftTime(isHole);
 
+				//std::cout << "drift Time " << driftTime << " time to the electrode " << timeToElectrode << std::endl;
+				// both should be in ns.  drift time is clearly wrong.
+
 				// Set up variables for diffusion, per current pixel code process (I have not seen the origin of these equations)
 				G4double hallEffect = 1.13 + 0.0008*(temperature - 273.0);      //Hall Scattering Factor - taken from https://cds.cern.ch/record/684187/files/indet-2001-004.pdf
 				G4double tanLorentz = hallEffect*mobility*bField*(1.0E-3);	//unit conversion 
@@ -384,7 +403,7 @@ void AllPixFEI4RadDamageDigitizer::Digitize(){
 				}
 				
 				// Only trapping
-				if (doTrapping && !doRamo){
+				else if (doTrapping && !doRamo){
 				  
 				  if (driftTime >= timeToElectrode){ 	// charge wasn't trapped - record energy deposit at electrode
 				    
@@ -413,9 +432,65 @@ void AllPixFEI4RadDamageDigitizer::Digitize(){
 				  // else, charge is trapped - no energy deposit, do nothing (since no ramo)
 				  
 				} // end (doTrapping && !doRamo)
+
+				else if (!doTrapping && doRamo){
+				
+				  //Diffusion
+				  G4double rdif=0.007; //*sqrt(zpos*coLorentz/0.3); We should modify with e.g. the Einstein relation
+				  G4double xposD=xpos+zpos*tanLorentz+rdif*CLHEP::RandGauss::shoot(0,1); // Is it still +zpos in the case of the holes?
+				  G4double yposD=ypos+rdif*CLHEP::RandGauss::shoot(0,1); 
+				  
+				  // Account for drifting into another pixel 
+				  while (fabs(xposD) >= pitchX/2){
+				    G4double sign = xposD/(fabs(xposD));              // returns +1 or -1 depending on + or - x value 
+				    extraPixel.first = extraPixel.first + 1*sign;     // increments or decrements pixel count in x
+				    xposD = xposD - (pitchX*sign);                    // moves xpos coordinate 1 pixel over in x 
+				  }
+				  while (fabs(yposD) >= pitchY/2){
+				    G4double sign = yposD/(fabs(yposD));              // returns +1 or -1 depending on + or - y value 
+				    extraPixel.second = extraPixel.second + 1*sign;   // increments or decrements pixel count in y 
+				    yposD = yposD - (pitchY*sign);                    // moves xpos coordinate 1 pixel over in y
+				  }
+				  // Record deposit 
+				  pixelsContent[extraPixel] += eHit; //eV
+				  
+				  // Also record deposit due to diff in ramo potential between (xposD, yposD, electrode) and (xpos, ypos, zpos)                                                 
+				  // Initial ramo potential based on (x,y,z) position in micrometers  
+				  int nbin = 0;
+				  if(!isHole) nbin = ramoPotentialMap->FindBin(fabs(ypos*1000),fabs(xpos*1000),zpos*1000);
+				  if(isHole) nbin = ramoPotentialMap->FindBin(fabs(ypos*1000),fabs(xpos*1000),200-zpos*1000);
+				  G4double ramo_i = ramoPotentialMap->GetBinContent(nbin);
+				  
+				  // ramo potential at electrode based on (x,y,z) position in micrometers
+				  // -- loop in the x-coordinate
+				  for (int i=-1; i<=1; i++){
+				    G4double x_neighbor = xposD + i*pitchX;
+				    extraPixel.first += i;
+				    if (i == 0){
+				      extraPixel.first += 1; // For the middle neighbor, still have to add one to get back to zero 
+				    }
+				    extraPixel.second = extraPixel.second - 1;  // to start the y-pixel count in the middle pixel each time    
+				    
+				    // -- loop in the y-coordinate
+				    for (int j=-1; j<=1; j++){
+				      G4double y_neighbor = yposD + j*pitchY;
+				      extraPixel.second += j;
+				      if (j == 0){
+					extraPixel.second += 1; // For the middle neighbor, add one to get back to zero 
+				      }
+				      // Return ramo potential based on (x,y,z) position in micrometers; in z is at electrode 
+				      int nbin = ramoPotentialMap->FindBin(fabs(y_neighbor*1000),fabs(x_neighbor*1000),0); 
+				      G4double ramo = ramoPotentialMap->GetBinContent(nbin);
+				      
+				      // Record deposit  
+				      G4double eHitRamo = eHit*(ramo - ramo_i); //eV
+				      pixelsContent[extraPixel] += eHitRamo; // eV 
+				    } // end loop over y-coordinate
+				  } // end loop over x-coordinate
+				} 
 				
 				// Trapping and Ramo Potential
-				if (doTrapping && doRamo){
+				else if (doTrapping && doRamo){
 
 				  if (driftTime >= timeToElectrode){	// charge wasn't trapped - record energy deposit at electrode
 				    
@@ -447,7 +522,8 @@ void AllPixFEI4RadDamageDigitizer::Digitize(){
 				    if(isHole) nbin = ramoPotentialMap->FindBin(fabs(ypos*1000),fabs(xpos*1000),200-zpos*1000);
 				    G4double ramo_i = ramoPotentialMap->GetBinContent(nbin);
 				    
-				    // ramo potential at electrode based on (x,y,z) position in micrometers						// -- loop in the x-coordinate
+				    // ramo potential at electrode based on (x,y,z) position in micrometers
+				    // -- loop in the x-coordinate
 				    for (int i=-1; i<=1; i++){
 				      G4double x_neighbor = xposD + i*pitchX;
 				      extraPixel.first += i;
@@ -470,12 +546,14 @@ void AllPixFEI4RadDamageDigitizer::Digitize(){
 					// Record deposit
 					G4double eHitRamo = eHit*(ramo - ramo_i); // eV
 					//G4cout << "ramodiff: " << ramo-ramo_i << G4endl;
-					//pixelsContent[extraPixel] += eHitRamo; // eV
+					pixelsContent[extraPixel] += eHitRamo; // eV
 				      } // end loop over y-coordinate
 				    } // end loop over x-coordinate
 				  } // end trapped charge
 				  
 				  else if (driftTime < timeToElectrode){	// charge is trapped - just do ramo potential calculation
+				    
+				    //std::cout << "charge was trapped ! " << std::endl;
 				    
 				    // -- Calculate trapping position taking into account diffusion in the XY plane
 				    // rdif/coLorentz source: acode-browser2.usatlas.bnl.gov/lxr-rel17
@@ -496,13 +574,13 @@ void AllPixFEI4RadDamageDigitizer::Digitize(){
 				      G4double sign = x_trap/(fabs(x_trap)); 			// returns +1 or -1 depending on + or - x value
 				      extraPixel.first = extraPixel.first + 1*sign;		// increments or decrements pixel count in x
 				      x_trap = x_trap - (pitchX*sign);			// moves xpos coordinate 1 pixel over in x
-				      G4cout << "Drifted to another pixel in x" << G4endl;
+				      //G4cout << "Drifted to another pixel in x" << G4endl;
 				    }
 				    while (fabs(y_trap) >= pitchY/2){
 				      G4double sign = y_trap/(fabs(y_trap)); 			// returns +1 or -1 depending on + or - y value
 				      extraPixel.second = extraPixel.second + 1*sign;		// increments or decrements pixel count in y
 				      y_trap = y_trap - (pitchY*sign);			// moves xpos coordinate 1 pixel over in y
-				      G4cout << "Drifted to another pixel in y" << G4endl;
+				      //G4cout << "Drifted to another pixel in y" << G4endl;
 				    }
 				    
 				    // Record deposit due to ramo potential
@@ -511,9 +589,9 @@ void AllPixFEI4RadDamageDigitizer::Digitize(){
 				    if(!isHole) nbin = ramoPotentialMap->FindBin(fabs(ypos*1000),fabs(xpos*1000),zpos*1000);
 				    if(isHole) nbin = ramoPotentialMap->FindBin(fabs(ypos*1000),fabs(xpos*1000),200-zpos*1000);
 				    G4double ramo_i = ramoPotentialMap->GetBinContent(nbin);
-				    if(ramo_i == 0){
-				      G4cout << "ramo_i = 0; xpos, ypos, zpos: " << fabs(xpos*1000) << ", " << fabs(ypos*1000) << ", " << zpos*1000 << endl;
-				    }
+				    //if(ramo_i == 0){
+				    //  G4cout << "ramo_i = 0; xpos, ypos, zpos: " << fabs(xpos*1000) << ", " << fabs(ypos*1000) << ", " << zpos*1000 << endl;
+				    //}
 				    
 				    // -- Calculate signal induced in pixel where trapped as well as the 8 pixel neighbors						// -- loop in the x-coordinate
 				    for (int i=-1; i<=1; i++){
@@ -535,16 +613,16 @@ void AllPixFEI4RadDamageDigitizer::Digitize(){
 					// Note that in ramo mapping, x and y are reversed!!!
 					int nbin = ramoPotentialMap->FindBin(fabs(y_neighbor*1000),fabs(x_neighbor*1000),z_trap);
 					G4double ramo = ramoPotentialMap->GetBinContent(nbin);		
-					if(ramo == 0){
-					  G4cout << "ramo = 0; x,y,z: " << y_neighbor*1000 << ", " << x_neighbor*1000 << ", " << z_trap*1000 << G4endl;
-					}
+					//if(ramo == 0){
+					//  G4cout << "ramo = 0; x,y,z: " << y_neighbor*1000 << ", " << x_neighbor*1000 << ", " << z_trap*1000 << G4endl;
+					//}
 					
 					// Calculate charge contribution
 					G4double eHitRamo = eHit*(ramo - ramo_i); // eV
 					//G4cout << "ramodiff: " << ramo-ramo_i << G4endl;
 					
 					// Record deposit
-					//pixelsContent[extraPixel] += eHitRamo; // eV
+					pixelsContent[extraPixel] += eHitRamo; // eV
 				      } // end loop over y-coordinate
 				    } // end loop over x-coordinate
 				  } // end if charge trapped
@@ -571,9 +649,13 @@ void AllPixFEI4RadDamageDigitizer::Digitize(){
 	      //G4double threshold = 5.824*keV; // 1600e on twiki: https://twiki.cern.ch/twiki/bin/viewauth/Atlas/IBLTBJune2011 
 	      G4double threshold = 2*5.824*keV; // 2*1600e on twiki: https://twiki.cern.ch/twiki/bin/viewauth/Atlas/IBLTBJune2011
 	      double TOT = 1.2*deposited_charge/1000.; //This and the next number are from parameterizations of the tables in ATHENA
-	      double TOTsig = 0.5+0.02*deposited_charge/1000.;
-	      TOT = CLHEP::RandGauss::shoot(TOT, TOTsig);
+	      //double TOTsig = 0.5+0.02*deposited_charge/1000.;
+	      TOT*=0.5;
+	      //TOT = CLHEP::RandGauss::shoot(TOT, TOTsig);
 	      int TOT_int = TMath::FloorNint(TOT);
+	      if (TOT_int >=15) TOT_int = 15;
+	      //int TOT_int_func = EnergyToTOT(deposited_energy,1600*3.64*eV);
+	      //std::cout << "TOT comparison " << TOT_int << " " << TOT_int_func << " " << deposited_energy << " " << 1600*3.64*eV << std::endl;
 	      AllPixFEI4RadDamageDigit * digit = new AllPixFEI4RadDamageDigit;
 	      digit->SetPixelIDX((*pCItr).first.first);
 	      digit->SetPixelIDY((*pCItr).first.second);
@@ -614,6 +696,8 @@ G4int AllPixFEI4RadDamageDigitizer::EnergyToTOT(G4double Energy, G4double thresh
 	G4double dEdt = (MipCharge- threshold)/(MipTOT*Lv1Unit);
 	//G4int TOT = TMath::FloorNint((Energy-threshold)/(dEdt*Lv1Unit*ns));
 	G4int TOT = TMath::FloorNint((Energy-threshold)/(dEdt*Lv1Unit));
+
+	//std::cout << "here " << (MipCharge- threshold) << " " << MipCharge << " " << threshold << " " << (Energy-threshold) << " " << dEdt << " " << Lv1Unit << " " << dEdt*Lv1Unit*ns << std::endl;
 
 	if(Energy<threshold) TOT=0;
 	if (TOT<0) TOT=0;
