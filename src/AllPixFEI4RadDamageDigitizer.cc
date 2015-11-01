@@ -39,7 +39,7 @@ AllPixFEI4RadDamageDigitizer::AllPixFEI4RadDamageDigitizer(G4String modName, G4S
 	/////Setup all the inputs/////////////////////////////////////////
 	////////////////////////////////////////////////////////////////// 
 	//Physics switches
-	doTrapping = true;
+	doTrapping = false;
         doRamo = false;
 	doDrift = false;
 
@@ -59,8 +59,8 @@ AllPixFEI4RadDamageDigitizer::AllPixFEI4RadDamageDigitizer(G4String modName, G4S
 	precision = 250; //this is the number of charges to divide the G4 hit into.
 
 	//Efield, time, ramo maps
-	TFile* efile=new TFile("/afs/cern.ch/work/b/bnachman/public/TCAD_maps/efieldmapping/Converted_TCAD/eFieldfl3.8e15v400_out.root");
-	TFile* tfile=new TFile("/afs/cern.ch/work/b/bnachman/public/TCAD_maps/efieldmapping/Time_Maps/timeZ_fl3.8e15v400.root");
+	TFile* efile=new TFile("/afs/cern.ch/work/b/bnachman/public/TCAD_maps/efieldmapping/Converted_TCAD/eFieldfl0v150_out.root");
+	TFile* tfile=new TFile("/afs/cern.ch/work/b/bnachman/public/TCAD_maps/efieldmapping/Time_Maps/timeZ_fl0v150.root");
 	TFile* rfile=new TFile("./share/absRamo3D-map-200um-output.root");
 	//////////////////////////////////////////////////////////////////
 	//////////////////////////////////////////////////////////////////
@@ -240,7 +240,7 @@ void AllPixFEI4RadDamageDigitizer::Digitize(){
 		G4double eHitTotal = (*hitsCollection)[itr]->GetEdep(); // Energy deposition for the hit, internal unit
 		tempPixel.first  = (*hitsCollection)[itr]->GetPixelNbX();
 		tempPixel.second = (*hitsCollection)[itr]->GetPixelNbY();
-		
+
 		// In case the charge moves into a neighboring pixel
 		pair<G4int, G4int> extraPixel;
 		extraPixel = tempPixel;
@@ -285,19 +285,18 @@ void AllPixFEI4RadDamageDigitizer::Digitize(){
 		    G4double yposD=ypos+rdif*CLHEP::RandGauss::shoot(0,1);
 		    
 		    // Account for drifting into another pixel 
-		    while (fabs(xposD) >= pitchX/2){
-		      G4double sign = xposD/(fabs(xposD));                        // returns +1 or -1 depending on + or - x value                                                       
-		      extraPixel.first = extraPixel.first + 1*sign;               // increments or decrements pixel count in x                                                          
-		      xposD = xposD - (pitchX*sign);                              // moves xpos coordinate 1 pixel over in x                                                            
+		    while (fabs(xposD) > pitchX/2){
+		      G4double sign = xposD/(fabs(xposD));                        // returns +1 or -1 depending on + or - x value 
+		      extraPixel.first = extraPixel.first + 1*sign;               // increments or decrements pixel count in x
+		      xposD = xposD - (pitchX*sign);                              // moves xpos coordinate 1 pixel over in x
 		    }
-		    while (fabs(yposD) >= pitchY/2){
-		      G4double sign = yposD/(fabs(yposD));                        // returns +1 or -1 depending on + or - y value                                                       
-		      extraPixel.second = extraPixel.second + 1*sign;             // increments or decrements pixel count in y                                                          
-		      yposD = yposD - (pitchY*sign);                              // moves xpos coordinate 1 pixel over in y                                                            
+		    while (fabs(yposD) > pitchY/2){
+		      G4double sign = yposD/(fabs(yposD));                        // returns +1 or -1 depending on + or - y value
+		      extraPixel.second = extraPixel.second + 1*sign;             // increments or decrements pixel count in y
+		      yposD = yposD - (pitchY*sign);                              // moves xpos coordinate 1 pixel over in y 
 		    }
 		    
-		    
-		    if (driftTime < timeToElectrode && doTrapping){ //charge was trapped
+		    if ((driftTime < timeToElectrode) && doTrapping){ //charge was trapped
 		      if (doRamo){
 			// Also record deposit due to diff in ramo potential between (xposD, yposD, electrode) and (xpos, ypos, zpos)
 			// Initial ramo potential based on (x,y,z) position in micrometers
