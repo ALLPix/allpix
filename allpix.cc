@@ -61,7 +61,7 @@ using namespace std;
 #include "AllPix_Frames_WriteToEntuple.h"
 // hits
 #include "AllPix_Hits_WriteToEntuple.h"
-
+#include "AllPixWriteROOTFile.hh" //nalipour
 #include "Randomize.hh"
 
 
@@ -246,6 +246,12 @@ int main(int argc, char** argv)
 	// G4int nDigitizers = event_action->GetNumberOfDigitizers();
 	for( detItr = geoMap->begin() ; detItr != geoMap->end() ; detItr++) {
 	  WriteToNtuple::GetInstance("", "", "", (int)geoMap->size(), (*detItr).first)->closeNtuple();
+
+	  //nalipour: Close and write the ROOT files
+	  if(run_action->writeROOTFile !=NULL)
+	    {
+	      run_action->writeROOTFile[run_action->ReturnAllPixRun()->return_detIdToIndex((*detItr).first)]->AllPixCloseROOTFile();
+	    }
 	}
 
 	// hits ntuple closing

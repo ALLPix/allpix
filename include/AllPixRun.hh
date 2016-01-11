@@ -10,6 +10,8 @@
 #include "AllPixRunAction.hh"
 #include "AllPixMimosa26Digit.hh"
 #include "AllPixDigitInterface.hh"
+#include "AllPixWriteROOTFile.hh" //nalipour: Write MC hits in a ROOT file
+#include "ROOTDataFormat.hh" //nalipour: Write MC hits in a ROOT file
 
 #include <TROOT.h>
 #include <TFile.h>
@@ -40,7 +42,7 @@ class AllPixRun : public G4Run {
 
 public:
 
-  AllPixRun(AllPixDetectorConstruction *, TString, TString, TString, G4bool);
+  AllPixRun(AllPixDetectorConstruction *, TString, TString, TString, G4bool, G4bool MCWriteFlag);
   virtual ~AllPixRun();
 
   virtual void RecordEvent(const G4Event*);
@@ -55,6 +57,18 @@ public:
   // fill timepix telescope files
   void FillTelescopeFiles(const G4Run *, G4String, G4bool, G4bool);
 
+
+  //nalipour: MC hits
+  void FillROOTFiles(AllPixWriteROOTFile** rootFiles); //fills the ROOT files
+  G4int return_detIdToIndex(G4int detId)
+  {
+    return m_detIdToIndex[detId];
+  }
+  //void RecordHitsForROOTFiles(const G4Event* evt); //Record the MC hits to save in the ROOT file
+  //void RecordHitsForROOTFiles_withChargeSharing(const G4Event* evt); // Hits with charge sharing values
+  void RecordDigits_all(const G4Event* evt);
+
+
 private:
 
   AllPixDetectorConstruction * m_detectorPtr;
@@ -62,6 +76,7 @@ private:
 
   // Hits
   SimpleHits ** m_storableHits;
+  vector<ROOTDataFormat*> MC_ROOT_data; //nalipour: MC hits (for each detector) 
 
   // map index in frames handler to det Id
   map<int, int> m_detIdToIndex;
@@ -93,6 +108,7 @@ private:
   time_t m_runTime;
 
   G4bool m_writeTPixTelescopeFilesFlag;
+  G4bool m_writeMCFilesFlag; //nalipour: MC hits
 
 };
 

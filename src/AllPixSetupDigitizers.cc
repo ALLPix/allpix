@@ -15,6 +15,9 @@
 #include "AllPixMCTruthDigitizer.hh"
 #include "AllPixLETCalculatorDigitizer.hh"
 
+// Included by newdigitizer.sh script --> TMPX
+#include "AllPixTMPXDigitizer.hh"
+
 // Included by newdigitizer.sh script --> FEI4RadDamage
 #include "AllPixFEI4RadDamageDigitizer.hh"
 // __endofheader__
@@ -141,7 +144,12 @@ else if (digitizerName == "FEI4RadDamage") {
 			dmPtr = static_cast<AllPixDigitizerInterface *> (dp);
 			cout << "    Setting up a " << digitizerName << " digitizer for det : " << detectorId << endl;
 		}
- 
+// Included by newdigitizer.sh script --> TMPX
+else if (digitizerName == "TMPX") {
+			AllPixTMPXDigitizer * dp = new AllPixTMPXDigitizer(digitizerModulesNames[itr] , hcName, digitColectionName);
+			dmPtr = static_cast<AllPixDigitizerInterface *> (dp);
+			cout << "    Setting up a " << digitizerName << " digitizer for det : " << detectorId << endl;
+		}  
         // __endofdigitlist__
    	    else {
 			G4cout << "    can't find digitizer with name : " << digitizerName << G4endl;
