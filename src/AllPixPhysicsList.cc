@@ -369,7 +369,7 @@ void AllPixPhysicsList::SetBuilderList1(G4bool flagHP)
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo.....
 
-void AllPixPhysicsList::SetBuilderList2(G4bool addStopping)
+ void AllPixPhysicsList::SetBuilderList2(G4bool addStopping)
 {
   hadronPhys.push_back( new G4EmExtraPhysics(verboseLevel));
   //hadronPhys.push_back( new G4HadronElasticPhysicsLHEP(verboseLevel));

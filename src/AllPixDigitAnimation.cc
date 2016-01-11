@@ -16,10 +16,16 @@
 #include <stdio.h>
 #include <string>
 #include "AllPixDigitAnimation.hh"
-#include "G4SystemOfUnits.hh"
 #include "TString.h"
 #include "TGeoMatrix.h"
+
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wshadow"
+#include "G4SystemOfUnits.hh"
 #include "TColor.h"
+#pragma GCC diagnostic pop
+
+
 #include "TMath.h"
 using namespace std;
 
@@ -55,27 +61,27 @@ AllPixDigitAnimation::AllPixDigitAnimation(int nx, int ny, double Lz, double pit
             
             z_hit=Lz/2+2.5;
             
-   			Double_t r[]    = {0., 0.0, 1.0, 1.0, 1.0};
-  			Double_t g[]    = {0., 0.0, 0.0, 1.0, 1.0};
-   			Double_t b[]    = {0., 1.0, 0.0, 0.0, 1.0};
+   			Double_t red[]    = {0., 0.0, 1.0, 1.0, 1.0};
+  			Double_t green[]    = {0., 0.0, 0.0, 1.0, 1.0};
+   			Double_t blue[]    = {0., 1.0, 0.0, 0.0, 1.0};
   			Double_t stop[] = {0., .25, .50, .75, 1.0};
-   			Int_t FI = TColor::CreateGradientColorTable(5, stop, r, g, b, 100);
+   			Int_t FI = TColor::CreateGradientColorTable(5, stop, red, green, blue, 100);
    			for (int i=0;i<100;i++) MyPalette[i] = FI+i;
               
             
               
                         
-			this->nx=nx;
-			this->ny=ny;
-			this->Lz=Lz;
-			this->pitchx=pitchx;
-			this->pitchy=pitchy;
+			this->m_nx=nx;
+			this->m_ny=ny;
+			this->m_Lz=Lz;
+			this->m_pitchx=pitchx;
+			this->m_pitchy=pitchy;
 			
-			TGeoMedium *medium=0; 
-            top = Geo->MakeBox("TOP",medium,nx*pitchx/2,ny*pitchy/2,2*Lz/2);
+			medium=0;
+            top = Geo->MakeBox("TOP",medium,m_nx*m_pitchx/2,m_ny*m_pitchy/2,2*m_Lz/2);
             Geo->SetTopVolume(top);
             
-            TGeoVolume *Sensor =  Geo->MakeBox("TOP",medium,nx*pitchx/2,ny*pitchy/2,Lz/2);
+            TGeoVolume *Sensor =  Geo->MakeBox("TOP",medium,m_nx*m_pitchx/2,m_ny*m_pitchy/2,m_Lz/2);
             Sensor->SetLineColor(kGray+1);
             top->AddNode(Sensor,1);
             
@@ -84,14 +90,14 @@ AllPixDigitAnimation::AllPixDigitAnimation(int nx, int ny, double Lz, double pit
 
                         trackid=0;
                         
-            for(int i=0;i<nx;i++){
-                    for(int j=0;j<ny;j++){
+            for(int i=0;i<m_nx;i++){
+                    for(int j=0;j<m_ny;j++){
                             
                             
-							ori[0]=-(nx-1)*pitchx/2 + (i)*pitchx; 
-                            ori[1]=-(ny-1)*pitchy/2 + (j)*pitchy;
-                            ori[2]=Lz/2 +0.5;
-                            PixBox= new TGeoBBox(TString::Format("Pix_%i_%i",i,j),(pitchx-0.1*pitchx)/2,(pitchy-0.1*pitchy)/2,1,ori);
+							ori[0]=-(m_nx-1)*m_pitchx/2 + (i)*m_pitchx;
+                            ori[1]=-(m_ny-1)*m_pitchy/2 + (j)*m_pitchy;
+                            ori[2]=m_Lz/2 +0.5;
+                            PixBox= new TGeoBBox(TString::Format("Pix_%i_%i",i,j),(m_pitchx-0.1*m_pitchx)/2,(m_pitchy-0.1*m_pitchy)/2,1,ori);
                             
                             PixVolume =new  TGeoVolume(TString::Format("Pix_%i_%i",i,j),PixBox);
                             PixVolume->SetLineColor(kYellow -3);
@@ -125,19 +131,19 @@ void AllPixDigitAnimation::AddTrack(vector<double> x, vector<double> y, vector<d
      //cout << TString::Format("[Animation] Hit Position : x:%f y:%f z:%f",x[0],y[0],z[0]) << endl;
 
      
-//     if(x[0]>nx*pitchx/(2)) {
-//     		shiftx= (x[0] - modulo(x[0],nx*pitchx));
+//     if(x[0]>m_nx*m_pitchx/(2)) {
+//     		shiftx= (x[0] - modulo(x[0],m_nx*m_pitchx));
 //		};
 //	 
-//     if(x[0]<-nx*pitchx/(2)){
-//     		shiftx = -(x[0]-modulo(-x[0],nx*pitchx));
+//     if(x[0]<-m_nx*m_pitchx/(2)){
+//     		shiftx = -(x[0]-modulo(-x[0],m_nx*m_pitchx));
 //		};
-//     if(y[0]>ny*pitchy/(2)) {
-//     		shifty= (y[0] - modulo(y[0],ny*pitchy));
+//     if(y[0]>m_ny*m_pitchy/(2)) {
+//     		shifty= (y[0] - modulo(y[0],m_ny*m_pitchy));
 //		};
 //	 
-//     if(y[0]<-ny*pitchy/(2)){
-//     		shifty = -(y[0]-modulo(-y[0],ny*pitchy));
+//     if(y[0]<-m_ny*m_pitchy/(2)){
+//     		shifty = -(y[0]-modulo(-y[0],m_ny*m_pitchy));
 //		};		
      
 			
@@ -210,12 +216,12 @@ double AllPixDigitAnimation::modulo(double a, double b){
 
 void AllPixDigitAnimation::SubThresholdPixel(int i , int j){
 	
-	TString pixelName = TString::Format("Pix_%d_%d",i+nx/2-1,j+ny/2-1);
+	TString pixelName = TString::Format("Pix_%d_%d",i+m_nx/2-1,j+m_ny/2-1);
 	
 	cout << "[Fired]" << pixelName << endl;
 	
 	
-	if (i+nx/2-1<nx && j+ny/2-1<ny &&i+nx/2-1 > 0 &&j+ny/2-1 > 0 ){
+	if (i+m_nx/2-1<m_nx && j+m_ny/2-1<m_ny &&i+m_nx/2-1 > 0 &&j+m_ny/2-1 > 0 ){
 
 	
 	Geo->GetVolume(pixelName)->SetLineColor(kRed);
@@ -227,12 +233,12 @@ void AllPixDigitAnimation::SubThresholdPixel(int i , int j){
 
 void AllPixDigitAnimation::FirePixel(int i , int j){
 	
-	TString pixelName = TString::Format("Pix_%d_%d",i+nx/2-1,j+ny/2-1);
+	TString pixelName = TString::Format("Pix_%d_%d",i+m_nx/2-1,j+m_ny/2-1);
 	
 	cout << "[Fired]" << pixelName << endl;
 	
 	
-	if (i+nx/2-1<nx && j+ny/2-1<ny &&i+nx/2-1 > 0 &&j+ny/2-1 > 0 ){
+	if (i+m_nx/2-1<m_nx && j+m_ny/2-1<m_ny &&i+m_nx/2-1 > 0 &&j+m_ny/2-1 > 0 ){
 
 	
 	Geo->GetVolume(pixelName)->SetLineColor(kBlue);

@@ -112,6 +112,12 @@ private:
   G4int CounterDepth;
   G4int MipCharge;
   G4double Lv1Unit;
+
+  G4bool doDrift;
+  G4double diffusion_length;
+  G4double threshold;
+  G4double tuning;
+
 };
 
 #endif
