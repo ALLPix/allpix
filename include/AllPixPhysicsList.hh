@@ -45,6 +45,9 @@
 #include "G4VModularPhysicsList.hh"
 #include "globals.hh"
 
+
+#include "G4EmConfigurator.hh" //nalipour PAI
+
 class G4VPhysicsConstructor;
 class AllPixPhysicsListMessenger;
 
@@ -69,8 +72,16 @@ public:
   void ConstructProcess();
   void AddStepMax();
   void List();
+
   
 private:
+
+  void AddPAIModel(const G4String& modname); //nalipour PAI
+  void NewPAIModel(const G4ParticleDefinition* part,
+  		   const G4String& modname,
+  		   const G4String& procname); //nalipour PAI
+
+  G4EmConfigurator* fConfig; //nalipour // PAI
 
   void SetBuilderList0(G4bool flagHP = false);
   void SetBuilderList1(G4bool flagHP = false);

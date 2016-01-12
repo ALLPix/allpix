@@ -52,28 +52,63 @@ void AllPixMCTruthDigitizer::Digitize(){
 
   G4int nEntries = hitsCollection->entries();
   G4cout << "nEntries=" << nEntries << G4endl;
-
+  
   // Example of detector description handle
   // provided by the interface
   AllPixGeoDsc * gD = GetDetectorGeoDscPtr();
   gD->GetNPixelsX();
-
+  Double_t pitchX=gD->GetPixelX();
+  Double_t pitchY=gD->GetPixelY();
+  
   G4double MC_deposited_energy=0.0;
 
-  for(G4int itr  = 0 ; itr < nEntries ; itr++) {
+  int pixelX=-10;
+  int pixelY=-10;
+  
+  for(G4int itr  = 0 ; itr < nEntries ; itr++) 
+    {
+      
+      //  tempPixel.first  = (*hitsCollection)[itr]->GetPixelNbX();
+      //tempPixel.second = (*hitsCollection)[itr]->GetPixelNbY();
+      //pixelsContent[tempPixel] += (*hitsCollection)[itr]->GetEdep();
+      Double_t tempEnergy=(*hitsCollection)[itr]->GetEdep();
+      MC_deposited_energy+=(*hitsCollection)[itr]->GetEdep();
+      
+      G4double xpos=(*hitsCollection)[itr]->GetPosWithRespectToPixel().x();
+      G4double ypos=(*hitsCollection)[itr]->GetPosWithRespectToPixel().y();
+      G4double zpos=(*hitsCollection)[itr]->GetPosWithRespectToPixel().z(); // [mm]; zpos=thickness corresponds to the sensor side and zpos=0 corresponds to the pixel side     
+      
+      xpos=(*hitsCollection)[itr]->GetPixelNbX()*pitchX+xpos+pitchX/2.0;
+      ypos=(*hitsCollection)[itr]->GetPixelNbY()*pitchY+ypos+pitchY/2.0;
+      
+      tempPixel.first=xpos;
+      tempPixel.second=zpos;
+      pixelsContent[tempPixel] += (*hitsCollection)[itr]->GetEdep();
+      
+      // G4cout << "xpos=" << xpos << ", zpos=" << zpos << G4endl;
+      // G4cout << "tempEnergy=" << tempEnergy << ", zpos=" << zpos << G4endl;
+      //G4cout << "x=" << (*hitsCollection)[itr]->GetPixelNbX() << ", y=" << (*hitsCollection)[itr]->GetPixelNbY() << G4endl;
+      pixelX=(*hitsCollection)[itr]->GetPixelNbX();
+      pixelY=(*hitsCollection)[itr]->GetPixelNbY();
+    }
+  
 
-    tempPixel.first  = (*hitsCollection)[itr]->GetPixelNbX();
-    tempPixel.second = (*hitsCollection)[itr]->GetPixelNbY();
-    pixelsContent[tempPixel] += (*hitsCollection)[itr]->GetEdep();
-    MC_deposited_energy+=(*hitsCollection)[itr]->GetEdep();
-  }
-
+  G4cout << "x=" << pixelX << ", y=" << pixelY << G4endl;
 
   G4cout << "MC_deposited_energy=" << MC_deposited_energy/keV << G4endl;
   // Now create digits, one per pixel
   // Second entry in the map is the energy deposit in the pixel
   map<pair<G4int, G4int>, G4double >::iterator pCItr = pixelsContent.begin();
-
+  /*for( ; pCItr != pixelsContent.end() ; pCItr++)
+    {
+      if(((*pCItr).second)/keV > 0) // over threshold !                                                                                                             
+        {
+          pair<G4int, G4int> tempPixel;
+          tempPixel.first=(*pCItr).first.first;
+          tempPixel.second=(*pCItr).first.second;
+	  
+	}
+	}*/
   // NOTE that there is a nice interface which provides useful info for hits.
   // For instance, the following member gives you the position of a hit with respect
   //  to the center of the pixel.
@@ -90,7 +125,10 @@ void AllPixMCTruthDigitizer::Digitize(){
   if(MC_deposited_energy>0)
     {
       AllPixMCTruthDigit * digit = new AllPixMCTruthDigit;
-      digit->SetPixelEnergyDep(MC_deposited_energy/keV);	
+      digit->SetPixelEnergyDep(MC_deposited_energy/keV);
+      digit->SetPixelIDX(pixelX); // An ugly hack to have the same coordinate system as the test-beam
+      digit->SetPixelIDY(pixelY);	 
+      digit->IncreasePixelCounts(); // Counting mode
       m_digitsCollection->insert(digit);
 	
     }

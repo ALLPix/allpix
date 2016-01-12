@@ -91,12 +91,21 @@
 #include "G4Positron.hh"
 #include "G4Proton.hh"
 
+//nalipour
+#include "G4PAIModel.hh"
+#include "G4PAIPhotonModel.hh"
+
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo.....
 
-AllPixPhysicsList::AllPixPhysicsList() : G4VModularPhysicsList()
+AllPixPhysicsList::AllPixPhysicsList() : G4VModularPhysicsList() 
+				       , fConfig(0) //nalipour PAI
 {
+  fConfig = G4LossTableManager::Instance()->EmConfigurator(); //nalipour PAI
+  G4LossTableManager::Instance()->SetVerbose(1); //nalipour PAI
+
   G4LossTableManager::Instance();
   defaultCutValue = 0.010*mm;
+
   cutForGamma     = defaultCutValue;
   cutForElectron  = defaultCutValue;
   cutForPositron  = defaultCutValue;
@@ -147,32 +156,32 @@ void AllPixPhysicsList::ConstructProcess()
 
 void AllPixPhysicsList::SetVerbose(G4int verbose)
 {
-	emAllPixPhysicsList->SetVerboseLevel(verbose);
-	  for(size_t i=0; i<hadronPhys.size(); i++) {
-    	hadronPhys[i]->SetVerboseLevel(verbose);
+  emAllPixPhysicsList->SetVerboseLevel(verbose);
+  for(size_t i=0; i<hadronPhys.size(); i++) {
+    hadronPhys[i]->SetVerboseLevel(verbose);
   }
 }
 
 void AllPixPhysicsList::AddStepMax()
 {
 
-	// Step limitation seen as a process
-	G4StepLimiter* stepLimiter = new G4StepLimiter();
+  // Step limitation seen as a process
+  G4StepLimiter* stepLimiter = new G4StepLimiter();
 
-	theParticleIterator->reset();
+  theParticleIterator->reset();
 
-	while ((*theParticleIterator)()){
+  while ((*theParticleIterator)()){
 
-		G4ParticleDefinition* particle = theParticleIterator->value();
-		//G4cout << particle->GetPDGCharge() << G4endl;
-		G4ProcessManager* pmanager = particle->GetProcessManager();
+    G4ParticleDefinition* particle = theParticleIterator->value();
+    //G4cout << particle->GetPDGCharge() << G4endl;
+    G4ProcessManager* pmanager = particle->GetProcessManager();
 
-		if (particle->GetPDGCharge() != 0.0)
-		{
-			pmanager->AddDiscreteProcess(stepLimiter);
-			////pmanager ->AddDiscreteProcess(userCuts);
-		}
-	}
+    if (particle->GetPDGCharge() != 0.0)
+      {
+	pmanager->AddDiscreteProcess(stepLimiter);
+	////pmanager ->AddDiscreteProcess(userCuts);
+      }
+  }
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo.....
@@ -202,7 +211,13 @@ void AllPixPhysicsList::AddAllPixPhysicsList(const G4String& name)
     delete emAllPixPhysicsList;
     emAllPixPhysicsList = new G4EmStandardPhysics();
 
-  } else if (name == "FTFP_BERT_EMV") {
+  } 
+  else if (name == "pai")  // nalipour PAI
+    {
+      AddPAIModel(name);
+    }
+  
+  else if (name == "FTFP_BERT_EMV") {
 
     AddAllPixPhysicsList("emstandard_opt1");
     AddAllPixPhysicsList("FTFP_BERT");
@@ -310,12 +325,15 @@ void AllPixPhysicsList::AddAllPixPhysicsList(const G4String& name)
     SetBuilderList1();
     hadronPhys.push_back( new HadronPhysicsFTFP_BERT());
     emAllPixPhysicsList = new G4EmLivermorePhysics();
-	G4ProductionCutsTable::GetProductionCutsTable()->SetEnergyRange(250*eV, 1000*GeV); 
+    G4ProductionCutsTable::GetProductionCutsTable()->SetEnergyRange(250*eV, 1000*GeV); 
 	
-	G4cout << "Implementing  physics list LIVERMORE_FTFP_BERT"
+    G4cout << "Implementing  physics list LIVERMORE_FTFP_BERT"
            << G4endl;
   } 
-  
+  else if (name == "Livermore")  //nalipour
+    {
+      emAllPixPhysicsList = new G4EmLivermorePhysics();
+    } 
   else {
 
    
@@ -451,5 +469,40 @@ void AllPixPhysicsList::List()
 	 << G4endl; 
 }
 
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+//nalipour PAI
+void AllPixPhysicsList::AddPAIModel(const G4String& modname)
+{
+  theParticleIterator->reset();
+  while ((*theParticleIterator)())
+  {
+    G4ParticleDefinition* particle = theParticleIterator->value();
+    G4String partname = particle->GetParticleName();
+    if(partname == "e-" || partname == "e+") {
+      NewPAIModel(particle, modname, "eIoni");
 
+    } else if(partname == "mu-" || partname == "mu+") {
+      NewPAIModel(particle, modname, "muIoni");
+
+    } else if(partname == "proton" ||
+              partname == "pi+" ||
+              partname == "pi-"   
+              ) {
+      NewPAIModel(particle, modname, "hIoni");
+    }
+  }
+}
+void AllPixPhysicsList::NewPAIModel(const G4ParticleDefinition* part, 
+                              const G4String& modname,
+                              const G4String& procname)
+{
+  G4String partname = part->GetParticleName();
+  if(modname == "pai") {
+    G4PAIModel* pai = new G4PAIModel(part,"PAIModel");
+    fConfig->SetExtraEmModel(partname,procname,pai,"",
+                              0.0,100.*TeV,pai);
+  } else if(modname == "pai_photon") {
+    G4PAIPhotonModel* pai = new G4PAIPhotonModel(part,"PAIPhotonModel");
+    fConfig->SetExtraEmModel(partname,procname,pai,"",
+                              0.0,100.*TeV,pai);
+  }
+}
