@@ -40,10 +40,10 @@ class AllPixDigitAnimation : public TObject
              
              //double Lx,Ly,Lz;  // size of the box
 	     	 int trackid;
-	    	 int m_nx,m_ny;
-	    	 double m_Lz;
+	    	 int nx,ny;
+	    	 double Lz;
 	    	 double shiftx,shifty;
-	   		 double m_pitchx,m_pitchy;
+	   		 double pitchx,pitchy;
          	 Int_t MyPalette[100];
          	 
          	 double emax;

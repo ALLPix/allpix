@@ -77,6 +77,7 @@ public:
   void SetTrackVolumeName(G4String vn) { trackVolumeName = vn; };
   void SetParentVolumeName(G4String vn) { parentVolumeName = vn; } ;
   void SetDetId(G4int i){ detID = i; };
+  void SetKinEParent(G4double kinE){ kinEParent = kinE; };
   //void SetKineticEnergy     (G4double kinE) {kinE = kinE; };
   
   G4int GetTrackID()    { return trackID; };
@@ -93,7 +94,7 @@ public:
   G4int GetTrackPdgId() { return pdgIdTrack; };
   G4String GetTrackVolumeName() {return trackVolumeName;};
   G4String GetParentVolumeName() {return parentVolumeName;};
-
+  G4double GetKinEParent() { return kinEParent; };
   //G4double GetKineticEnergy(){ return kinE; };
   
 private:
@@ -112,6 +113,7 @@ private:
   G4int         pdgIdTrack;
   G4String      trackVolumeName;
   G4String      parentVolumeName;
+  G4double		kinEParent;
   //G4double      kinE;
 
 };

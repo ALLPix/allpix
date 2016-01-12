@@ -40,7 +40,7 @@ include(${Geant4_USE_FILE})
 #
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include 
                     ${Geant4_INCLUDE_DIR})
-file(GLOB sources ${PROJECT_SOURCE_DIR}/src/*.cc)
+file(GLOB sources ${PROJECT_SOURCE_DIR}/src/SelDict.cc ${PROJECT_SOURCE_DIR}/src/*.cc)
 file(GLOB headers ${PROJECT_SOURCE_DIR}/include/*.hh)
 
 #----------------------------------------------------------------------------
@@ -48,6 +48,17 @@ file(GLOB headers ${PROJECT_SOURCE_DIR}/include/*.hh)
 #
 add_executable(allpix allpix.cc ${sources} ${headers})
 target_link_libraries(allpix ${Geant4_LIBRARIES} ${ROOT_LIBRARIES})
+
+include(CheckCXXCompilerFlag)
+CHECK_CXX_COMPILER_FLAG("-std=c++11" COMPILER_SUPPORTS_CXX11)
+CHECK_CXX_COMPILER_FLAG("-std=c++0x" COMPILER_SUPPORTS_CXX0X)
+if(COMPILER_SUPPORTS_CXX11)
+   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+elseif(COMPILER_SUPPORTS_CXX0X)
+   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x")
+else()
+        message(STATUS "The compiler ${CMAKE_CXX_COMPILER} has no C++11 support. Please use a different C++ compiler.")
+endif()
 
 #----------------------------------------------------------------------------
 # Copy all scripts to the build directory, i.e. the directory in which we
@@ -71,6 +82,29 @@ foreach(_script ${ALLPIX_SCRIPTS})
     COPYONLY
     )
 endforeach()
+
+#----------------------------------------------------------------------------
+# rootcling - dictionaries
+#add_custom_target(TARGET rootcling PRE_BUILD 
+#COMMAND	@echo "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa")
+
+add_custom_target(rootcling_build ALL DEPENDS ALLPIX)
+
+add_custom_command(TARGET rootcling_build PRE_BUILD
+WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
+COMMAND rootcling -v0 -f SelDict.cc -c -p -I./include
+AllPix_Hits_WriteToEntuple.h 
+AllPix_Frames_WriteToEntuple.h allpix_dm.h 
+AllPixDigitAnimation.hh LinkDef.h
+COMMAND mv SelDict.cc ./src/SelDict.cc
+COMMAND mv SelDict_rdict.pcm ${PROJECT_BINARY_DIR}/SelDict_rdict.pcm)
+
+
+
+#rootcint -v0 -f SelDict.cc -c -p -I./include 
+#		AllPix_Hits_WriteToEntuple.h 
+#		AllPix_Frames_WriteToEntuple.h allpix_dm.h 
+#		AllPixDigitAnimation.hh LinkDef.h)
 
 #----------------------------------------------------------------------------
 # Add program to the project targets

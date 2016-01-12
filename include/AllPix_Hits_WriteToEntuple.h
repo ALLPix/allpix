@@ -34,11 +34,13 @@ class SimpleHits {
 
  public:
   SimpleHits();
-  virtual ~SimpleHits(){};
+  ~SimpleHits(){};
   void Rewind();
 
   // total energy (all hits in event)
-  float edepTotal;
+  double edepTotal;
+  //
+  double kinEParent;
   // interactions in hit (ioni, msc, phot, etc ..)
   vector<string> interactions;
   // position of hit
@@ -72,7 +74,7 @@ class Hits_WriteToNtuple {
 public:
 
   Hits_WriteToNtuple(TString, TString, TString, Int_t, TString om="RECREATE");
-  virtual ~Hits_WriteToNtuple(){};
+  ~Hits_WriteToNtuple(){};
   void fillVars(SimpleHits *);
   void closeNtuple();
   TString GetNtupleFileName(){return m_ntupleFileName;};

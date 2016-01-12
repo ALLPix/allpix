@@ -54,51 +54,40 @@ class G4UIcommand;
 
 class AllPixPrimaryGeneratorMessenger: public G4UImessenger
 {
-public:
-  AllPixPrimaryGeneratorMessenger(AllPixPrimaryGeneratorAction*);
-  ~AllPixPrimaryGeneratorMessenger();
+  public:
+	AllPixPrimaryGeneratorMessenger(AllPixPrimaryGeneratorAction*);
+	~AllPixPrimaryGeneratorMessenger();
 
-  G4bool   GetTimepixTelescopeWriteFlag()   {return this->m_TimepixTelescopeWriteFlag;}
-  G4String GetTimepixTelescopeFolderName()  {return this->m_TimepixTelescopeFolderName;}
-  G4bool   GetTimepixTelescopeDoEventFlag() {return this->m_TimepixTelescopeDoEventFlag;}
-  G4bool   GetTimepixTelescopeSumTOTFlag()  {return this->m_TimepixTelescopeSumTOTFlag;}
+	G4bool   GetTimepixTelescopeWriteFlag()   {return this->m_TimepixTelescopeWriteFlag;}
+	G4String GetTimepixTelescopeFolderName()  {return this->m_TimepixTelescopeFolderName;}
+	G4bool   GetTimepixTelescopeDoEventFlag() {return this->m_TimepixTelescopeDoEventFlag;}
+	G4bool   GetTimepixTelescopeSumTOTFlag()  {return this->m_TimepixTelescopeSumTOTFlag;}
 
-  //Write MC hits in ROOT files (nalipour)
-  G4bool GetWrite_MC_FilesFlag() {return this->m_Write_MC_FilesFlag;} 
-  G4String GetWrite_MC_FolderName()  {return this->m_Write_MC_FolderName;}
+	void SetNewValue(G4UIcommand*, G4String);
 
-  void SetNewValue(G4UIcommand*, G4String);
+  private:
+    AllPixPrimaryGeneratorAction * AllPixAction;
+    G4UIdirectory                * gunDir;
+    G4UIcmdWithADoubleAndUnit    * polarCmd;
+    G4UIcmdWithAString           * m_MCPrefix;
 
-private:
-  AllPixPrimaryGeneratorAction * AllPixAction;
-  G4UIdirectory                * gunDir;
-  G4UIcmdWithADoubleAndUnit    * polarCmd;
-  G4UIcmdWithAString           * m_MCPrefix;
+    G4UIcmdWithAnInteger         * m_userBeamNumberOfFramesCmd;
+    G4UIcmdWithoutParameter      * m_userBeamOnCmd;
+    G4UIcommand                  * m_userBeamTypeCmd;
+    G4int m_hits;
+    G4int m_frames;
+		G4String m_beamTypeHitFunc;
+		G4double m_beamTypePar1;
+		G4double m_beamTypePar2;
 
-  G4UIcmdWithAnInteger         * m_userBeamNumberOfFramesCmd;
-  G4UIcmdWithoutParameter      * m_userBeamOnCmd;
-  G4UIcommand                  * m_userBeamTypeCmd;
-  G4int m_hits;
-  G4int m_frames;
-  G4String m_beamTypeHitFunc;
-  G4double m_beamTypePar1;
-  G4double m_beamTypePar2;
-
-  G4UIcmdWithABool   * m_TimepixTelescopeWriteCmd;
-  G4UIcmdWithAString * m_TimepixTelescopeFolderNameCmd;
-  G4UIcmdWithABool   * m_TimepixTelescopeDoEventCmd;
-  G4UIcmdWithABool   * m_TimepixTelescopeSumTOTCmd;
-  G4bool   m_TimepixTelescopeWriteFlag;
-  G4String m_TimepixTelescopeFolderName;
-  G4bool   m_TimepixTelescopeDoEventFlag;
-  G4bool   m_TimepixTelescopeSumTOTFlag;
-
-  
-  //nalipour: MC hits
-  G4UIcmdWithABool   * m_Write_MC_FilesCmd;
-  G4UIcmdWithAString * m_Write_MC_FolderNameCmd;
-  G4bool m_Write_MC_FilesFlag;
-  G4String m_Write_MC_FolderName;
+	G4UIcmdWithABool   * m_TimepixTelescopeWriteCmd;
+	G4UIcmdWithAString * m_TimepixTelescopeFolderNameCmd;
+	G4UIcmdWithABool   * m_TimepixTelescopeDoEventCmd;
+	G4UIcmdWithABool   * m_TimepixTelescopeSumTOTCmd;
+	G4bool   m_TimepixTelescopeWriteFlag;
+	G4String m_TimepixTelescopeFolderName;
+	G4bool   m_TimepixTelescopeDoEventFlag;
+	G4bool   m_TimepixTelescopeSumTOTFlag;
 
 };
 

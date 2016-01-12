@@ -76,6 +76,9 @@ private:
   AllPixGeoDsc * m_gD; // Geo description !
   G4String m_thisHitsCollectionName;
   bool m_thisIsAPixelDetector;
+  bool firstStrikePrimary;
+  G4double _kinEPrimary;
+  G4double _totalEdep;
 
   // used to dump tracking info in special cases
   long m_globalTrackId_Dump;

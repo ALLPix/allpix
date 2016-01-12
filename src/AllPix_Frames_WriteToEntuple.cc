@@ -27,12 +27,12 @@ WriteToNtuple::WriteToNtuple(TString prefix, TString dataSet, TString tempScratc
 	}
 
 
-	if(prefix.Length() > 0){
+	if (prefix.Length() > 0) {
 	  m_ntupleFileName += prefix;
 	  m_ntupleFileName += "_";
 	  m_ntupleFileName += m_MPXDataSetNumber;
 	} else {
-	  m_ntupleFileName += "MPXNtuple_"+m_MPXDataSetNumber;	  
+	  m_ntupleFileName += "MPXNtuple_"+m_MPXDataSetNumber;
 	}
 	m_ntupleFileName += ".root";
 

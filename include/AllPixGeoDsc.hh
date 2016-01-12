@@ -13,9 +13,10 @@
 #include <string>
 
 #include "CLHEP/Units/SystemOfUnits.h"
+using namespace CLHEP;
+
 
 using namespace std;
-using namespace CLHEP;
 
 class AllPixGeoDsc {
 
@@ -30,9 +31,6 @@ public:
 	G4int GetNPixelsZ(){return m_npix_z;};
 	G4int GetNPixelsTotXY(){return GetNPixelsX()*GetNPixelsY();}; // Planar layout //
 	G4double GetResistivity(){return m_resistivity;};
-  G4double GetBiasVoltage(){return m_BiasVoltage;}; //nalipour
-  G4String GetSensorType(){return m_SensorType;}; //nalipour
-  G4String GetCalibrationFile(){return m_CalibrationFile;}; //nalipour
 
 	//G4int GetHalfNPixelsX(){return GetNPixelsX()/2;}; // half number of pixels //
 	//G4int GetHalfNPixelsY(){return GetNPixelsY()/2;};
@@ -250,15 +248,6 @@ public:
 	void SetResistivity(G4double val){
 		m_resistivity = val;
 	}
-  void SetBiasVoltage(G4double val){ //nalipour
-		m_BiasVoltage = val;
-	}
-  void SetSensorType(G4String val){ //nalipour
-    m_SensorType = val;
-  }
-  void SetCalibrationFile(G4String val){ //nalipour
-    m_CalibrationFile = val;
-  }
 	void SetMIPTot(G4int val){
 		m_MIP_Tot = val;
 	}	
@@ -365,9 +354,6 @@ private:
 	G4double m_WaferYpos;
 
 	G4double m_resistivity;
-  G4double m_BiasVoltage; //nalipour
-  G4String m_SensorType; //nalipour
-  G4String m_CalibrationFile; //nalipour
 	
 	G4int m_MIP_Tot;
 	G4double m_MIP_Charge;	

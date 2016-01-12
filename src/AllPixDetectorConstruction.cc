@@ -198,7 +198,7 @@ G4VPhysicalVolume * AllPixDetectorConstruction::Construct()
 		G4cout << "Clearance obtained to build the pixel devices." << G4endl;
 
 		// Read the database
-		m_geoDsc = new ReadGeoDescription("./models/pixeldetector.xml");
+		ReadGeoDescription * m_geoDsc = new ReadGeoDescription("./models/pixeldetector.xml");
 
 		// Don't keep in the database the detectors which are not used.
 		// Searching the id's

@@ -47,22 +47,6 @@ public:
   void SetDetectorDigitInputs(G4double);
 
 private:
-  class MC_content
-  {
-  public:
-	  MC_content()
-	  {
-		  posX_WithRespectToPixel=-11.0;
-		  posY_WithRespectToPixel=-11.0;
-		  posZ_WithRespectToPixel=-11.0;
-		  MC_energy=0.0;
-	  };
-	  Double_t posX_WithRespectToPixel;
-	  Double_t posY_WithRespectToPixel;
-	  Double_t posZ_WithRespectToPixel;
-	  Double_t MC_energy;
-  };
-
   digitInput m_digitIn;
   AllPixTimepixDigitsCollection * m_digitsCollection;
   vector<G4String> m_hitsColName;

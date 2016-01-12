@@ -18,9 +18,6 @@
 #include "AllPixPostDetConstruction.hh"
 
 #include "G4UnitsTable.hh"
-#include "CLHEP/Units/SystemOfUnits.h"
-
-using namespace CLHEP;
 
 AllPixPostDetConstruction *AllPixPostDetConstruction::fgInstance = 0;
 

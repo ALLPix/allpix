@@ -6,7 +6,7 @@
 
 ############################
 # Detector 0
-/allpix/det/setId        200
+/allpix/det/setId        500
 /allpix/det/setPosition  0.0 0.0 346.0 mm
 /allpix/det/setRotation  0.0 180.0 90.0 deg
 /allpix/det/setLowTHL 13. keV
@@ -117,7 +117,7 @@
 #/vis/scene/add/axes 0. 0. 0. 10. cm
 /vis/scene/add/volume World -1 2
 /vis/viewer/set/style s
-#/vis/open OIX 1024x768-100+100
+/vis/open OIX 1024x768-100+100
 #/vis/open OGLIXm 1024x768-100+100
 #/vis/open RayTracer
 #/vis/open OGLIQt
@@ -144,25 +144,25 @@
 
 ####################################################################
 # Write Telescope files
-/allpix/timepixtelescope/setFolderPath /home/mbenoit/AllpixData/test11
+/allpix/timepixtelescope/setFolderPath ./EUTelescopeFiles/Run_of_Mystery
 /allpix/timepixtelescope/setEventIDcolumn 0
 /allpix/timepixtelescope/setSumTOT 1
-/allpix/timepixtelescope/write 1
+/allpix/timepixtelescope/write 0
 
 ####################################################################
 # Source GPS
-/gps/particle pi+
+/gps/particle e-
 /gps/pos/type Plane
 /gps/pos/shape Rectangle
 /gps/pos/centre 0.0 0.0 -1000.0 mm
 /gps/pos/halfy 5000. um
 /gps/pos/halfx 5000. um
 /gps/direction 0 0 1
-/gps/energy 180 GeV
+/gps/energy 5.6 GeV
 
 ####################################################################
 # Shoot
-/allpix/beam/frames 25000
+/allpix/beam/frames 1
 /allpix/beam/type const 1
 /allpix/beam/on
 

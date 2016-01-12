@@ -74,8 +74,10 @@ AllPixTrackerSD::AllPixTrackerSD(G4String name,
 	m_thisIsAPixelDetector = true;
 
 	m_globalTrackId_Dump = 0;
-}
+	firstStrikePrimary = false;
+	_totalEdep = 0;
 
+}
 /*
  * Second constructor for sensitive devices which are
  * not actual pixel detectors
@@ -95,6 +97,8 @@ AllPixTrackerSD::AllPixTrackerSD(G4String name, G4ThreeVector absPos, G4Rotation
 	m_thisIsAPixelDetector = false;
 
 	m_globalTrackId_Dump = 0;
+	_totalEdep = 0;
+
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -147,6 +151,25 @@ G4bool AllPixTrackerSD::ProcessHits(G4Step * aStep, G4TouchableHistory *)
 		G4cout << "          !!! You may have an error in your macro, bad detector ID !!!" << G4endl;
 		G4cout << "          has been given. AllPixTrackerSD::ProcessHits returns false." << G4endl;
 		return false;
+	}
+
+	// track
+	G4Track * aTrack = aStep->GetTrack();
+	// particle
+	G4ParticleDefinition * aParticle = aTrack->GetDefinition();
+
+	// not used for now, not pretty.
+	// I need to know where is this hit and tie it to a detector ID
+	// G4String detId_S = touchablepre->GetSolid(2)->GetName();
+	// detId_S.remove(0,4); // remove the part "Box_", take the ID
+
+	// Isolate the information of the incoming particle when doing the first hit in the SD
+	//G4cout << aParticle->GetPDGEncoding() << G4endl;
+
+	if ( aTrack->GetTrackID() == 1 && ! firstStrikePrimary ) {
+		_kinEPrimary = aTrack->GetKineticEnergy()/keV;
+		_kinEPrimary -= (aStep->GetDeltaEnergy()/keV);
+		firstStrikePrimary = true;
 	}
 
 	// Work with the Hit
@@ -224,16 +247,7 @@ G4bool AllPixTrackerSD::ProcessHits(G4Step * aStep, G4TouchableHistory *)
 
 	// process
 	const G4VProcess * aProcessPointer = aStep->GetPostStepPoint()->GetProcessDefinedStep();
-	// track
-	G4Track * aTrack = aStep->GetTrack();
 
-	// particle
-	G4ParticleDefinition * aParticle = aTrack->GetDefinition();
-
-	// not used for now, not pretty.
-	// I need to know where is this hit and tie it to a detector ID
-	// G4String detId_S = touchablepre->GetSolid(2)->GetName();
-	// detId_S.remove(0,4); // remove the part "Box_", take the ID
 
 	// create a hit instance
 	AllPixTrackerHit * newHit = new AllPixTrackerHit();
@@ -245,12 +259,15 @@ G4bool AllPixTrackerSD::ProcessHits(G4Step * aStep, G4TouchableHistory *)
 	newHit->SetPostPixelNbX(copyIDx_post);
 	newHit->SetPostPixelNbY(copyIDy_post);
 	newHit->SetEdep(edep);
+	_totalEdep += edep;
 	newHit->SetPos(aStep->GetPostStepPoint()->GetPosition());
 
 	newHit->SetPosWithRespectToPixel( correctedPos );
 
 	newHit->SetProcessName(aProcessPointer->GetProcessName());
 	newHit->SetTrackPdgId(aParticle->GetPDGEncoding());
+
+	newHit->SetKinEParent( _kinEPrimary );
 
 	/////////////////////////////////////////////
 	g_temp_edep = edep;
@@ -266,6 +283,10 @@ G4bool AllPixTrackerSD::ProcessHits(G4Step * aStep, G4TouchableHistory *)
 	//newHit->Print();
 	//newHit->Draw();
 
+	if ( _totalEdep > _kinEPrimary ) {
+		cout << "[WARNING] totalEdep = " << _totalEdep << ", kinEPrimary = " << _kinEPrimary << endl;
+	}
+
 	return true;
 }
 
@@ -274,12 +295,15 @@ G4bool AllPixTrackerSD::ProcessHits(G4Step * aStep, G4TouchableHistory *)
 void AllPixTrackerSD::EndOfEvent(G4HCofThisEvent*)
 {
 
-	G4int NbHits = hitsCollection->entries();
-	if(NbHits > 0)
-		G4cout << "--------> Hits Collection : " << collectionName[0] << " has " << NbHits << " hits " << G4endl;
+	//G4int NbHits = hitsCollection->entries();
+	//if(NbHits > 0)
+	//	G4cout << "--------> Hits Collection : " << collectionName[0] << " has " << NbHits << " hits " << G4endl;
 
 	// clear the Set of pointers to hitCollection used for verification
 	m_hitsCollectionSet.clear();
+	firstStrikePrimary = false;
+	_totalEdep = 0.;
+	_kinEPrimary = 0.;
 
 }
 

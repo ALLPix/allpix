@@ -13,6 +13,7 @@
 
 using namespace std;
 
+
 ClassImp(FrameContainer)
 ClassImp(FrameStruct)
 
@@ -53,6 +54,22 @@ void FrameContainer::FillOneElement(Int_t xi, Int_t yi, Int_t width, Int_t count
 	m_frameXC_E[X] += E;           // Energy with detector effects
 
 }
+
+/*
+void FrameContainer::FillOneElement(Int_t xi, Int_t yi, Int_t width, Int_t counts, vector<Double_t> truthE, vector<Double_t> E){
+
+	// Fill pixel withouth MC info first
+	FillOneElement(xi, yi, width, counts);
+
+	// X,Y,C --> X,C : yi*width + xi
+	Int_t X = yi*width + xi;
+
+	//m_frameXC_TruthE_multiThl[X] = truthE; // Truth energy
+	//m_frameXC_E[X] = E;           // Energy with detector effects
+
+}
+*/
+
 
 void FrameContainer::SetLVL1(Int_t xi, Int_t yi, Int_t width, Int_t lvl1){
 
@@ -310,6 +327,7 @@ void FrameContainer::CleanUpMatrix(){
 	m_frameXC.clear();
 	m_lvl1.clear();
 	m_frameXC_TruthE.clear();
+	//m_frameXC_TruthE_multiThl.clear();
 	m_frameXC_E.clear();
 }
 

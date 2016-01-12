@@ -29,8 +29,6 @@ print sys.argv[3:]
 
 mySensorIDlist = sys.argv[3:]
 for mySensorID in mySensorIDlist:
-for mySensorID in mySensorIDlist:
-    telescopeTestDict[mySensorID] = 0
     telescopeTestDict[mySensorID] = 0
 
 #########################################################################################

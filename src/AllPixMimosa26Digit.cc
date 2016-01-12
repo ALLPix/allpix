@@ -14,8 +14,6 @@ AllPixMimosa26Digit::AllPixMimosa26Digit()
   pixelIDX = -1; 
   pixelIDY = -1; 
   pixelCounts = 0;
-  pixelEnergyDep = -11; // MC // Corrected MC charge (detector effects included, at Digi step)
-  pixelEnergyMC = -11; //MC only //nalipour
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....

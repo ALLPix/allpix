@@ -10,6 +10,9 @@
 
 #include <TROOT.h>
 
+#include "CLHEP/Units/SystemOfUnits.h"
+using namespace CLHEP;
+
 class TPolyLine3D;
 class TObjArray;
 

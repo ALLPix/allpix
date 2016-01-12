@@ -384,24 +384,8 @@ void ReadGeoDescription::ParseContext(TXMLNode *node)
 					m_detsGeo[m_firstIndx]->SetResistivity(val);
 
 				}				
-				else if(m_currentNodeName == __Bias_Voltage){ //nalipour
-
-					float val = atof(tempContent.c_str());
-					m_detsGeo[m_firstIndx]->SetBiasVoltage(val);
-
-				}
-				else if(m_currentNodeName == __Sensor_Type){ //nalipour
-
-				  G4String valS(tempContent.c_str());
-				  m_detsGeo[m_firstIndx]->SetSensorType(valS);
-
-				}
-				else if(m_currentNodeName == __Calibration_File){ //nalipour
-
-				  G4String valS(tempContent.c_str());
-				  m_detsGeo[m_firstIndx]->SetCalibrationFile(valS);
-
-				}
+				
+				
 				else if(m_currentNodeName == __MIP_Tot_S){
 
 					float val = atoi(tempContent.c_str());

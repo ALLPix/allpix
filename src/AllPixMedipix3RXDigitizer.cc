@@ -65,11 +65,13 @@ void AllPixMedipix3RXDigitizer::Digitize(){
 	AllPixGeoDsc * gD = GetDetectorGeoDscPtr();
 	gD->GetNPixelsX();
 
+	G4double kinEParent;
 	for(G4int itr  = 0 ; itr < nEntries ; itr++) {
 
 		tempPixel.first  = (*hitsCollection)[itr]->GetPixelNbX();
 		tempPixel.second = (*hitsCollection)[itr]->GetPixelNbY();
 		pixelsContent[tempPixel] += (*hitsCollection)[itr]->GetEdep();
+		kinEParent = (*hitsCollection)[itr]->GetKinEParent();
 
 	}
 
@@ -90,7 +92,6 @@ void AllPixMedipix3RXDigitizer::Digitize(){
 
 	for( ; pCItr != pixelsContent.end() ; pCItr++)
 	{
-
 		// Create one digit per pixel, I need to look at all the pixels first
 
 		AllPixMedipix3RXDigit * digit = new AllPixMedipix3RXDigit( nThresholds );
@@ -100,26 +101,28 @@ void AllPixMedipix3RXDigitizer::Digitize(){
 
 			// Compare to the corresponding threshold level
 			if ( (*pCItr).second > thlMap[thlI] ) {
-
 				digit->SetPixelIDX((*pCItr).first.first);
 				digit->SetPixelIDY((*pCItr).first.second);
+				digit->SetPixelEnergyDep( (*pCItr).second );
 				digit->IncreasePixelCountsMultiTHL( thlI );
-
 			}
 
 		}
+
+		// kinEnergy parent.  Once per event.
+		digit->SetKinEParent( kinEParent );
 
 		m_digitsCollection->insert(digit);
 
 	}
 
 	G4int dc_entries = m_digitsCollection->entries();
-	if ( dc_entries > 0 ) {
-		G4cout << "--------> Digits Collection : " << collectionName[0]
-		                                                             << "(" << m_hitsColName[0] << ")"
-		                                                             << " contains " << dc_entries
-		                                                             << " digits" << G4endl;
-	}
+	//if ( dc_entries > 0 ) {
+	//	G4cout << "--------> Digits Collection : " << collectionName[0]
+	//	                                                             << "(" << m_hitsColName[0] << ")"
+	//	                                                             << " contains " << dc_entries
+	//	                                                             << " digits" << G4endl;
+	//}
 
 	StoreDigiCollection(m_digitsCollection);
 

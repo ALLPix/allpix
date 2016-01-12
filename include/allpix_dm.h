@@ -16,6 +16,10 @@
 
 #include "allpix_dm_consts.h"
 
+using namespace std;
+
+
+
 /**
  * Contains only the pixels matrix
  *  and some members that may go to the
@@ -33,6 +37,8 @@ private:
 	// FIXME -->  I am unable to deserialize here <int, double>
 	// Truth energy (from Hits)
 	std::map<int, int> m_frameXC_TruthE;
+	// Truth energy multithreshold
+	//std::map<int, vector<Double_t> > m_frameXC_TruthE_multiThl;
 	// Corrected MC charge (detector effects included, at Digitization step)
 	std::map<int, int> m_frameXC_E;
 
@@ -53,6 +59,7 @@ public:
 	FrameContainer();
 	virtual ~FrameContainer(){};
 	void FillOneElement(Int_t, Int_t, Int_t, Int_t, Double_t, Double_t);
+	//void FillOneElement(Int_t xi, Int_t yi, Int_t width, Int_t counts, vector<Double_t> truthE, vector<Double_t> E); // multi threshold
 	void FillOneElement(Int_t, Int_t, Int_t, Int_t);
 	void SetLVL1(Int_t, Int_t, Int_t, Int_t);
 

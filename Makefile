@@ -19,7 +19,7 @@ rootdict:	./include/*.hh ./include/*.h
 		AllPix_Frames_WriteToEntuple.h allpix_dm.h \
 		AllPixDigitAnimation.hh LinkDef.h
 	@mv SelDict.cc ./src
-#	@mv SelDict.h ./include/
+	@mv SelDict.h ./include/
 # the geant4 makefile will compile the dictionary
 
 cleanroot:

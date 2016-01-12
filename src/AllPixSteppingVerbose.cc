@@ -38,8 +38,8 @@
 
 #include "G4SteppingManager.hh"
 #include "G4UnitsTable.hh"
-#include "CLHEP/Units/SystemOfUnits.h"
 
+#include "CLHEP/Units/SystemOfUnits.h"
 using namespace CLHEP;
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

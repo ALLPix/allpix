@@ -15,12 +15,8 @@
 #include "AllPixMCTruthDigitizer.hh"
 #include "AllPixLETCalculatorDigitizer.hh"
 
-// Included by newdigitizer.sh script --> TMPX
-#include "AllPixTMPXDigitizer.hh"
-// Included by newdigitizer.sh script --> NoThresh
-//#include "AllPixNoThreshDigitizer.hh"
-// Included by newdigitizer.sh script --> FEI4RadDamage
-#include "AllPixFEI4RadDamageDigitizer.hh"
+// Included by newdigitizer.sh script --> Medipix3RX
+#include "AllPixMedipix3RXDigitizer.hh"
 // __endofheader__
 
 // geometry
@@ -139,25 +135,13 @@ void AllPixEventAction::SetupDigitizers(){
 					cout << "    Setting up a " << digitizerName << " digitizer for det : " << detectorId << endl;
 				}
  
-// Included by newdigitizer.sh script --> FEI4RadDamage
-else if (digitizerName == "FEI4RadDamage") {
-			AllPixFEI4RadDamageDigitizer * dp = new AllPixFEI4RadDamageDigitizer(digitizerModulesNames[itr] , hcName, digitColectionName);
-			dmPtr = static_cast<AllPixDigitizerInterface *> (dp);
-			cout << "    Setting up a " << digitizerName << " digitizer for det : " << detectorId << endl;
-		}
-// Included by newdigitizer.sh script --> TMPX
-else if (digitizerName == "TMPX") {
-			AllPixTMPXDigitizer * dp = new AllPixTMPXDigitizer(digitizerModulesNames[itr] , hcName, digitColectionName);
+// Included by newdigitizer.sh script --> Medipix3RX
+else if (digitizerName == "Medipix3RX") {
+			AllPixMedipix3RXDigitizer * dp = new AllPixMedipix3RXDigitizer(digitizerModulesNames[itr] , hcName, digitColectionName);
 			dmPtr = static_cast<AllPixDigitizerInterface *> (dp);
 			cout << "    Setting up a " << digitizerName << " digitizer for det : " << detectorId << endl;
 		}
  
-// Included by newdigitizer.sh script --> NoThresh
-//else if (digitizerName == "NoThresh") {
-//			AllPixNoThreshDigitizer * dp = new AllPixNoThreshDigitizer(digitizerModulesNames[itr] , hcName, digitColectionName);
-//			dmPtr = static_cast<AllPixDigitizerInterface *> (dp);
-//			cout << "    Setting up a " << digitizerName << " digitizer for det : " << detectorId << endl;
-//		}
         // __endofdigitlist__
    	    else {
 			G4cout << "    can't find digitizer with name : " << digitizerName << G4endl;

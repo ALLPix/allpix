@@ -13,7 +13,7 @@
 #include "TF1.h"
 #include "CLHEP/Random/RandGauss.h"
 #include "CLHEP/Random/RandFlat.h"
-#include <cmath>
+
 //#include "SystemOfUnits.h"
 
 
@@ -705,11 +705,12 @@ vector<G4double>  AllPixFEI3StandardDigitizer::RKF5Integration(G4double x, G4dou
 
 
 //______________________________________________________________________________
-G4double  AllPixFEI3StandardDigitizer::SetDt(G4double dt, double ErreurMoy)
+G4double  AllPixFEI3StandardDigitizer::SetDt(G4double dt, G4double ErreurMoy)
 {
 
 	double Dt=dt;
-	if(std::isnan((double)ErreurMoy)){Dt=tup;}
+	//if(isnan(ErreurMoy)){Dt=tup;}
+	if( ErreurMoy != ErreurMoy ){Dt=tup;}
 	else if(ErreurMoy > Target){ Dt*=0.9;}
 	else if(ErreurMoy < Target){ Dt*=1.1;};
 
