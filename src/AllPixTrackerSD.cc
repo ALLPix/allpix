@@ -226,6 +226,7 @@ G4bool AllPixTrackerSD::ProcessHits(G4Step * aStep, G4TouchableHistory *)
 	const G4VProcess * aProcessPointer = aStep->GetPostStepPoint()->GetProcessDefinedStep();
 	// track
 	G4Track * aTrack = aStep->GetTrack();
+
 	// particle
 	G4ParticleDefinition * aParticle = aTrack->GetDefinition();
 

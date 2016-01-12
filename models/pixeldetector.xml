@@ -3,7 +3,100 @@
 
 <detectors>
 
+
+<!-- Timepix3 telescope planes-->
+
+<pixeldet id="300,301,302,303,304,305">
+<digitizer>MCTruth</digitizer>
+<npix_x>256</npix_x>
+<npix_y>256</npix_y>
+<npix_z>0</npix_z>
+
+<pixsize_x units="um">27.5</pixsize_x>
+<pixsize_y units="um">27.5</pixsize_y>
+<pixsize_z units="um">150.</pixsize_z>
+
+<chip_hx units="um">7055.5</chip_hx>
+<chip_hy units="um">8060</chip_hy>
+<chip_hz units="um">375.0</chip_hz>
+
+<chip_offsetx units="um">0.</chip_offsetx>
+<chip_offsety units="um">-1020.</chip_offsety>
+<chip_offsetz units="um">0.</chip_offsetz>
+
+<sensor_hx units="um">7040.</sensor_hx>
+<sensor_hy units="um">7040.</sensor_hy>
+<sensor_hz units="um">150.0</sensor_hz>
+
+<sensor_gr_excess_htop units="um">50.0</sensor_gr_excess_htop>
+<sensor_gr_excess_hbottom units="um">50.0</sensor_gr_excess_hbottom>
+<sensor_gr_excess_hright units="um">50.0</sensor_gr_excess_hright>
+<sensor_gr_excess_hleft units="um">50.0</sensor_gr_excess_hleft>
+
+<sensor_posx units="mm">0</sensor_posx>
+<sensor_posy units="mm">22.25</sensor_posy>
+<sensor_posz units="mm">0.</sensor_posz>
+
+
+<bump_radius units="um">7.0</bump_radius>
+<bump_height units="um">16.0</bump_height>
+<bump_offset_x units="um">0.0</bump_offset_x>
+<bump_offset_y units="um">0.0</bump_offset_y>
+<bump_dr units="um">1.0</bump_dr>
+
+
+<pcb_hx units="mm">23.50</pcb_hx>
+<pcb_hy units="mm">39.5</pcb_hy>
+<pcb_hz units="mm">0.88</pcb_hz>
+
+</pixeldet>
+
+
+
 <!-- MIMOSA26 -->
+<!--
+<pixeldet id="300,301,302,303,304,305">
+
+<digitizer>Mimosa26</digitizer>
+
+<npix_x>1152</npix_x>
+<npix_y>576</npix_y>
+<npix_z>0</npix_z>
+
+<pixsize_x units="um">9.2</pixsize_x>
+<pixsize_y units="um">9.2></pixsize_y>
+<pixsize_z units="um">25.</pixsize_z>
+
+<chip_hx units="um">10598.4</chip_hx>
+<chip_hy units="um">5299.2</chip_hy>
+<chip_hz units="um">0.0</chip_hz>
+
+<chip_posx units="um">0.</chip_posx>
+<chip_posy units="um">0.</chip_posy>
+<chip_posz units="um">0.</chip_posz>
+
+<sensor_hx units="um">10598.4</sensor_hx>
+<sensor_hy units="um">5299.2</sensor_hy>
+<sensor_hz units="um">25.0</sensor_hz>
+
+<sensor_gr_excess_htop units="um">10.0</sensor_gr_excess_htop>
+<sensor_gr_excess_hbottom units="um">10.0</sensor_gr_excess_hbottom>
+<sensor_gr_excess_hright units="um">10.0</sensor_gr_excess_hright>
+<sensor_gr_excess_hleft units="um">10.0</sensor_gr_excess_hleft>
+
+<sensor_posx units="mm">0</sensor_posx>
+<sensor_posy units="mm">0.0</sensor_posy>
+<sensor_posz units="mm">0</sensor_posz>
+
+<pcb_hx units="mm">30.75</pcb_hx>
+<pcb_hy units="mm">39.7</pcb_hy>
+<pcb_hz units="mm">0.0</pcb_hz>
+
+</pixeldet>
+-->
+
+<!-- MIMOSA26 -->
+<!--
 <pixeldet id="300,301,302,303,304,305">
 
 <digitizer>Mimosa26</digitizer>
@@ -41,10 +134,63 @@
 <pcb_hz units="mm">0.00000001</pcb_hz>
 
 </pixeldet>
+-->
+<!-- 200 um sensor-->
+<pixeldet id="200">
+<digitizer>TMPX</digitizer>
+
+<npix_x>256</npix_x>
+<npix_y>256</npix_y>
+<npix_z>0</npix_z>
+
+<pixsize_x units="um">27.5</pixsize_x>
+<pixsize_y units="um">27.5</pixsize_y>
+<pixsize_z units="um">100.</pixsize_z>
+
+<chip_hx units="um">7055.5</chip_hx>
+<chip_hy units="um">8060</chip_hy>
+<chip_hz units="um">375.0</chip_hz>
+
+<chip_offsetx units="um">0.</chip_offsetx>
+<chip_offsety units="um">-1020.</chip_offsety>
+<chip_offsetz units="um">0.</chip_offsetz>
+
+<sensor_hx units="um">7040.</sensor_hx>
+<sensor_hy units="um">7040.</sensor_hy>
+<sensor_hz units="um">100.0</sensor_hz>
+
+<sensor_gr_excess_htop units="um">50.0</sensor_gr_excess_htop>
+<sensor_gr_excess_hbottom units="um">50.0</sensor_gr_excess_hbottom>
+<sensor_gr_excess_hright units="um">50.0</sensor_gr_excess_hright>
+<sensor_gr_excess_hleft units="um">50.0</sensor_gr_excess_hleft>
+
+<sensor_posx units="mm">0</sensor_posx>
+<sensor_posy units="mm">22.25</sensor_posy>
+<sensor_posz units="mm">0.</sensor_posz>
+
+
+<bump_radius units="um">7.0</bump_radius>
+<bump_height units="um">16.0</bump_height>
+<bump_offset_x units="um">0.0</bump_offset_x>
+<bump_offset_y units="um">0.0</bump_offset_y>
+<bump_dr units="um">1.0</bump_dr>
+
+
+<pcb_hx units="mm">23.50</pcb_hx>
+<pcb_hy units="mm">39.5</pcb_hy>
+<pcb_hz units="mm">0.88</pcb_hz>
+
+<sensor_resistivity>5000.0</sensor_resistivity>
+<Bias_Voltage>35.0</Bias_Voltage>
+<Sensor_Type>n-in-p</Sensor_Type>
+<Chip_Threshold> 984. </Chip_Threshold>
+<Calibration_File>/afs/cern.ch/work/n/nalipour/AllPix/nalipour-dev-timepix/allpix/models/calibration_B06_W0125.txt</Calibration_File>
+
+</pixeldet>
 
 <!-- 100 um sensor-->
-<pixeldet id="2223">
-<digitizer>TMPX</digitizer>
+<pixeldet id="100">
+<digitizer>MCTruth</digitizer>
 <digitizer>FEI4RadDamage</digitizer>
 <npix_y>336</npix_y>
 <chip_hy units="um">8400</chip_hy>
@@ -91,21 +237,20 @@
 <pcb_hy units="mm">39.5</pcb_hy>
 <pcb_hz units="mm">0.88</pcb_hz>
 
-<sensor_resistivity>4500.0</sensor_resistivity>
-<MIP_Tot> 160 </MIP_Tot>
-<MIP_Charge> 24000.</MIP_Charge>
-<Counter_Depth> 11810 </Counter_Depth>
-<Clock_Unit> 10.41e-9 </Clock_Unit>
+<sensor_resistivity>5000.0</sensor_resistivity>
+<Bias_Voltage>35.0</Bias_Voltage>
+<Sensor_Type>n-in-p</Sensor_Type>
+<Chip_Threshold> 984. </Chip_Threshold>
+<Calibration_File>/afs/cern.ch/work/n/nalipour/AllPix/nalipour-dev-timepix/allpix/models/calibration_B06_W0125.txt</Calibration_File>
 
 <Chip_Noise>125</Chip_Noise>
-<Chip_Threshold> 800. </Chip_Threshold>
-<Cross_Talk>0.005</Cross_Talk>
-<Saturation_Energy>350.</Saturation_Energy>
 </pixeldet>
 
-<!-- 200 um sensor-->
-<pixeldet id="2224">
-<digitizer>TMPX</digitizer>
+
+
+<!-- 50 um sensor-->
+<pixeldet id="50">
+<digitizer>MCTruth</digitizer>
 
 <npix_x>256</npix_x>
 <npix_y>256</npix_y>
@@ -113,7 +258,7 @@
 
 <pixsize_x units="um">27.5</pixsize_x>
 <pixsize_y units="um">27.5</pixsize_y>
-<pixsize_z units="um">100.</pixsize_z>
+<pixsize_z units="um">25.</pixsize_z>
 
 <chip_hx units="um">7055.5</chip_hx>
 <chip_hy units="um">8060</chip_hy>
@@ -125,7 +270,7 @@
 
 <sensor_hx units="um">7040.</sensor_hx>
 <sensor_hy units="um">7040.</sensor_hy>
-<sensor_hz units="um">100.0</sensor_hz>
+<sensor_hz units="um">25.0</sensor_hz>
 
 <sensor_gr_excess_htop units="um">50.0</sensor_gr_excess_htop>
 <sensor_gr_excess_hbottom units="um">50.0</sensor_gr_excess_hbottom>
@@ -148,16 +293,165 @@
 <pcb_hy units="mm">39.5</pcb_hy>
 <pcb_hz units="mm">0.88</pcb_hz>
 
-<sensor_resistivity>4500.0</sensor_resistivity>
-<MIP_Tot> 160 </MIP_Tot>
-<MIP_Charge> 24000.</MIP_Charge>
-<Counter_Depth> 11810 </Counter_Depth>
-<Clock_Unit> 10.41e-9 </Clock_Unit>
+<sensor_resistivity>5000.0</sensor_resistivity>
+<Bias_Voltage>15.0</Bias_Voltage>
+<Sensor_Type>p-in-n</Sensor_Type>
+<Chip_Threshold> 984. </Chip_Threshold>
+<Calibration_File>/afs/cern.ch/work/n/nalipour/AllPix/nalipour-dev-timepix/allpix/models/calibration_A06_W0110.txt</Calibration_File>
 
-<Chip_Noise>120.</Chip_Noise>
-<Chip_Threshold> 800. </Chip_Threshold>
-<Cross_Talk>0.005</Cross_Talk>
-<Saturation_Energy>350.</Saturation_Energy>
+</pixeldet>
+
+
+
+
+
+
+
+
+
+<!-- 130 um sensor-->
+<pixeldet id="1300">
+<digitizer>MCTruth</digitizer>
+
+<npix_x>256</npix_x>
+<npix_y>256</npix_y>
+<npix_z>0</npix_z>
+
+<pixsize_x units="um">27.5</pixsize_x>
+<pixsize_y units="um">27.5</pixsize_y>
+<pixsize_z units="um">60.</pixsize_z>
+
+<chip_hx units="um">7055.5</chip_hx>
+<chip_hy units="um">8060</chip_hy>
+<chip_hz units="um">375.0</chip_hz>
+
+<chip_offsetx units="um">0.</chip_offsetx>
+<chip_offsety units="um">-1020.</chip_offsety>
+<chip_offsetz units="um">0.</chip_offsetz>
+
+<sensor_hx units="um">7040.</sensor_hx>
+<sensor_hy units="um">7040.</sensor_hy>
+<sensor_hz units="um">60.0</sensor_hz>
+
+<sensor_gr_excess_htop units="um">50.0</sensor_gr_excess_htop>
+<sensor_gr_excess_hbottom units="um">50.0</sensor_gr_excess_hbottom>
+<sensor_gr_excess_hright units="um">50.0</sensor_gr_excess_hright>
+<sensor_gr_excess_hleft units="um">50.0</sensor_gr_excess_hleft>
+
+<sensor_posx units="mm">0</sensor_posx>
+<sensor_posy units="mm">22.25</sensor_posy>
+<sensor_posz units="mm">0.</sensor_posz>
+
+
+<bump_radius units="um">7.0</bump_radius>
+<bump_height units="um">16.0</bump_height>
+<bump_offset_x units="um">0.0</bump_offset_x>
+<bump_offset_y units="um">0.0</bump_offset_y>
+<bump_dr units="um">1.0</bump_dr>
+
+<pcb_hx units="mm">23.50</pcb_hx>
+<pcb_hy units="mm">39.5</pcb_hy>
+<pcb_hz units="mm">0.88</pcb_hz>
+
+<sensor_resistivity>5000.0</sensor_resistivity>
+<Bias_Voltage>35.0</Bias_Voltage>
+<Sensor_Type>n-in-p</Sensor_Type>
+<Chip_Threshold> 984. </Chip_Threshold>
+<Calibration_File>/afs/cern.ch/work/n/nalipour/AllPix/nalipour-dev-timepix/allpix/models/calibration_B06_W0125.txt</Calibration_File>
+
+</pixeldet>
+
+
+
+<!-- 450 um sensor-->
+<pixeldet id="450">
+<digitizer>MCTruth</digitizer>
+
+<npix_x>256</npix_x>
+<npix_y>256</npix_y>
+<npix_z>0</npix_z>
+
+<pixsize_x units="um">27.5</pixsize_x>
+<pixsize_y units="um">27.5</pixsize_y>
+<pixsize_z units="um">225.</pixsize_z>
+
+<chip_hx units="um">7055.5</chip_hx>
+<chip_hy units="um">8060</chip_hy>
+<chip_hz units="um">375.0</chip_hz>
+
+<chip_offsetx units="um">0.</chip_offsetx>
+<chip_offsety units="um">-1020.</chip_offsety>
+<chip_offsetz units="um">0.</chip_offsetz>
+
+<sensor_hx units="um">7040.</sensor_hx>
+<sensor_hy units="um">7040.</sensor_hy>
+<sensor_hz units="um">225.0</sensor_hz>
+
+<sensor_gr_excess_htop units="um">50.0</sensor_gr_excess_htop>
+<sensor_gr_excess_hbottom units="um">50.0</sensor_gr_excess_hbottom>
+<sensor_gr_excess_hright units="um">50.0</sensor_gr_excess_hright>
+<sensor_gr_excess_hleft units="um">50.0</sensor_gr_excess_hleft>
+
+<sensor_posx units="mm">0</sensor_posx>
+<sensor_posy units="mm">22.25</sensor_posy>
+<sensor_posz units="mm">0.</sensor_posz>
+
+
+<bump_radius units="um">7.0</bump_radius>
+<bump_height units="um">16.0</bump_height>
+<bump_offset_x units="um">0.0</bump_offset_x>
+<bump_offset_y units="um">0.0</bump_offset_y>
+<bump_dr units="um">1.0</bump_dr>
+
+<pcb_hx units="mm">23.50</pcb_hx>
+<pcb_hy units="mm">39.5</pcb_hy>
+<pcb_hz units="mm">0.88</pcb_hz>
+</pixeldet>
+
+
+<!-- 290 um sensor-->
+<pixeldet id="290">
+<digitizer>MCTruth</digitizer>
+
+<npix_x>256</npix_x>
+<npix_y>256</npix_y>
+<npix_z>0</npix_z>
+
+<pixsize_x units="um">27.5</pixsize_x>
+<pixsize_y units="um">27.5</pixsize_y>
+<pixsize_z units="um">145.</pixsize_z>
+
+<chip_hx units="um">7055.5</chip_hx>
+<chip_hy units="um">8060</chip_hy>
+<chip_hz units="um">375.0</chip_hz>
+
+<chip_offsetx units="um">0.</chip_offsetx>
+<chip_offsety units="um">-1020.</chip_offsety>
+<chip_offsetz units="um">0.</chip_offsetz>
+
+<sensor_hx units="um">7040.</sensor_hx>
+<sensor_hy units="um">7040.</sensor_hy>
+<sensor_hz units="um">145.0</sensor_hz>
+
+<sensor_gr_excess_htop units="um">50.0</sensor_gr_excess_htop>
+<sensor_gr_excess_hbottom units="um">50.0</sensor_gr_excess_hbottom>
+<sensor_gr_excess_hright units="um">50.0</sensor_gr_excess_hright>
+<sensor_gr_excess_hleft units="um">50.0</sensor_gr_excess_hleft>
+
+<sensor_posx units="mm">0</sensor_posx>
+<sensor_posy units="mm">22.25</sensor_posy>
+<sensor_posz units="mm">0.</sensor_posz>
+
+
+<bump_radius units="um">7.0</bump_radius>
+<bump_height units="um">16.0</bump_height>
+<bump_offset_x units="um">0.0</bump_offset_x>
+<bump_offset_y units="um">0.0</bump_offset_y>
+<bump_dr units="um">1.0</bump_dr>
+
+<pcb_hx units="mm">23.50</pcb_hx>
+<pcb_hy units="mm">39.5</pcb_hy>
+<pcb_hz units="mm">0.88</pcb_hz>
 </pixeldet>
 
 </detectors>

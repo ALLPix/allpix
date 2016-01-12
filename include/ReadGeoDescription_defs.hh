@@ -69,5 +69,8 @@
 #define __Cross_Talk_S "Cross_Talk"
 #define __Saturation_Energy_S "Saturation_Energy"
 
+#define __Bias_Voltage "Bias_Voltage" //nalipour
+#define __Sensor_Type "Sensor_Type" //nalipour
+#define __Calibration_File "Calibration_File" //nalipour
 
 

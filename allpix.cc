@@ -185,6 +185,8 @@ int main(int argc, char** argv)
 	// Get the pointer to the User Interface manager
 	//
 	G4UImanager* UI = G4UImanager::GetUIpointer();
+	//UI->ApplyCommand("/tracking/verbose 1"); //nalipour: get information from secondary vertices???
+
 
 	G4String command = "/control/execute ";
 
