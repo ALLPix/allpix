@@ -1,0 +1,17 @@
+#########################
+# GPS
+/gps/particle gamma
+/gps/pos/type Plane
+#/gps/pos/rot1 0 0 1
+#/gps/pos/rot2 1 0 0
+/gps/pos/shape Rectangle
+/gps/pos/centre 0.0 0.0 100.0 mm
+/gps/pos/halfy 7040. um
+/gps/pos/halfx 7040. um
+/gps/direction  0 0 -1
+/gps/ene/type User
+/gps/hist/type energy
+# spectra
+#/control/execute macros/gps_source_ASI_50kVp_XRayTube.mac
+/gps/hist/point 0.1 1
+/gps/source/list
