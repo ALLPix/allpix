@@ -208,7 +208,7 @@ void AllPixRun::FillTelescopeFiles(const G4Run* aRun, G4String folderName, G4boo
 	 *
 	 */
 
-	G4int runID = aRun->GetRunID();
+	runID = aRun->GetRunID();
 
 	m_runTime = 1351163373; // reference time for Run 0: Thu Oct 25 10:09:33 2012 UTC
 

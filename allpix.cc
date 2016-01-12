@@ -190,8 +190,8 @@ int main(int argc, char** argv)
 
 	if (argc-1 == _RUN_BATCH)   // batch mode
 	{
-		G4String command = "/control/execute ";
-		G4String fileName = argv[_MACRO];
+		command = "/control/execute ";
+		fileName = argv[_MACRO];
 		UI->ApplyCommand(command+fileName);
 	}
 	else

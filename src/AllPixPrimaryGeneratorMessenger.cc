@@ -205,7 +205,7 @@ void AllPixPrimaryGeneratorMessenger::SetNewValue(
 		TFile * f = new TFile("hitFunction.root","recreate");
 		TH1I * h = new TH1I("h","h",1000,0,1000);
 
-		for (G4int f = 0; f < m_frames; f++)
+		for (G4int fr = 0; fr < m_frames; fr++)
 		{
 			if ( m_beamTypeHitFunc == "gauss" )
 			{

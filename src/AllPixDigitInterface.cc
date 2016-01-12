@@ -16,6 +16,6 @@ void AllPixDigitInterface::SetPixelCountsMultiTHL(G4int, G4int){;}
 
 void AllPixDigitInterface::SetPixelEnergyDepMultiTHL(G4double, G4double){;}
 
-G4int AllPixDigitInterface::GetPixelCountsMultiTHL(G4int){;}
+G4int AllPixDigitInterface::GetPixelCountsMultiTHL(G4int){return 0;}
 
 void AllPixDigitInterface::IncreasePixelCountsMultiTHL(G4int){;}

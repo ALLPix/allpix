@@ -34,7 +34,7 @@ class SimpleHits {
 
  public:
   SimpleHits();
-  ~SimpleHits(){};
+  virtual ~SimpleHits(){};
   void Rewind();
 
   // total energy (all hits in event)
@@ -74,7 +74,7 @@ class Hits_WriteToNtuple {
 public:
 
   Hits_WriteToNtuple(TString, TString, TString, Int_t, TString om="RECREATE");
-  ~Hits_WriteToNtuple(){};
+  virtual ~Hits_WriteToNtuple(){};
   void fillVars(SimpleHits *);
   void closeNtuple();
   TString GetNtupleFileName(){return m_ntupleFileName;};
