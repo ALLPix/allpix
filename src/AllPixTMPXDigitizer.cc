@@ -47,7 +47,7 @@ AllPixTMPXDigitizer::~AllPixTMPXDigitizer()
 
 void AllPixTMPXDigitizer::Digitize()
 {
-  G4double elec=3.64*eV;
+  this->elec=3.64*eV;
   m_digitsCollection = new AllPixTMPXDigitsCollection("AllPixTMPXDigitizer", collectionName[0] );
 
   // get the digiManager
@@ -74,19 +74,19 @@ void AllPixTMPXDigitizer::Digitize()
 
   //Parameters for Charge sharing and TOT!!!!!!
   // BE careful
-  const Double_t epsilon = 11.8*8.854187817e-14; // [F/cm] -> F=As/V (silicon)
-  const Double_t echarge=1.60217646e-19; //[C=As]
-  const Double_t Default_Hole_Mobility=480.0; //[cm2/Vs] Hole mobility
-  const Double_t Default_Hole_D=12; //;// Hole diffusion [cm2/s]
+//  epsilon = 11.8*8.854187817e-14; // [F/cm] -> F=As/V (silicon)
+  echarge=1.60217646e-19; //[C=As]
+  Default_Hole_Mobility=480.0; //[cm2/Vs] Hole mobility
+  Default_Hole_D=12; //;// Hole diffusion [cm2/s]
 
-  const Double_t Default_Electron_Mobility=1415.0; //[cm2/Vs] Electron mobility
-  const Double_t Default_Electron_D=36; //;// Electron diffusion [cm2/s]
+  Default_Electron_Mobility=1415.0; //[cm2/Vs] Electron mobility
+  Default_Electron_D=36; //;// Electron diffusion [cm2/s]
 
 
   //// ============PARAMETERS TO ADJUST================
   string sensorType="n-in-p"; // or n-in-p
   //Double_t V_B=35; //[V] //Run 1189
-  Double_t V_B=35; //[V] //Run 2302 Vb=-35[V]
+  V_B=35; //[V] //Run 2302 Vb=-35[V]
 
   //-------L04-W0125-------// //100um p-in-n
   //G4double a=14.2;
@@ -98,8 +98,8 @@ void AllPixTMPXDigitizer::Digitize()
   //B06: dopant conc.=9.88e11                                                                                                                                                        
   TString carrier_type="n";
   TString bulk_type="p";
-  Double_t nDopants=9.88e11;
-  Double_t V_D=30.31;
+  //Double_t nDopants=9.88e11;
+  V_D=30.31;
   Double_t temperature=300; //[K]
 
   G4double a=29.8;
@@ -108,10 +108,10 @@ void AllPixTMPXDigitizer::Digitize()
   G4double t=0.7;
   // //-----------------------//
 
-  Double_t resistivity=5000; //[ohm cm] 
+  resistivity=5000; //[ohm cm]
   ///=================================================
-  Double_t mobility_const=0.0;
-  Double_t diffusion_const=0.0;
+  //mobility_const=0.0;
+  //diffusion_const=0.0;
   if (sensorType=="p-in-n")
     {
       mobility_const=Default_Hole_Mobility;
@@ -144,7 +144,7 @@ void AllPixTMPXDigitizer::Digitize()
       AvgPosX+=tempPixel.first*pitchX+xpos+pitchX/2.0;
       AvgPosY+=tempPixel.second*pitchY+ypos+pitchY/2.0;
       
-      Double_t depletionWidth=(thickness/(2*V_D))*(V_D+V_B)-2e-3; //TMath::Sqrt(V_B/V_D)*thickness; //[cm]
+      depletionWidth=(thickness/(2*V_D))*(V_D+V_B)-2e-3; //TMath::Sqrt(V_B/V_D)*thickness; //[cm]
       G4cout << "test depletionWidth=" << (thickness/(2*V_D))*(V_D+V_B) << "[mm]" << G4endl; 
       G4cout << "depletionWidth=" << depletionWidth << "[mm]" << G4endl;
 
@@ -235,7 +235,6 @@ void AllPixTMPXDigitizer::Digitize()
       if(((*pCItr).second)/keV > threshold) // over threshold !
 	{
 	  G4cout << "yes" << G4endl;
-	  pair<G4int, G4int> tempPixel;
 	  tempPixel.first=(*pCItr).first.first;
 	  tempPixel.second=(*pCItr).first.second;
 

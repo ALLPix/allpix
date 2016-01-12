@@ -652,7 +652,6 @@ void AllPixMimosa26Digitizer::Digitize(){
     {
       if((*pCItr).second > m_digitIn.thl) // over threshold !
 	{
-	  pair<G4int, G4int> tempPixel;
 	  tempPixel.first=(*pCItr).first.first;
 	  tempPixel.second=(*pCItr).first.second;
 
@@ -679,7 +678,6 @@ void AllPixMimosa26Digitizer::Digitize(){
   map<pair<G4int, G4int>, MC_content >::iterator pCItr_MC = pixelsContent_MC.begin();
   for( ; pCItr_MC != pixelsContent_MC.end() ; pCItr_MC++)
     {
-      pair<G4int, G4int> tempPixel;
       tempPixel.first=(*pCItr_MC).first.first;
       tempPixel.second=(*pCItr_MC).first.second;
 

@@ -73,7 +73,7 @@ public:
 */
 	inline G4int GetPixelIDX()   {return pixelIDX;};
 	inline G4int GetPixelIDY()   {return pixelIDY;};
-	inline G4int GetPixelCounts() {};
+	inline G4int GetPixelCounts() {return 0;};
 	/*
 	inline G4int GetPixelCounts(G4int thl)  {
 		if(thl >= 0 && thl <= nthresholds ) {

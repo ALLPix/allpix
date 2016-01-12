@@ -328,7 +328,7 @@ void AllPixPhysicsList::AddAllPixPhysicsList(const G4String& name)
     hadronPhys.push_back( new HadronPhysicsQGSP_BIC_HP());
 
   } 
-  
+
   
   else if (name == "LIVERMORE_FTFP_BERT") {
 
@@ -339,7 +339,7 @@ void AllPixPhysicsList::AddAllPixPhysicsList(const G4String& name)
 	
     G4cout << "Implementing  physics list LIVERMORE_FTFP_BERT"
            << G4endl;
-  } 
+  }  */
   else if (name == "Livermore")  //nalipour
     {
       emAllPixPhysicsList = new G4EmLivermorePhysics();
@@ -385,7 +385,7 @@ void AllPixPhysicsList::SetBuilderList1(G4bool flagHP)
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo.....
 
- void AllPixPhysicsList::SetBuilderList2(G4bool addStopping)
+ void AllPixPhysicsList::SetBuilderList2(G4bool /*addStopping*/)
 {
   hadronPhys.push_back( new G4EmExtraPhysics(verboseLevel));
   //hadronPhys.push_back( new G4HadronElasticPhysicsLHEP(verboseLevel));

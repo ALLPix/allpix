@@ -58,12 +58,12 @@ private:
   TH1F *timeMap_h;
 
   G4double GetElectricField(G4double z);
-  G4double GetMobility(G4double electricField, G4double temperature, G4bool isHole);
-  G4double GetDriftVelocity(G4double electricField, G4double mobility, G4bool isHole);
-  G4double GetMeanFreePath(G4double driftVelocity, G4bool isHole);
-  G4double GetTrappingProbability(G4double z, G4double meanFreePath);
-  G4double GetDriftTime(G4bool isHole);
-  G4double GetTimeToElectrode(G4double z, G4bool isHole);
+  G4double GetMobility(G4double electricField, G4double Temperature, G4bool isHoleBit);
+  G4double GetDriftVelocity(G4double electricField, G4double mobility, G4bool isHoleBit);
+  G4double GetMeanFreePath(G4double driftVelocity, G4bool isHoleBit);
+  G4double GetTrappingProbability(G4double z, G4double meanFreePath,G4bool isHoleBit);
+  G4double GetDriftTime(G4bool isHoleBit);
+  G4double GetTimeToElectrode(G4double z, G4bool isHoleBit);
 
   G4int EnergyToTOT(G4double Energy, G4double threshold);
   G4double SlimEdgeEffect(G4int nX,G4double xpos,G4double eHit);

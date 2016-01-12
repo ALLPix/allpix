@@ -35,7 +35,7 @@ class WriteToNtuple {
 public:
 
   WriteToNtuple(TString, TString, TString, Int_t, TString om="RECREATE");
-  ~WriteToNtuple();
+  virtual ~WriteToNtuple();
   void fillVars(FramesHandler *);
   void closeNtuple();
   TString GetNtupleFileName(){return m_ntupleFileName;};

@@ -136,7 +136,7 @@ G4double AllPixFEI4RadDamageDigitizer::GetElectricField(G4double z){
 	return electricField*1.0E-7;
 }
 
-G4double AllPixFEI4RadDamageDigitizer::GetMobility(G4double electricField, G4double temperature, G4bool isHole){ 
+G4double AllPixFEI4RadDamageDigitizer::GetMobility(G4double electricField, G4double Temperature, G4bool isHoleBit){
 	
 	// Initialize variables so they have the right scope
 	G4double vsat = 0;
@@ -144,60 +144,60 @@ G4double AllPixFEI4RadDamageDigitizer::GetMobility(G4double electricField, G4dou
 	G4double beta = 0;	
 
 	//These parameterizations come from C. Jacoboni et al., Solid‐State Electronics 20 (1977) 77‐89. (see also https://cds.cern.ch/record/684187/files/indet-2001-004.pdf).
-	if(!isHole){
-		vsat = 15.3*pow(temperature,-0.87);	// mm/ns
-		ecrit = 1.01E-7*pow(temperature,1.55);	// MV/ns
-		beta = 2.57E-2*pow(temperature,0.66);
+	if(!isHoleBit){
+		vsat = 15.3*pow(Temperature,-0.87);	// mm/ns
+		ecrit = 1.01E-7*pow(Temperature,1.55);	// MV/ns
+		beta = 2.57E-2*pow(Temperature,0.66);
 	}
-	if(isHole){
-		vsat = 1.62*pow(temperature,-0.52);	// mm/ns
-		ecrit = 1.24E-7*pow(temperature,1.68);	// MV/ns
-		beta = 0.46*pow(temperature,0.17);
+	if(isHoleBit){
+		vsat = 1.62*pow(Temperature,-0.52);	// mm/ns
+		ecrit = 1.24E-7*pow(Temperature,1.68);	// MV/ns
+		beta = 0.46*pow(Temperature,0.17);
 	}
 
-	G4double mobility = (vsat/ecrit)/pow(1+pow((electricField/ecrit),beta),(1/beta));	
-	return mobility;  					// mm^2/(MV*ns)
+	G4double mobility_calculation_res = (vsat/ecrit)/pow(1+pow((electricField/ecrit),beta),(1/beta));
+	return mobility_calculation_res;  					// mm^2/(MV*ns)
 }
 
-G4double AllPixFEI4RadDamageDigitizer::GetDriftVelocity(G4double electricField, G4double mobility, G4bool isHole){
-	G4double driftVelocity = mobility*electricField;// mm/ns
-	if(isHole) driftVelocity = -1*driftVelocity; // Drifts in opposite direction
+G4double AllPixFEI4RadDamageDigitizer::GetDriftVelocity(G4double electricField, G4double Mobility, G4bool isHoleBit){
+	G4double driftVelocity = Mobility*electricField;// mm/ns
+	if(isHoleBit) driftVelocity = -1*driftVelocity; // Drifts in opposite direction
 	return driftVelocity;
 }
 
-G4double AllPixFEI4RadDamageDigitizer::GetMeanFreePath(G4double driftVelocity, G4bool isHole){
+G4double AllPixFEI4RadDamageDigitizer::GetMeanFreePath(G4double driftVelocity, G4bool isHoleBit){
 
 	G4double meanFreePath = 0;	
-	if(!isHole) meanFreePath = driftVelocity*trappingTimeElectrons; // mm
-	if(isHole) meanFreePath = driftVelocity*trappingTimeHoles; // mm
+	if(!isHoleBit) meanFreePath = driftVelocity*trappingTimeElectrons; // mm
+	if(isHoleBit) meanFreePath = driftVelocity*trappingTimeHoles; // mm
 	return meanFreePath;
 }
 
-G4double AllPixFEI4RadDamageDigitizer::GetTrappingProbability(G4double z, G4double meanFreePath){
-	if(isHole) z = 0.25 - z; // For holes, should consider opposite direction.  0.25 mm is the depth of the sensor bulk.
+G4double AllPixFEI4RadDamageDigitizer::GetTrappingProbability(G4double z, G4double meanFreePath, G4bool isHoleBit){
+	if(isHoleBit) z = 0.25 - z; // For holes, should consider opposite direction.  0.25 mm is the depth of the sensor bulk.
 	G4double trappingProbability = 1.0 - TMath::Exp(-TMath::Abs(z/(meanFreePath))); 
 	return trappingProbability;
 }
 
-G4double AllPixFEI4RadDamageDigitizer::GetDriftTime(G4bool isHole){
+G4double AllPixFEI4RadDamageDigitizer::GetDriftTime(G4bool isHoleBit){
 	G4double u = CLHEP::RandFlat::shoot(0.,1.); // 
 	G4double driftTime = 0;
 
-	if(!isHole) driftTime = (-1.)*trappingTimeElectrons*TMath::Log(u); // ns
-	if(isHole) driftTime = (-1.)*trappingTimeHoles*TMath::Log(u); // ns
+	if(!isHoleBit) driftTime = (-1.)*trappingTimeElectrons*TMath::Log(u); // ns
+	if(isHoleBit) driftTime = (-1.)*trappingTimeHoles*TMath::Log(u); // ns
 	return driftTime;
 }
 
-G4double AllPixFEI4RadDamageDigitizer::GetTimeToElectrode(G4double z, G4bool isHole){
+G4double AllPixFEI4RadDamageDigitizer::GetTimeToElectrode(G4double z, G4bool isHoleBit){
 	// Uses z position in mm to return time to electrode, in ns
 	// The mapping takes care of holes going in opposite direction
 	G4double timeToElectrode = 0;
-	if(!isHole) 
+	if(!isHoleBit)
 	  {
 	    int n_binz = timeMap_e->GetZaxis()->FindBin(0.25 - z);	// using z as distance to readout side. 0.25 mm is the depth of the sensor bulk.				
 	    timeToElectrode = timeMap_e->GetBinContent(n_binz);	
 	  }
-	if(isHole)
+	if(isHoleBit)
 	  {
 	    int n_binz = timeMap_h->GetZaxis()->FindBin(0.25 - z);							
 	    timeToElectrode = timeMap_h->GetBinContent(n_binz);			
@@ -249,7 +249,7 @@ void AllPixFEI4RadDamageDigitizer::Digitize(){
 		for(G4int nQ  = 0 ; nQ < precision ; nQ++) {
 				
 		  G4double eHit = G4double(eHitTotal)/(2*precision); // eV; divide in half because we are treating holes separately	
-		  G4double eHitbefore = eHit;
+		  //G4double eHitbefore = eHit;
 		  
 		  // Loop over everything following twice, once for holes and once for electrons
 		  for(G4int eholes=0 ; eholes<2 ; eholes++) { // Loop over everything twice, once for electrons and once for holes
@@ -270,10 +270,10 @@ void AllPixFEI4RadDamageDigitizer::Digitize(){
 		    // Reset extraPixel coordinates each time through loop
 		    extraPixel = tempPixel;
 		    
-		    G4double mobility = GetMobility(electricField, temperature, isHole);
-		    G4double driftVelocity = GetDriftVelocity(electricField, mobility, isHole);
-		    G4double meanFreePath = GetMeanFreePath(driftVelocity, isHole);
-		    G4double trappingProbability = GetTrappingProbability(zpos, meanFreePath);
+		    mobility = GetMobility(electricField, temperature, isHole);
+		    //G4double driftVelocity = GetDriftVelocity(electricField, mobility, isHole);
+		    //G4double meanFreePath = GetMeanFreePath(driftVelocity, isHole);
+		    //G4double trappingProbability = GetTrappingProbability(zpos, meanFreePath,isHole);
 		    G4double timeToElectrode = GetTimeToElectrode(zpos, isHole);
 		    G4double driftTime = GetDriftTime(isHole);
 		    G4double hallEffect = 1.13 + 0.0008*(temperature - 273.0);      //Hall Scattering Factor - taken from https://cds.cern.ch/record/684187/files/indet-2001-004.pdf

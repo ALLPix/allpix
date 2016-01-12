@@ -416,7 +416,7 @@ G4double AllPixTimepixDigitizer::MyErf(G4double x){
 }
 
 
-G4double AllPixTimepixDigitizer::GetIkrum(double energy,double Target){
+G4double AllPixTimepixDigitizer::GetIkrum(double energy,double aTarget){
 	
   G4double Max=0;
   if(energy>SaturationEnergy)  Max= (1.0/keV)*SaturationEnergy*DefaultGain;
@@ -435,7 +435,7 @@ G4double AllPixTimepixDigitizer::GetIkrum(double energy,double Target){
 	G4cout << "[IKRum Calculation] SE : " << SaturationEnergy << endl; */
 
 	
-  return (Max-(1.0/keV)*m_digitIn.thl*DefaultGain)/(ClockUnit*(Target-a));
+  return (Max-(1.0/keV)*m_digitIn.thl*DefaultGain)/(ClockUnit*(aTarget-a));
 }
 
 
@@ -918,7 +918,7 @@ void AllPixTimepixDigitizer::Digitize(){
   for( ; pCItr_MC != pixelsContent_MC.end() ; pCItr_MC++)
     {
       G4cout << "x=" << tempPixel.first << ", y=" << tempPixel.second << ", energyMC=" << (pixelsContent_MC[tempPixel].MC_energy)/keV << G4endl;
-      pair<G4int, G4int> tempPixel;
+      //pair<G4int, G4int> tempPixel;
       tempPixel.first=(*pCItr_MC).first.first;
       tempPixel.second=(*pCItr_MC).first.second;
 

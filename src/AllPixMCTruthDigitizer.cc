@@ -71,7 +71,7 @@ void AllPixMCTruthDigitizer::Digitize(){
       //  tempPixel.first  = (*hitsCollection)[itr]->GetPixelNbX();
       //tempPixel.second = (*hitsCollection)[itr]->GetPixelNbY();
       //pixelsContent[tempPixel] += (*hitsCollection)[itr]->GetEdep();
-      Double_t tempEnergy=(*hitsCollection)[itr]->GetEdep();
+//      Double_t tempEnergy=(*hitsCollection)[itr]->GetEdep();
       MC_deposited_energy+=(*hitsCollection)[itr]->GetEdep();
       
       G4double xpos=(*hitsCollection)[itr]->GetPosWithRespectToPixel().x();

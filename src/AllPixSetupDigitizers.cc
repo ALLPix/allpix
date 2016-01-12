@@ -18,7 +18,7 @@
 // Included by newdigitizer.sh script --> TMPX
 #include "AllPixTMPXDigitizer.hh"
 // Included by newdigitizer.sh script --> NoThresh
-#include "AllPixNoThreshDigitizer.hh"
+//#include "AllPixNoThreshDigitizer.hh"
 // Included by newdigitizer.sh script --> FEI4RadDamage
 #include "AllPixFEI4RadDamageDigitizer.hh"
 // __endofheader__
@@ -153,11 +153,11 @@ else if (digitizerName == "TMPX") {
 		}
  
 // Included by newdigitizer.sh script --> NoThresh
-else if (digitizerName == "NoThresh") {
-			AllPixNoThreshDigitizer * dp = new AllPixNoThreshDigitizer(digitizerModulesNames[itr] , hcName, digitColectionName);
-			dmPtr = static_cast<AllPixDigitizerInterface *> (dp);
-			cout << "    Setting up a " << digitizerName << " digitizer for det : " << detectorId << endl;
-		}  
+//else if (digitizerName == "NoThresh") {
+//			AllPixNoThreshDigitizer * dp = new AllPixNoThreshDigitizer(digitizerModulesNames[itr] , hcName, digitColectionName);
+//			dmPtr = static_cast<AllPixDigitizerInterface *> (dp);
+//			cout << "    Setting up a " << digitizerName << " digitizer for det : " << detectorId << endl;
+//		}
         // __endofdigitlist__
    	    else {
 			G4cout << "    can't find digitizer with name : " << digitizerName << G4endl;
