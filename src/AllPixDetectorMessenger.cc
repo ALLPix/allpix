@@ -53,6 +53,9 @@ AllPixDetectorMessenger::AllPixDetectorMessenger(
 	m_detDir = new G4UIdirectory("/allpix/det/");
 	m_detDir->SetGuidance("detector control");
 
+	m_ROOTDir = new G4UIdirectory("/allpix/WriteROOTFiles/");
+	m_ROOTDir->SetGuidance("ROOT File output control");
+
 	m_configDir = new G4UIdirectory("/allpix/config/");
 	m_configDir->SetGuidance("allpix configuration");
 
@@ -227,6 +230,8 @@ AllPixDetectorMessenger::~AllPixDetectorMessenger()
 
 	delete m_detDir;
 	delete m_allpixDir;
+	delete m_ROOTDir;
+
 
 #ifdef _EUTELESCOPE
 	delete m_scint1PosCmd;

@@ -56,6 +56,7 @@ private:
   
   G4UIdirectory *             m_allpixDir;
   G4UIdirectory *             m_detDir;
+  G4UIdirectory *             m_ROOTDir;
   G4UIdirectory *             m_configDir;
   G4UIdirectory *             m_extrasDir;
   G4UIdirectory *             m_beamDir;

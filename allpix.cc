@@ -1,7 +1,7 @@
 // ********************************************************************
 //                                                     AllPix Geant4  *
 //                 Generic Geant4 implementation for pixel detectors  *
-//    Laboratoire de l'AccÃ©lÃ©rateur LinÃ©aire UniversitÃ© Paris-Sud 11  *
+//    Laboratoire de l'Accélérateur Linéaire Université Paris-Sud 11  *
 //                                                                    *
 //                           John Idarraga <idarraga@lal.in2p3.fr>    *
 //                            Mathieu Benoit <benoit@lal.in2p3.fr>    *
@@ -61,7 +61,7 @@ using namespace std;
 #include "AllPix_Frames_WriteToEntuple.h"
 // hits
 #include "AllPix_Hits_WriteToEntuple.h"
-
+#include "AllPixWriteROOTFile.hh" //nalipour
 #include "Randomize.hh"
 
 
@@ -185,13 +185,15 @@ int main(int argc, char** argv)
 	// Get the pointer to the User Interface manager
 	//
 	G4UImanager* UI = G4UImanager::GetUIpointer();
+	//UI->ApplyCommand("/tracking/verbose 1"); //nalipour: get information from secondary vertices???
+
 
 	G4String command = "/control/execute ";
 
 	if (argc-1 == _RUN_BATCH)   // batch mode
 	{
-		command = "/control/execute ";
-		fileName = argv[_MACRO];
+		//G4String command = "/control/execute ";
+		//G4String fileName = argv[_MACRO];
 		UI->ApplyCommand(command+fileName);
 	}
 	else
@@ -246,6 +248,12 @@ int main(int argc, char** argv)
 	// G4int nDigitizers = event_action->GetNumberOfDigitizers();
 	for( detItr = geoMap->begin() ; detItr != geoMap->end() ; detItr++) {
 	  WriteToNtuple::GetInstance("", "", "", (int)geoMap->size(), (*detItr).first)->closeNtuple();
+
+	  //nalipour: Close and write the ROOT files
+	  if(run_action->writeROOTFile !=NULL)
+	    {
+	      run_action->writeROOTFile[run_action->ReturnAllPixRun()->return_detIdToIndex((*detItr).first)]->AllPixCloseROOTFile();
+	    }
 	}
 
 	// hits ntuple closing
@@ -274,11 +282,11 @@ void checkflags(int argc, char** argv){
 void SplashWindow(){
 
 	G4cout << "*************************************************************" << G4endl;
-	G4cout << "                                    AllPix Geant4 (LAL Orsay)" << G4endl;
+	G4cout << "                                    AllPix Geant4" << G4endl;
 	G4cout << "            Generic Geant4 implementation for pixel detectors" << G4endl;
 	G4cout << "                                                             " << G4endl;
-	G4cout << "                        John Idarraga <idarraga@lal.in2p3.fr>" << G4endl;
-	G4cout << "                         Mathieu Benoit <benoit@lal.in2p3.fr>" << G4endl;
+	G4cout << "                      John Idarraga, NIKHEF  <idarraga@CERN.CH>" << G4endl;
+	G4cout << "                       Mathieu Benoit, UNIGE  <mbenoit@CERN.CH>" << G4endl;
 	G4cout << "*************************************************************" << G4endl;
 	G4cout << G4endl;
 
