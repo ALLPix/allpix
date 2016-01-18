@@ -65,11 +65,18 @@ endif()
 # build B5. This is so that we can run the executable directly because it
 # relies on these scripts being in the current working directory.
 #
+
+file(GLOB MACROLIST RELATIVE ${PROJECT_SOURCE_DIR}  "macros/*.in")
+file(GLOB GDMLLIST RELATIVE ${PROJECT_SOURCE_DIR}  "models/*.gdml")
+
 set(ALLPIX_SCRIPTS
+    ${MACROLIST}
+    ${GDMLLIST}
     macros/oneDetector_vis.in
     macros/mpx3rx_vis.in
     macros/mpx3rx.in
 	models/pixeldetector.xml
+	models/clicpix_box_materials.xml
 	share/Erf.dat
 	share/GDML_EUDETAlHolder/EUDETAlHolder.gdml
 	share/GDML_EUDETAlHolder/EUDETAlHolder_materials.xml
