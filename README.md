@@ -44,10 +44,10 @@ First create the Allpix folder :
 Then checkout the github version of allpix : 
     git clone https://github.com/ALLPix/allpix.git
 
-By default, Allpix_v1.0 is cloned, to get the latest version, checkout the master branch : 
+By default, Allpix_v1.0 is cloned, to get the latest version, checkout the AllPix_v1.1alpha branch : 
 
 	cd allpix 
-	git checkout master 
+	git checkout  AllPix_v1.1alpha
 	cd ..
 
 Now create the build and install folder : 
