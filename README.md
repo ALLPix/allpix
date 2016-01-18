@@ -1,13 +1,12 @@
-// ********************************************************************
-//                                                        AllPix     		    
-//                        Generic simulation for pixel detectors	
-//                                                                                       
-//                              John Idarraga <idarraga@cern.ch>        
-//                              Mathieu Benoit <mbenoit@cern.ch>  
-//			        			Samir Arfaoui  <sarfaoui@cern.ch>     
-// ********************************************************************
 
-# Dependencies:
+# AllPix     		    
+## Generic simulation for pixel detectors	
+                                                                                      
+John Idarraga <idarraga@cern.ch>        
+Mathieu Benoit <mbenoit@cern.ch>  
+Samir Arfaoui  <sarfaoui@cern.ch>     
+
+### Dependencies:
 
 1) Geant4 v4.10 or newer must be installed with the following dependencies
 satisfied
@@ -18,7 +17,7 @@ satisfied
 
 2) ROOT 6.04 or newer .  A basic setup with xml parser is enough.
 
-# Build:
+### Build:
 
 Make sure you loaded your Geant4 and ROOT setups (check $G4LIB and $ROOTSYS vars for instance). For user installing allpix on lxplus with SLC6, a GEANT4 installation has been prepared for you convenience. the bash script setup_allpix_lxplus_geant4.9.10.sh need to however edited. in the file, change the folder assigned to G4WORKDIR to a folder where you have write access, objects and executable produced during allpix compilation will be put in there. Ex : 
 	
@@ -70,29 +69,29 @@ NOTE : the pixeldetector.xml file that is used for simulation is picked followin
 NOTE : The makefile method is deprecated for this version, please use CMAKE instead 
 	
 
-# Folder Structure : 
+### Folder Structure : 
 
-	- include and src : These contain the source code of the allpix framework, whenever you create a new digitizer, the .cc and  .h
-	files will be added to these directories 
-	
-	- macros : This folder contains example of macro files to be used for different type of Simulation framework , see allpix Twiki
-	page for more details : https://twiki.cern.ch/twiki/bin/view/Main/AllPix
-	
-	- models : This folder contains the pixel geometry database (pixeldetector.xml). If one imports geometry from a gdml file, it
-	should be put here. (ex : clicpix_box.gdml and clicpic_box_materials.xml)
-	
-	- share :  This directory contains files and scripts indirectly related to allpix, for example , the python script to translate
-	allpix output to slcio file for processing in the EUTELESCOPE framework. See Twiki page for more details https://twiki.cern.ch/twiki/bin/view/Main/AllPix
+- include and src : These contain the source code of the allpix framework, whenever you create a new digitizer, the .cc and  .h
+files will be added to these directories 
+
+- macros : This folder contains example of macro files to be used for different type of Simulation framework , see allpix Twiki
+page for more details : https://twiki.cern.ch/twiki/bin/view/Main/AllPix
+
+- models : This folder contains the pixel geometry database (pixeldetector.xml). If one imports geometry from a gdml file, it
+should be put here. (ex : clicpix_box.gdml and clicpic_box_materials.xml)
+
+- share :  This directory contains files and scripts indirectly related to allpix, for example , the python script to translate
+allpix output to slcio file for processing in the EUTELESCOPE framework. See Twiki page for more details https://twiki.cern.ch/twiki/bin/view/Main/AllPix
 	
 	
 
-# Preparing your Simulation : 
+### Preparing your Simulation : 
 
 See : https://twiki.cern.ch/twiki/bin/view/Main/AllPix
 
 
 	
-# Running:
+### Running:
 
 Setup your Geant4 and ROOT environments and run the following
 way, from the source folder
