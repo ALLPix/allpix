@@ -77,6 +77,18 @@ NOTE : The makefile method is deprecated for this version, please use CMAKE inst
 
 ### Folder Structure : 
 
+
+the code on github follow this folder structure : 
+
+```
+	 |----- allpix 			
+	 |      |----- src 
+	 |      |----- include
+	 |      |----- models
+	 |      |----- share
+	 |      |----- macros 	
+```
+
 - include and src : These contain the source code of the allpix framework, whenever you create a new digitizer, the .cc and  .h
 files will be added to these directories 
 
