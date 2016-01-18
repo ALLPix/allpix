@@ -36,36 +36,37 @@ Build:
 	
 	first create the Allpix folder : 
 	
+	'''
 	mkdir Allpix 
-	
+	'''
 	Then checkout the github version of allpix : 
-	
+	'''
 	git clone https://github.com/ALLPix/allpix.git
-	
+	'''
 	By default, Allpix_v1.0 is cloned, to get the latest version, checkout the master branch : 
-	
+	'''
 	cd allpix 
 	git checkout master 
 	cd ..
-	
+	'''
 	Now create the build and install folder : 
-	
+	'''
 	mkdir allpix-build allpix-install
 	cd allpix-build 
-	
+	'''
 	Initialize cmake for compilation of allpix : 
-	
+	'''
 	cmake ../allpix -DCMAKE_CXX_COMPILER=/afs/cern.ch/sw/lcg/external/gcc/4.8/x86_64-slc6/bin/g++ -DCMAKE_C_COMPILER=/afs/cern.ch/sw/lcg/external/gcc/4.8/x86_64-slc6/bin/gcc -DCMAKE_INSTALL_PREFIX=../allpix-install
-	
+	'''
 	
 	the flags -DCMAKE_CXX_COMPILER and -DCMAKE_C_COMPILER should point to a std-cxx-11 compatible compiler ie gcc4.8 
 	
 	
 	Once the Cmake environnement is set, to compile, simply execute : 
-		
-		make -jX install 
-		
-		# X is a number of processor 
+	'''	
+	make -jX install 
+	'''	
+	X is a number of processor 
 	
 	make sure allpix-install/bin is added to the PATH environnement variable. 
 	
