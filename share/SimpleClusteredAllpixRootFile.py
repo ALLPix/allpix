@@ -349,9 +349,9 @@ class AllpixData:
         col_tmp = [s for s in self.m_RawDataTree.posY]
         tot_tmp = [s for s in self.m_RawDataTree.TOT]
         
-        print row_tmp
-        print col_tmp
-        print tot_tmp
+#         print row_tmp
+#         print col_tmp
+#         print tot_tmp
         
         #energyGC_tmp = [s for s in self.p_energyGC]
         #energyPbPC_tmp = [s for s in self.p_energyPbPC]
@@ -380,14 +380,15 @@ class AllpixData:
         # set a maximum number of hit pixels to be clustered (skips large events)
         if len(col_tmp) < 5000:
 #             try : 
-            print "clustering event %i"%i
+            if(i%1000==0):
+                print "clustering event %i"%i
             clusters = self.RecursiveClustering(col_tmp,row_tmp,tot_tmp)
-            print "%i clusters found"%len(clusters)
+            #print "%i clusters found"%len(clusters)
 #             except : 
 #                 print "except"
 #                 clusters=[]
         else:
-            print "Event", i, "not beng clustered,", len(col_tmp), "hit pixels"
+            print "Event", i, "not being clustered,", len(col_tmp), "hit pixels"
             clusters=[]
 
 
@@ -417,7 +418,6 @@ class AllpixData:
 
     def SciPyClustering(self,col,row,tot):
 
-        print "inside scipy"
         pixels = [[col[i],row[i]] for i,x in enumerate(col)]
         if(len(pixels)>1):
             result=fclusterdata(pixels,sqrt(2.),criterion="distance")
@@ -438,7 +438,7 @@ class AllpixData:
 
             cluster = Cluster()
             cluster.addPixel(col[0], row[0], tot[0])
-            print "[DEBUG] adding pixel col=%d row=%d as seed"%(col[0],row[0])
+            #print "[DEBUG] adding pixel col=%d row=%d as seed"%(col[0],row[0])
             row.pop(0)
             col.pop(0)
             tot.pop(0)
@@ -585,7 +585,7 @@ if __name__ == "__main__":
         usage()
         sys.exit( 1 )    
         
-    filename,outfile = sys.arv[1],sys.argv[2]    
+    filename,outfile = sys.argv[1],sys.argv[2]    
     data = AllpixData(filename)
     
 #     for i in range(10): 
