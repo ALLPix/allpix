@@ -23,13 +23,19 @@ Make sure you loaded your Geant4 and ROOT setups (check $G4LIB and $ROOTSYS vars
 	
     export G4WORKDIR=~/myG4WorkDirectory	
 	
-Allpix is now compilable using Cmake. We suggest the following work folder structure. 
-	
-	Allpix /  				# Mother folder containing source, build and install folder
-	Allpix / allpix 		# Source code folder to be checked out from Github 
-	Allpix / allpix-build 	# Build folder for cmake 
-	Allpix / allpix-install # Installation folder for cmake 
-	
+Allpix is now compilable using Cmake. We suggest the following work folder structure. 	 
+```	
+|--- Allpix /  				# Mother folder containing source, build and install folder
+	 |----- allpix 			# Source code folder to be checked out from Github 
+	 |      |----- src 
+	 |      |----- include
+	 |      |----- models
+	 |      |----- share
+	 |      |----- macros 	 
+	 |----- allpix-build 	# Build folder for cmake 
+	 |----- allpix-install # Installation folder for cmake 
+	 |		|----- bin		# allpix executable folder
+```
 First create the Allpix folder : 
 	
 
