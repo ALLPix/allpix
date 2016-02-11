@@ -14,6 +14,7 @@
 #include "AllPixTimepixDigitizer.hh"
 #include "AllPixMCTruthDigitizer.hh"
 #include "AllPixLETCalculatorDigitizer.hh"
+#include "AllPixFEI4RadDamageDigitizer.hh"
 
 // Included by newdigitizer.sh script --> Medipix3RX
 #include "AllPixMedipix3RXDigitizer.hh"
@@ -134,6 +135,11 @@ void AllPixEventAction::SetupDigitizers(){
 					dmPtr = static_cast<AllPixDigitizerInterface *> (dp);
 					cout << "    Setting up a " << digitizerName << " digitizer for det : " << detectorId << endl;
 				}
+		else if (digitizerName == "FEI4RadDamage") {
+			AllPixFEI4RadDamageDigitizer * dp = new AllPixFEI4RadDamageDigitizer(digitizerModulesNames[itr] , hcName, digitColectionName);
+			dmPtr = static_cast<AllPixDigitizerInterface *> (dp);
+			cout << "    Setting up a " << digitizerName << " digitizer for det : " << detectorId << endl;
+		}
  
 // Included by newdigitizer.sh script --> Medipix3RX
 else if (digitizerName == "Medipix3RX") {
