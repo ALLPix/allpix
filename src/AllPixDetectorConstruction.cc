@@ -1089,23 +1089,23 @@ void AllPixDetectorConstruction::SetMaxStepLengthSensor(G4double val) {
 #include "G4UniformMagField.hh"
 #include "MorourgoMagField.hh"
 #include "G4PropagatorInField.hh"
-void AllPixDetectorConstruction::SetPeakMagField(G4double fieldValue)
+void AllPixDetectorConstruction::SetPeakMagField(G4ThreeVector fieldValues)
 {
-    //apply a global uniform magnetic field along Z axis
-    G4FieldManager * fieldMgr
-            = G4TransportationManager::GetTransportationManager()->GetFieldManager();
-    G4TransportationManager* tmanager = G4TransportationManager::GetTransportationManager();
-    tmanager->GetPropagatorInField()->SetLargestAcceptableStep(1*mm);
-    if ( fieldValue != 0. )
-    {
+	//apply a global uniform magnetic field along Z axis
+	G4FieldManager * fieldMgr
+	= G4TransportationManager::GetTransportationManager()->GetFieldManager();
+	G4TransportationManager* tmanager = G4TransportationManager::GetTransportationManager();
+	tmanager->GetPropagatorInField()->SetLargestAcceptableStep(1*mm);
+	if ( fieldValues[0] != 0. || fieldValues[1] != 0. || fieldValues[2] != 0. )
+	{
 
-        // FIXME !!! --> feed this value from the macro
-        //		m_magField = new MorourgoMagField(fieldValue, 252.5*mm);
-        //		fieldMgr->SetDetectorField(m_magField);
-        //		fieldMgr->CreateChordFinder(m_magField);
-        m_magField = new G4UniformMagField ( G4ThreeVector(0.,0.,fieldValue) );
-        fieldMgr->SetDetectorField(m_magField);
-        fieldMgr->CreateChordFinder(m_magField);
+		// FIXME !!! --> feed this value from the macro
+		//		m_magField = new MorourgoMagField(fieldValue, 252.5*mm);
+		//		fieldMgr->SetDetectorField(m_magField);
+		//		fieldMgr->CreateChordFinder(m_magField);
+		m_magField = new G4UniformMagField ( fieldValues );
+		fieldMgr->SetDetectorField(m_magField);
+		fieldMgr->CreateChordFinder(m_magField);
 
         fieldMgr->SetMinimumEpsilonStep( 1e-7 );
         fieldMgr->SetMaximumEpsilonStep( 1e-6 );

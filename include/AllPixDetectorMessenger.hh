@@ -71,7 +71,7 @@ private:
   G4UIcmdWithAnInteger *      m_AppliancesType;
   G4UIcmdWith3VectorAndUnit * m_detAppliancePosCmd;
   G4UIcmdWith3VectorAndUnit * m_wrapperEnhancementCmd;
-  G4UIcmdWithADoubleAndUnit * m_magFieldCmd;
+  G4UIcmdWith3VectorAndUnit * m_magFieldCmd;
 
   G4UIcmdWithAString * m_worldMaterial;
 

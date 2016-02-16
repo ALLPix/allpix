@@ -97,7 +97,7 @@ public:
 	void SetMaxStepLengthSensor(G4double);
 
 	// mag field
-	void SetPeakMagField(G4double fieldValue);
+	void SetPeakMagField(G4ThreeVector fieldValue);
 
 	// world volume from macro
 	void SetWorldMaterial(G4String);

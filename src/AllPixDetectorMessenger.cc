@@ -196,10 +196,11 @@ AllPixDetectorMessenger::AllPixDetectorMessenger(
 	m_worldMaterial->SetCandidates("Air Vacuum");
 	m_worldMaterial->AvailableForStates(G4State_PreInit, G4State_Idle);
 
-	m_magFieldCmd = new G4UIcmdWithADoubleAndUnit("/allpix/extras/setPeakField",this);
+	m_magFieldCmd = new G4UIcmdWith3VectorAndUnit("/allpix/extras/setPeakField",this);
 	m_magFieldCmd->SetGuidance("Define magnetic field peak value.");
 	m_magFieldCmd->SetGuidance("Magnetic field will be in Z direction.");
-	m_magFieldCmd->SetParameterName("Bz",false);
+	m_magFieldCmd->SetParameterName("Bx", "By", "Bz", false, true);
+	m_magFieldCmd->SetDefaultValue(G4ThreeVector(0.,0.,0.));
 	m_magFieldCmd->SetUnitCategory("Magnetic flux density");
 	m_magFieldCmd->AvailableForStates(G4State_PreInit,G4State_Idle);
 
@@ -340,13 +341,13 @@ void AllPixDetectorMessenger::SetNewValue(G4UIcommand* command, G4String newValu
 
 	if( command == m_magFieldCmd )
 	{
-		G4cout << "Setting up magnetic field " << m_magFieldCmd->GetNewDoubleValue(newValue) << G4endl;
+		// G4cout << "Setting up magnetic field " << m_magFieldCmd->GetNew3VectorValue(newValue) << G4endl;
 		m_AllPixDetector->SetPeakMagField(
-				m_magFieldCmd->GetNewDoubleValue(newValue)
+				m_magFieldCmd->GetNew3VectorValue(newValue)
 				);
 	}
 
-	if( command == m_outputPrefix ) 
+	if( command == m_outputPrefix )
 	  {
 	    G4cout << "Setting up output file prefix " << newValue << G4endl;
 	    m_AllPixDetector->SetOutputFilePrefix( newValue );
