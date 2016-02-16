@@ -1482,7 +1482,7 @@
 </pixeldet>
 
 <!-- CMS -->
-<pixeldet id="900">
+<pixeldet id="900, 901, 902, 903, 904, 905">
 
 <digitizer>CMSp1</digitizer>
 
@@ -1503,40 +1503,40 @@
 <sensor_hy units="um">4000</sensor_hy>
 <sensor_hz units="um">142.5</sensor_hz>
 
-<sensor_gr_excess_htop units="um">350.0</sensor_gr_excess_htop>
-<sensor_gr_excess_hbottom units="um">350.0</sensor_gr_excess_hbottom>
-<sensor_gr_excess_hright units="um">350.0</sensor_gr_excess_hright>
-<sensor_gr_excess_hleft units="um">350.0</sensor_gr_excess_hleft>
+<sensor_gr_excess_htop units="um">430.0</sensor_gr_excess_htop>
+<sensor_gr_excess_hbottom units="um">570.0</sensor_gr_excess_hbottom>
+<sensor_gr_excess_hright units="um">430.0</sensor_gr_excess_hright>
+<sensor_gr_excess_hleft units="um">430.0</sensor_gr_excess_hleft>
 
-<sensor_posx units="mm">-4.3</sensor_posx>
-<sensor_posy units="mm">28.2</sensor_posy>
+<sensor_posx units="mm">0.</sensor_posx>
+<sensor_posy units="mm">-0.4</sensor_posy>
 <sensor_posz units="mm">0.</sensor_posz>
 
 <!-- # chip Geometry : Define the size of the Chip side of a Pixel detector
 # chip_offset describe the offset between the chip and sensor volume sensors, for example, if bonding pads are present  -->
-<chip_hx units="mm">3.6</chip_hx>
-<chip_hy units="mm">4.1</chip_hy>
-<chip_hz units="um">195.0</chip_hz>
-
-<chip_posx units="um">0.</chip_posx>
-<chip_posy units="um">0.</chip_posy>
-<chip_posz units="um">0.</chip_posz>
+<chip_hx units="um">4030.</chip_hx>
+<chip_hy units="um">5225.</chip_hy>
+<chip_hz units="um">90.</chip_hz>
 
 <chip_offsetx units="um">0.</chip_offsetx>
-<chip_offsety units="um">0</chip_offsety>
+<chip_offsety units="um">-1200.0</chip_offsety>
 <chip_offsetz units="um">0.</chip_offsetz>
+
+<!-- <chip_posx units="um">0.</chip_posx>
+<chip_posy units="um">0.</chip_posy>
+<chip_posz units="um">0.</chip_posz> -->
 
 <!-- # Bump-Bonding geometry : Bump bonds are modeled as the union of a
 # Cylinder(height ->bump_height, radius ->(bump_radius - bump_dr) ) and a Sphere(r->bump_radius). Offset is relative to the center of the pixel -->
-<bump_radius units="um">9.0</bump_radius>
-<bump_height units="um">20.0</bump_height>
-<bump_offset_x units="um">-170.0</bump_offset_x>
-<bump_offset_y units="um">0.0</bump_offset_y>
-<bump_dr units="um">2.0</bump_dr>
+<bump_radius units="um">15.</bump_radius>
+<bump_height units="um">30.</bump_height>
+<bump_offset_x units="um">25.</bump_offset_x>
+<bump_offset_y units="um">0.</bump_offset_y>
+<bump_dr units="um">5.0</bump_dr>
 
 <!-- # PCB Geometry : Size and thickness of the PCB, Default material is G10 -->
-<pcb_hx units="mm">26.5</pcb_hx>
-<pcb_hy units="mm">47.0</pcb_hy>
+<pcb_hx units="mm">20.875</pcb_hx>
+<pcb_hy units="mm">19.95</pcb_hy>
 <pcb_hz units="mm">0.80</pcb_hz>
 
 
