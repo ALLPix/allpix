@@ -617,7 +617,7 @@ void AllPixTimepixDigitizer::Efield1D(G4double z){
 		//electricFieldZ=(detectorThickness-z)*biasVoltage/depletedDepth;
 	}
 	else {
-		electricFieldZ=-(biasVoltage-depletionVoltage)/detectorThickness+(1-z/detectorThickness)*2*depletionVoltage/detectorThickness;
+		electricFieldZ=-((biasVoltage-depletionVoltage)/detectorThickness+(1-z/detectorThickness)*2*depletionVoltage/detectorThickness);
 		//electricFieldZ=-(detectorThickness-z)*biasVoltage/depletedDepth;
 	}
 	
