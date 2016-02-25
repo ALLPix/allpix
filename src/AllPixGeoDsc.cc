@@ -106,6 +106,92 @@ void AllPixGeoDsc::SetEFieldMap(G4String valS){
 
 }
 
+inline G4ThreeVector linear(const G4ThreeVector value0, const G4ThreeVector value1, const G4double p){
+
+	G4ThreeVector result;
+
+	for (size_t i = 0; i < 3; i++) {
+		result[i] = (value0[i] + (value1[i] - value0[i])*(p));
+	}
+
+	return result;
+}
+
+inline G4ThreeVector bilinear(const G4ThreeVector* ecube, const G4double x, const G4double y, const G4int z){
+
+	G4ThreeVector result;
+
+	G4ThreeVector bil_y1 = linear(ecube[0+2*0+4*z], ecube[1+2*0+4*z], x);
+  G4ThreeVector bil_y2 = linear(ecube[0+2*1+4*z], ecube[1+2*1+4*z], x);
+
+  return linear(bil_y1, bil_y2, y);
+
+}
+
+inline G4ThreeVector trilinear(const G4ThreeVector* ecube, const G4ThreeVector pos){
+
+	G4ThreeVector bil_z0, bil_z1;
+	bil_z0 = bilinear(ecube, pos[0], pos[1], 0);
+	bil_z1 = bilinear(ecube, pos[0], pos[1], 1);
+
+	return linear(bil_z0, bil_z1, pos[2]);
+
+}
+
+inline int int_floor(double x)
+{
+  int i = (int)x;
+  return i - ( i > x );
+}
+
+G4ThreeVector AllPixGeoDsc::GetEFieldFromMap(G4ThreeVector ppos){
+
+	G4ThreeVector currentefield;
+	
+	G4double pixsize_x = GetPixelX();
+	G4double pixsize_y = GetPixelY();
+	G4double pixsize_z = GetPixelZ();
+	
+	// ppos is the position in mm inside one pixel cell
+	
+	ppos = G4ThreeVector(fmod(ppos[0],pixsize_x), fmod(ppos[1],pixsize_y), fmod(ppos[2],pixsize_z));
+	
+	// Assuming that point 1 and nx are basically at the same position. The "+1" takes account of the efieldmap starting at the iterator 1.
+	// Get the position iside the grid
+
+	G4ThreeVector pposgrid;
+	pposgrid[0] = ppos[0]/pixsize_x*(G4double)(m_efieldmap_nx-1);
+	pposgrid[1] = ppos[1]/pixsize_y*(G4double)(m_efieldmap_ny-1);
+	pposgrid[2] = ppos[2]/pixsize_z*(G4double)(m_efieldmap_nz-1);
+	
+	// Got the position in units of the map coordinates. Do a 3D interpolation of the electric field.
+	// Get the eight neighbors and do three linear interpolations.
+
+	G4ThreeVector * ecube = new G4ThreeVector[8];
+
+	for (size_t i = 0; i < 2; i++) {
+		for (size_t j = 0; j < 2; j++) {
+			for (size_t k = 0; k < 2; k++) {
+				ecube[i+2*j+4*k] = m_efieldmap.at(int_floor(pposgrid[2]+k)).at(int_floor(pposgrid[1]+j)).at(int_floor(pposgrid[0]+i));
+			}
+		}
+	}
+
+	// Make pposgrid the position inside the cube
+
+	for (size_t i = 0; i < 3; i++) {
+		pposgrid[i] -= (double)(int_floor(pposgrid[i]));
+	}
+	
+	currentefield = trilinear(ecube, pposgrid);
+	// Try to just weight the eight edges with the 3D distance to the sampling point.
+
+	delete[] ecube;
+
+	return currentefield;
+
+}
+
 /*
 void AllPixGeoDsc::operator=(AllPixGeoDsc & cp){
 
