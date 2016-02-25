@@ -109,6 +109,7 @@ public:
 	void SetDetectorPosition(G4ThreeVector);
 	void SetDetectorRotation(G4ThreeVector);
 	void SetDetectorID(G4int);
+	void SetEFieldFile(G4String);
 
 	void SetLowTHL(G4double);
 	void UpdateGeometry();
@@ -139,6 +140,8 @@ private:
 	// pos rot detector
 	vector<G4int>              m_detId;
 	vector<G4int>::iterator    m_detIdItr;
+
+	map<int, G4String>	m_EFieldFiles;
 
 	map<int, G4ThreeVector>      m_posVector; // position of medipix(es), key is detector Id
 	map<int, G4RotationMatrix *> m_rotVector; // rotation

@@ -11,6 +11,12 @@
 #include <iostream>
 #include <fstream>
 #include <string>
+#include <tuple>
+#include <sys/stat.h>
+#include <unistd.h>
+#include <map>
+#include <math.h>
+#include "G4ThreeVector.hh"
 
 #include "CLHEP/Units/SystemOfUnits.h"
 using namespace CLHEP;
@@ -404,7 +410,12 @@ private:
     G4double m_Cross_Talk;
     G4double m_Saturation_Energy;
 
+	G4String m_EFieldFile;
 
+	vector<vector<vector<G4ThreeVector>>> m_efieldmap;
+	G4int m_efieldmap_nx, m_efieldmap_ny, m_efieldmap_nz;
+
+	G4bool m_efieldfromfile;
 
 };
 

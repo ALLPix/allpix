@@ -13,6 +13,7 @@ AllPixGeoDsc::AllPixGeoDsc() :
     m_coverlayer_ON(false)
 {
 
+	m_efieldfromfile = false;
 
 }
 
@@ -44,6 +45,64 @@ void AllPixGeoDsc::Dump() {
     G4cout << "   pcb_hx            = " << m_pcb_hx/mm << G4endl;
     G4cout << "   pcb_hy            = " << m_pcb_hy/mm << G4endl;
     G4cout << "   pcb_hz            = " << m_pcb_hz/mm << G4endl;
+
+}
+
+void AllPixGeoDsc::SetEFieldMap(G4String valS){
+	m_EFieldFile = valS;
+
+	// Get EFieldFile from $allpix/valS
+	struct stat buffer;
+	if(!(stat (valS, &buffer))){
+		
+		m_efieldfromfile = true;
+
+		ifstream efieldinput;
+		efieldinput.open(valS);
+
+		G4int nptsx, nptsy, nptsz;
+		G4int currx, curry, currz;
+
+		G4double ex, ey, ez;
+
+		efieldinput >> nptsx >> nptsy >> nptsz;
+
+		vector<G4ThreeVector> onedim;
+		vector<vector<G4ThreeVector>> twodim;
+		onedim.reserve(nptsx);
+		twodim.reserve(nptsy);
+
+		for (int k = 0; k < nptsz; k++) {
+			for (int j = 0; j < nptsy; j++) {
+				for (int i = 0; i < nptsx; i++) {
+					efieldinput >> currx >> curry >> currz;
+					efieldinput >> ex >> ey >> ez;
+					onedim.push_back(G4ThreeVector(ex, ey, ez));
+				}
+				twodim.push_back(onedim);
+				onedim.clear();
+			}
+			m_efieldmap.push_back(twodim);
+			twodim.clear();
+		}
+
+		m_efieldmap_nx = nptsx;
+		m_efieldmap_ny = nptsy;
+		m_efieldmap_nz = nptsz;
+
+		efieldinput.close();
+
+	}else{
+		if(!valS.isNull())
+		{
+			cout << "File for EField named, but not found: " << valS << endl;
+			cout << "This cannot end well... Abort." << endl;
+			m_efieldfromfile = false;
+			exit(1);
+		}
+		cout << "Found no EFieldFile " << valS << endl;
+		m_efieldfromfile = false;
+	}
 
 }
 

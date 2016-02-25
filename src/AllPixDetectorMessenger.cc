@@ -89,6 +89,11 @@ AllPixDetectorMessenger::AllPixDetectorMessenger(
 	m_detRotCmd->SetUnitCategory("Angle");
 	m_detRotCmd->AvailableForStates(G4State_PreInit, G4State_Idle);
 
+	m_detEFieldFileCmd = new G4UIcmdWithAString("/allpix/det/setEFieldFile", this);
+	m_detEFieldFileCmd->SetGuidance("Name file for input of electric field map");
+	m_detEFieldFileCmd->SetParameterName("EFieldFile", true);
+	m_detEFieldFileCmd->AvailableForStates(G4State_PreInit, G4State_Idle);
+
 	///////////
 	m_UpdateCmd = new G4UIcmdWithoutParameter("/allpix/det/update",this);
 	m_UpdateCmd->SetGuidance("Update geometry.");
@@ -254,6 +259,14 @@ void AllPixDetectorMessenger::SetNewValue(G4UIcommand* command, G4String newValu
 	{
 		m_AllPixDetector->SetDetectorID(
 				m_detIdCmd->GetNewIntValue(newValue)
+		);
+
+	}
+
+	if( command == m_detEFieldFileCmd )
+	{
+		m_AllPixDetector->SetEFieldFile(
+				newValue
 		);
 
 	}
