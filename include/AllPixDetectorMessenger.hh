@@ -40,6 +40,7 @@ class G4UIcmdWithoutParameter;
 class G4UIcmdWith3VectorAndUnit;
 class G4UIcmdWithADoubleAndUnit;
 class G4UIcmdWithAString;
+class G4UIcmdWithADouble;
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
@@ -84,6 +85,7 @@ private:
   G4UIcmdWithADoubleAndUnit * m_HVCmd;
   G4UIcmdWithADoubleAndUnit * m_ClockCmd;
   G4UIcmdWithADoubleAndUnit * m_StepLengthSensor;
+  G4UIcmdWithADouble * m_TempCmd;
 
   G4UIcmdWithoutParameter   * m_UpdateCmd;
 

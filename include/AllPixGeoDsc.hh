@@ -145,6 +145,7 @@ public:
     G4double GetThreshold(){return m_Chip_Threshold;}
     G4double GetCrossTalk(){return m_Cross_Talk;}
     G4double GetSaturationEnergy(){return m_Saturation_Energy;}
+    G4double GetTemperature(){return m_Temperature;};
 
     G4ThreeVector GetEFieldFromMap(G4ThreeVector);
 
@@ -326,6 +327,13 @@ public:
         m_Saturation_Energy = val;
     }
 
+    void SetTemperature(G4double val){
+	m_Temperature = val;
+    }
+
+    void SetEFieldMap(G4String valS);
+
+
     ///////////////////////////////////////////////////
     // operators
     //void operator=(AllPixGeoDsc &);
@@ -415,6 +423,7 @@ private:
     G4double m_Chip_Threshold;
     G4double m_Cross_Talk;
     G4double m_Saturation_Energy;
+    G4double m_Temperature;
 
 	G4String m_EFieldFile;
 

@@ -112,6 +112,7 @@ public:
 	void SetEFieldFile(G4String);
 
 	void SetLowTHL(G4double);
+	void SetTemperature(G4double);
 	void UpdateGeometry();
 
   // others
@@ -150,6 +151,7 @@ private:
 	G4int m_nIds;
 
 	vector<G4double>           m_lowThlVector; // lowTHL
+	map<int, G4double>	m_temperatures;
 	// for user information.  Absolute position (center) of the Si wafers
 	vector<G4ThreeVector>      m_absolutePosSiWafer;
 

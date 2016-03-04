@@ -40,6 +40,7 @@
 #include "G4UIcmdWithoutParameter.hh"
 #include "G4UIcmdWith3VectorAndUnit.hh"
 #include "G4UIcmdWithADoubleAndUnit.hh"
+#include "G4UIcmdWithADouble.hh"
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
@@ -125,6 +126,11 @@ AllPixDetectorMessenger::AllPixDetectorMessenger(
 	m_HVCmd->SetParameterName("HV", false, false);
 	//m_HVCmd->SetUnitCategory("");
 	m_HVCmd->AvailableForStates(G4State_PreInit, G4State_Idle);
+	
+	m_TempCmd = new G4UIcmdWithADouble("/allpix/det/setTemperature",this);
+	m_TempCmd->SetGuidance("Detector Temperature.");
+	m_TempCmd->SetParameterName("temperature", true, false);
+	m_TempCmd->AvailableForStates(G4State_PreInit, G4State_Idle);
 
 	m_ClockCmd = new G4UIcmdWithADoubleAndUnit("/allpix/det/setClock",this);
 	m_ClockCmd->SetGuidance("The clock.");
@@ -292,6 +298,13 @@ void AllPixDetectorMessenger::SetNewValue(G4UIcommand* command, G4String newValu
 				m_LowTHLCmd->GetNewDoubleValue(newValue)
 		);
 	}
+	if( command == m_TempCmd )
+	{
+		m_AllPixDetector->SetTemperature(
+				m_TempCmd->GetNewDoubleValue(newValue)
+		);
+	}
+	
 
 	if( command == m_testStructPosCmd )
 	{
