@@ -146,6 +146,7 @@ public:
     G4double GetCrossTalk(){return m_Cross_Talk;}
     G4double GetSaturationEnergy(){return m_Saturation_Energy;}
     G4double GetTemperature(){return m_Temperature;};
+    G4ThreeVector GetMagField(){return m_MagField;};
 
     G4ThreeVector GetEFieldFromMap(G4ThreeVector);
 
@@ -331,6 +332,10 @@ public:
 	m_Temperature = val;
     }
 
+    void SetMagField(G4ThreeVector vals){
+	m_MagField = vals;
+    }
+
     void SetEFieldMap(G4String valS);
 
 
@@ -424,6 +429,7 @@ private:
     G4double m_Cross_Talk;
     G4double m_Saturation_Energy;
     G4double m_Temperature;
+    G4ThreeVector m_MagField;
 
 	G4String m_EFieldFile;
 

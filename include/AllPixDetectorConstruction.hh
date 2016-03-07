@@ -262,6 +262,7 @@ private:
 
 	// mad field
 	G4UniformMagField * m_magField;      // pointer to the magnetic field
+	G4ThreeVector m_magField_cartesian;
 	//MorourgoMagField * m_magField;
 
 	// user limits
