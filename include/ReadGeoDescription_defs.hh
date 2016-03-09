@@ -36,6 +36,9 @@
 #define __sensor_hy_S "sensor_hy"
 #define __sensor_hz_S "sensor_hz"
 
+#define __coverlayer_hz_S "coverlayer_hz"
+#define __coverlayer_mat_S "coverlayer_mat"
+
 #define __sensor_posx_S "sensor_posx"
 #define __sensor_posy_S "sensor_posy"
 #define __sensor_posz_S "sensor_posz"

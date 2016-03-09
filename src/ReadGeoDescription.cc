@@ -321,7 +321,17 @@ void ReadGeoDescription::ParseContext(TXMLNode *node)
 					float val = atof(tempContent.c_str());
 					m_detsGeo[m_firstIndx]->SetSensorHZ(val*m_unitsMap[m_currentAtt]);
 
-				}else if(m_currentNodeName == __sensor_posx_S){
+                }else if(m_currentNodeName == __coverlayer_hz_S){
+
+                    float val = atof(tempContent.c_str());
+                    m_detsGeo[m_firstIndx]->SetCoverlayerHZ(val*m_unitsMap[m_currentAtt]);
+
+                }else if(m_currentNodeName == __coverlayer_mat_S){
+
+                    G4String valS(tempContent);
+                    m_detsGeo[m_firstIndx]->SetCoverlayerMat(valS);
+
+                }else if(m_currentNodeName == __sensor_posx_S){
 
 					float val = atof(tempContent.c_str());
 					m_detsGeo[m_firstIndx]->SetSensorPosX(val*m_unitsMap[m_currentAtt]);

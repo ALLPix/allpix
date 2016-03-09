@@ -223,11 +223,11 @@
 
 <pixsize_x units="um">27.5.</pixsize_x>
 <pixsize_y units="um">27.5.</pixsize_y>
-<pixsize_z units="um">10.</pixsize_z>
+<pixsize_z units="um">150.</pixsize_z>
 
 <chip_hx units="um">7055.5</chip_hx>
 <chip_hy units="um">8060</chip_hy>
-<chip_hz units="um">10.0</chip_hz>
+<chip_hz units="um">350.0</chip_hz>
 
 <chip_offsetx units="um">0.</chip_offsetx>
 <chip_offsety units="um">-1020.</chip_offsety>
@@ -235,7 +235,10 @@
 
 <sensor_hx units="um">7040.</sensor_hx>
 <sensor_hy units="um">7040.</sensor_hy>
-<sensor_hz units="um">10.0</sensor_hz>
+<sensor_hz units="um">150.0</sensor_hz>
+
+<coverlayer_hz units="um">0.05</coverlayer_hz>
+<coverlayer_mat>G4_Al</coverlayer_mat>
 
 <sensor_gr_excess_htop units="um">500.0</sensor_gr_excess_htop>
 <sensor_gr_excess_hbottom units="um">500.0</sensor_gr_excess_hbottom>
@@ -256,7 +259,7 @@
 
 <pcb_hx units="mm">23.50</pcb_hx>
 <pcb_hy units="mm">39.5</pcb_hy>
-<pcb_hz units="mm">0.88</pcb_hz>
+<pcb_hz units="mm">0.880</pcb_hz>
 
 <sensor_resistivity>4000.0</sensor_resistivity>
 <MIP_Tot> 160 </MIP_Tot>

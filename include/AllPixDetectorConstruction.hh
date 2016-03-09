@@ -188,6 +188,9 @@ private:
 	map<int, G4LogicalVolume *>    m_Box_log;
 	map<int, G4VPhysicalVolume*>   m_Box_phys;
 
+    map<int, G4LogicalVolume *>    m_Coverlayer_log;
+    map<int, G4VPhysicalVolume*>   m_Coverlayer_phys;
+
 	map<int, G4LogicalVolume *>    m_Chip_log;
 	map<int, G4VPhysicalVolume*>   m_Chip_phys;
 
