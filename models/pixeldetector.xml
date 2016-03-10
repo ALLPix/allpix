@@ -240,7 +240,6 @@
 <coverlayer_hz units="um">0.05</coverlayer_hz>
 <coverlayer_mat>G4_Al</coverlayer_mat>
 
-
 <sensor_gr_excess_htop units="um">500.0</sensor_gr_excess_htop>
 <sensor_gr_excess_hbottom units="um">500.0</sensor_gr_excess_hbottom>
 <sensor_gr_excess_hright units="um">500.0</sensor_gr_excess_hright>
