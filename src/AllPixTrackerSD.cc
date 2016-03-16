@@ -216,8 +216,11 @@ G4bool AllPixTrackerSD::ProcessHits(G4Step * aStep, G4TouchableHistory *)
 				0.); // in the middle of the tower
 
 		// The position within the pixel !!!
-		correctedPos = correctedPos - centerOfPixel - m_relativePosOfSD;
 
+                // 20160316: The line below wrong and only works if the relative postion is (0,0,0)   
+		// correctedPos = correctedPos - centerOfPixel - m_relativePosOfSD;
+		correctedPos = correctedPos - centerOfPixel;
+		
 		//G4cout << "uncorrectedPos : " << prePos.x()/um << " " << prePos.y()/um
 		//	   << " " << prePos.z()/um << " [um]" << G4endl;
 
