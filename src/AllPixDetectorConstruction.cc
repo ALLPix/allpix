@@ -149,17 +149,31 @@ G4VPhysicalVolume * AllPixDetectorConstruction::Construct()
     // materials
     // Vacuum
     G4double z,a,density;
-    m_Vacuum = new G4Material("Vacuum", z=1 , a=1.01*g/mole, density= 0.0001*g/cm3);
 
+    // FIXME: AllPixDetectorConstruction::Construct() is performed twice
+    // This generates the following warning:
+    // G4Material WARNING: duplicate name of material Vacuum
+    if (m_Vacuum==0) {
+      m_Vacuum = new G4Material("Vacuum", z=1 , a=1.01*g/mole, density= 0.0001*g/cm3);
+    }
     // Air
     G4NistManager * nistman = G4NistManager::Instance();
     m_Air = nistman->FindOrBuildMaterial("G4_AIR");
-    nistman->ListMaterials("all");
+
+    //nistman->ListMaterials("all");
 
     // Air is the default.  Can be changed from the messenger using
     // /allpix/extras/setWorldMaterial
     // which calls AllPixDetectorConstruction::SetWorldMaterial(G4String mat)
-    if(!m_userDefinedWorldMaterial) m_fillingWorldMaterial = m_Air;
+
+    if(!m_userDefinedWorldMaterial) {
+    	m_fillingWorldMaterial = m_Air;
+    }
+    else {
+    	if (m_world_material_name=="Vacuum") m_fillingWorldMaterial= m_Vacuum;
+    }
+
+    G4cout << "Material of world: " << m_fillingWorldMaterial->GetName() << G4endl;
 
     /////////////////////////////////////////
     // The experimental Hall.  World
@@ -363,7 +377,8 @@ void AllPixDetectorConstruction::SetWorldMaterial(G4String mat){
 
     if(mat == "Vacuum") {
         G4cout << "User action --> World volume material : Vacuum " << endl;
-        m_fillingWorldMaterial = m_Vacuum;
+        m_world_material_name = "Vacuum";
+        //m_fillingWorldMaterial = m_Vacuum;
         m_userDefinedWorldMaterial = true;
     }
     // else default Air
