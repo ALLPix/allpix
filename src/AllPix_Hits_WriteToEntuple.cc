@@ -119,4 +119,8 @@ void SimpleHits::Rewind(){
 	event = 0;
 	run = 0;
 	kinEParent = 0.;
+
+	trackID.clear();
+	trackFate.clear();
+	eOut.clear();
 }

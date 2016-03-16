@@ -8,6 +8,7 @@
 
 #include "AllPixTrackerHit.hh"
 #include "AllPixRunAction.hh"
+#include "AllPixSteppingAction.hh"
 #include "AllPixMimosa26Digit.hh"
 #include "AllPixDigitInterface.hh"
 #include "AllPixWriteROOTFile.hh" //nalipour: Write MC hits in a ROOT file
@@ -33,6 +34,7 @@ class FramesHandler;
 class WriteToNtuple;
 class SimpleHits;
 class AllPixDetectorConstruction;
+class AllPixSteppingAction;
 
 #ifdef _EUTELESCOPE
 #define __magic_trigger_cntr_ack 4 // 4 scintillators with 4 primary particle hits
@@ -42,7 +44,7 @@ class AllPixRun : public G4Run {
 
 public:
 
-  AllPixRun(AllPixDetectorConstruction *, TString, TString, TString, G4bool, G4bool MCWriteFlag);
+  AllPixRun(AllPixDetectorConstruction *, TString, TString, TString, G4bool, G4bool MCWriteFlag, AllPixSteppingAction *);
   virtual ~AllPixRun();
 
   virtual void RecordEvent(const G4Event*);
@@ -73,6 +75,8 @@ private:
 
   AllPixDetectorConstruction * m_detectorPtr;
   AllPixTrackerHitsCollection * m_hitsCollection;
+
+  AllPixSteppingAction *m_stepping_action;
 
   // Hits
   SimpleHits ** m_storableHits;

@@ -1,7 +1,7 @@
 // ********************************************************************
 //                                                     AllPix Geant4  *
 //                 Generic Geant4 implementation for pixel detectors  *
-//    Laboratoire de l'Accélérateur Linéaire Université Paris-Sud 11  *
+//    Laboratoire de l'Accï¿½lï¿½rateur Linï¿½aire Universitï¿½ Paris-Sud 11  *
 //                                                                    *
 //                           John Idarraga <idarraga@lal.in2p3.fr>    *
 //                            Mathieu Benoit <benoit@lal.in2p3.fr>    *
@@ -54,6 +54,7 @@ using namespace std;
 #include "AllPixRunAction.hh"
 #include "AllPixPrimaryGeneratorAction.hh"
 #include "AllPixEventAction.hh"
+#include "AllPixSteppingAction.hh"
 #include "AllPixRun.hh"
 #include "AllPixRunAction.hh"
 
@@ -136,13 +137,16 @@ int main(int argc, char** argv)
 	G4VUserPhysicsList * physics = new AllPixPhysicsList;
 	runManager->SetUserInitialization(physics);
 
+	AllPixSteppingAction * stepping_action = new AllPixSteppingAction();
+    runManager->SetUserAction(stepping_action);
+
 	// Hits ! --> Ntuple to store hits
 	// creates AllPixRun to analyze hits at the end of event
 	TString dataset = "allPix";
 	TString tempdir = "";
 	AllPixRunAction * run_action = new AllPixRunAction(detector, dataset, tempdir,
 			"lciobridge_allpix.txt",
-			"lciobridge_allpix_dut.txt"); // dataset
+			"lciobridge_allpix_dut.txt", stepping_action); // dataset
 	runManager->SetUserAction(run_action);
 
 	// Particle gun
@@ -155,8 +159,11 @@ int main(int argc, char** argv)
 	run_action->GetPrimaryGeneratorMessenger(gen_action);
 
 	// Digits ! --> calls Digitize, and makes ntuple to store digits
-	AllPixEventAction * event_action = new AllPixEventAction(run_action);
+	AllPixEventAction * event_action = new AllPixEventAction(run_action, stepping_action);
 	runManager->SetUserAction(event_action);
+
+
+
 
 	// Initialize G4 kernel
 	//

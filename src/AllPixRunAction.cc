@@ -52,7 +52,8 @@ using namespace std;
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 // this constructor is called only once in the whole program
-AllPixRunAction::AllPixRunAction(AllPixDetectorConstruction * det, TString ds, TString td, TString lciofn, TString lciofn_dut)
+AllPixRunAction::AllPixRunAction(AllPixDetectorConstruction * det, TString ds, TString td, TString lciofn, TString lciofn_dut
+		,AllPixSteppingAction * stepping_action)
 {
 
   m_detectorPtr = det;
@@ -67,6 +68,7 @@ AllPixRunAction::AllPixRunAction(AllPixDetectorConstruction * det, TString ds, T
 
   //nalipour: Initilise the ROOT files with the NULL pointer
   writeROOTFile=NULL; 
+  m_stepping_action = stepping_action;
 
 }
 
@@ -91,7 +93,7 @@ G4Run * AllPixRunAction::GenerateRun(){
   m_writeMCROOTFilesFlag = AllPixMessenger->GetWrite_MC_FilesFlag(); // nalipour: Flag to write the ROOT file
   
   m_AllPixRun = new AllPixRun(m_detectorPtr, m_detectorPtr->GetOutputFilePrefix(),
-			      m_dataset, m_tempdir, m_writeTPixTelescopeFilesFlag, m_writeMCROOTFilesFlag); // keep this pointer //nalipour: Add the flag for the ROOT files
+			      m_dataset, m_tempdir, m_writeTPixTelescopeFilesFlag, m_writeMCROOTFilesFlag, m_stepping_action); // keep this pointer //nalipour: Add the flag for the ROOT files
   m_AllPixRun->SetLCIOBridgeFileDsc(m_lciobridge_f, m_lciobridge_dut_f);
 
   if(m_writeMCROOTFilesFlag && writeROOTFile==NULL) //nalipour: Initialise the ROOT files (once in the whole program)

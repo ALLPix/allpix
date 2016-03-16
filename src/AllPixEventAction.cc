@@ -12,9 +12,10 @@
 // geometry
 #include "ReadGeoDescription.hh"
 
-AllPixEventAction::AllPixEventAction(AllPixRunAction* run){
+AllPixEventAction::AllPixEventAction(AllPixRunAction* run, AllPixSteppingAction * stepping_action){
 
 	m_run_action = run;
+	m_stepping_action = stepping_action;
 	m_nHC = 0;
 	m_nDigitizers = 0;
 
@@ -57,6 +58,7 @@ void AllPixEventAction::BeginOfEventAction(const G4Event * /*evt*/)
 {  
 
 	//G4PrimaryVertex * pv = evt->GetPrimaryVertex();
+	m_stepping_action->Clear();
 
 }
 

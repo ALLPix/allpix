@@ -29,7 +29,7 @@
 /**
  * This constructor is called once per run
  */
-AllPixRun::AllPixRun(AllPixDetectorConstruction * det, TString ofp, TString dataset, TString tempDir, G4bool writeFlag, G4bool MCWriteFlag){
+AllPixRun::AllPixRun(AllPixDetectorConstruction * det, TString ofp, TString dataset, TString tempDir, G4bool writeFlag, G4bool MCWriteFlag, AllPixSteppingAction *stepping_action){
 
   m_writeTPixTelescopeFilesFlag = writeFlag;
   m_writeMCFilesFlag=MCWriteFlag; //nalipour: flag for MC
@@ -81,6 +81,7 @@ AllPixRun::AllPixRun(AllPixDetectorConstruction * det, TString ofp, TString data
     cntr++;
     MC_ROOT_data.push_back(new ROOTDataFormat((*detItr).first));  //nalipour: For each detector, initialize a ROOTDataFormat
 
+    m_stepping_action = stepping_action;
   }
 
   /*
@@ -487,6 +488,8 @@ void AllPixRun::FillTelescopeFiles(const G4Run* aRun, G4String folderName, G4boo
  */
 void AllPixRun::RecordEvent(const G4Event* evt) {
 
+  // G4cout << " In record event " << G4endl;
+
   RecordHits(evt);
   RecordDigits(evt);
   if (m_writeTPixTelescopeFilesFlag)
@@ -590,6 +593,12 @@ void AllPixRun::RecordHits(const G4Event* evt) {
 
     // run id
     m_storableHits[itrCol]->run = GetRunID();
+
+
+    m_storableHits[itrCol]->trackID =  m_stepping_action->GetTrackID();
+    m_storableHits[itrCol]->trackFate = m_stepping_action->GetTrackFate();
+    m_storableHits[itrCol]->eOut = m_stepping_action->GetEOut();
+
 
     /** It is guaranteed by SD::ProcessHits that the hits contain
      *  energy deposit.  Thus we store every hit collection.

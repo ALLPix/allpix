@@ -3,6 +3,7 @@
 
 #include "G4UserEventAction.hh"
 #include "G4Event.hh"
+#include "AllPixSteppingAction.hh"
 
 //#include "AllPixMimosa26Digitizer.hh"
 #include "AllPixDigitizerInterface.hh"
@@ -20,7 +21,7 @@ class AllPixEventAction : public G4UserEventAction {
 
 public:
 
-	AllPixEventAction(AllPixRunAction *);
+	AllPixEventAction(AllPixRunAction *, AllPixSteppingAction *);
 	virtual ~AllPixEventAction();
 
 	void BeginOfEventAction(const G4Event*);
@@ -36,6 +37,7 @@ public:
 private:
 
 	AllPixRunAction * m_run_action;
+	AllPixSteppingAction * m_stepping_action;
 	vector<AllPixDigitizerInterface *> m_digiPtrs;
 
 	// digitizer modules names

@@ -62,6 +62,10 @@ class SimpleHits {
   // run
   int run;
 
+  vector<int> trackID;
+  vector<int> trackFate;
+  vector<float> eOut;
+
   ClassDef(SimpleHits, 1)
 };
 

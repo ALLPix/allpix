@@ -47,6 +47,8 @@
 #include "AllPixPrimaryGeneratorAction.hh"
 #include "AllPixWriteROOTFile.hh" //nalipour
 
+#include "AllPixSteppingAction.hh"
+
 #include <iostream>
 #include <fstream>
 using namespace std;
@@ -62,6 +64,8 @@ class AllPixWriteROOTFile; //nalipour
 //class FramesHandler;
 //class WriteToNtuple;
 
+class AllPixSteppingAction;
+
 // simplified hits;
 typedef struct {
   float edep;
@@ -75,7 +79,7 @@ class AllPixRunAction : public G4UserRunAction
 {
 
 public:
-  AllPixRunAction(AllPixDetectorConstruction *, TString, TString, TString, TString);
+  AllPixRunAction(AllPixDetectorConstruction *, TString, TString, TString, TString, AllPixSteppingAction *);
   ~AllPixRunAction();
   
 public:
@@ -108,6 +112,7 @@ private:
   G4bool m_writeTPixTelescopeFilesFlag;
   G4bool m_writeMCROOTFilesFlag; //nalipour: Flag to write MC hits in a ROOT file
 
+  AllPixSteppingAction *m_stepping_action;
 };
 
 
