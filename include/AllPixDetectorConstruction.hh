@@ -247,6 +247,8 @@ private:
 	// messenger
 	AllPixDetectorMessenger* m_detectorMessenger;
 
+	G4String m_world_material_name;
+
 	// materials
 	G4Material * m_Air;
 	G4Material * m_Vacuum;

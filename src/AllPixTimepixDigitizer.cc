@@ -97,7 +97,8 @@ AllPixTimepixDigitizer::AllPixTimepixDigitizer(G4String modName, G4String hitsCo
 	/////////////////////////////////
 	// Magnetic Field 			   //
 	////////////////////////////////
-	B_Field = 5.0;
+	//B_Field = 5.0;
+	B_Field = 0.0;
 	r_H_e = 1.1;
 	r_H_h=0.7;	
 
@@ -902,13 +903,13 @@ void AllPixTimepixDigitizer::Digitize(){
 
 
 
-	G4int dc_entries = m_digitsCollection->entries();
-	if(dc_entries > 0){
-		G4cout << "--------> Digits Collection : " << collectionName[0]
-		                                                             << "(" << m_hitsColName[0] << ")"
-		                                                             << " contains " << dc_entries
-		                                                             << " digits" << G4endl;
-	}
+	//G4int dc_entries = m_digitsCollection->entries();
+	//if(dc_entries > 0){
+	//	G4cout << "--------> Digits Collection : " << collectionName[0]
+	//	                                                             << "(" << m_hitsColName[0] << ")"
+	//	                                                             << " contains " << dc_entries
+	//	                                                             << " digits" << G4endl;
+	//}
 
 	StoreDigiCollection(m_digitsCollection);
 	
