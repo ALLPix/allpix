@@ -113,7 +113,7 @@ void AllPixSteppingAction::UserSteppingAction(const G4Step* step) {
           if (name1=="Coverlayer_500_phys") {
             trackFate[pos]=1;
           }
-          else if (name1=="BumpBox_500_phys" || name1=="Bump_500phys" ) {
+          else if (name1=="BumpBox_500_phys" || name1=="Bump_500phys" || name1=="wrapper_500_phys" ) {
         	trackFate[pos]=2;
           }
           else if (name1=="GuardRings_500_phys") {

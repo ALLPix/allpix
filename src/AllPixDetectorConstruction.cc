@@ -870,29 +870,29 @@ void AllPixDetectorConstruction::BuildPixelDevices(map<int, AllPixGeoDsc *> geoM
         if(geoMap[*detItr]->GetHalfPCBZ()!=0){
 
             m_PCB_phys[(*detItr)] = new G4PVPlacement(
-                        0,
-                        posPCB,
-                        m_PCB_log[(*detItr)],
-                    PCBName.second+"_phys",
-                    m_wrapper_log[(*detItr)], // mother log
-                    false,
-                    (*detItr),
-                    true); // copy number
+                      0,
+                      posPCB,
+                      m_PCB_log[(*detItr)],
+                      PCBName.second+"_phys",
+                      m_wrapper_log[(*detItr)], // mother log
+                      false,
+                      (*detItr),
+                      true); // copy number
         }
         if(geoMap[*detItr]->GetHalfChipZ()!=0){
 
             m_Chip_phys[(*detItr)] = new G4PVPlacement(0,
-                                                       posChip,
-                                                       m_Chip_log[(*detItr)],
+            		posChip,
+                    m_Chip_log[(*detItr)],
                     ChipName.second+"_phys",
                     m_wrapper_log[(*detItr)], // mother log
                     false,
                     (*detItr), // copy number
                     true); // check overlap
             if(geoMap[*detItr]->GetBumpHeight()!=0.0){
-                m_Bumps_phys[(*detItr)] = new G4PVPlacement(0,
-                                                            posBumps,
-                                                            m_Bumps_log[(*detItr)],
+            	m_Bumps_phys[(*detItr)] = new G4PVPlacement(0,
+                        posBumps,
+                        m_Bumps_log[(*detItr)],
                         BumpBoxName.second+"_phys",
                         m_wrapper_log[(*detItr)], // mother log
                         false,

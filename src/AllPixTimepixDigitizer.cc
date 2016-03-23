@@ -97,13 +97,12 @@ AllPixTimepixDigitizer::AllPixTimepixDigitizer(G4String modName, G4String hitsCo
 	/////////////////////////////////
 	// Magnetic Field 			   //
 	////////////////////////////////
+
+	// fixme: Magnetic field should not be hard coded
 	//B_Field = 5.0;
 	B_Field = 0.0;
 	r_H_e = 1.1;
 	r_H_h=0.7;	
-
-
-
 
 	///////////////////////////////////////////////////
 	// Silicon electron and hole transport constants //
