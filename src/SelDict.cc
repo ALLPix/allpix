@@ -527,7 +527,7 @@ namespace ROOT {
       vector<string> *ptr = 0;
       static ::TVirtualIsAProxy* isa_proxy = new ::TIsAProxy(typeid(vector<string>));
       static ::ROOT::TGenericClassInfo 
-         instance("vector<string>", -2, "vector", 210,
+         instance("vector<string>", -2, "vector", 214,
                   typeid(vector<string>), DefineBehavior(ptr, ptr),
                   &vectorlEstringgR_Dictionary, isa_proxy, 0,
                   sizeof(vector<string>) );
@@ -590,7 +590,7 @@ namespace ROOT {
       vector<int> *ptr = 0;
       static ::TVirtualIsAProxy* isa_proxy = new ::TIsAProxy(typeid(vector<int>));
       static ::ROOT::TGenericClassInfo 
-         instance("vector<int>", -2, "vector", 210,
+         instance("vector<int>", -2, "vector", 214,
                   typeid(vector<int>), DefineBehavior(ptr, ptr),
                   &vectorlEintgR_Dictionary, isa_proxy, 0,
                   sizeof(vector<int>) );
@@ -653,7 +653,7 @@ namespace ROOT {
       vector<float> *ptr = 0;
       static ::TVirtualIsAProxy* isa_proxy = new ::TIsAProxy(typeid(vector<float>));
       static ::ROOT::TGenericClassInfo 
-         instance("vector<float>", -2, "vector", 210,
+         instance("vector<float>", -2, "vector", 214,
                   typeid(vector<float>), DefineBehavior(ptr, ptr),
                   &vectorlEfloatgR_Dictionary, isa_proxy, 0,
                   sizeof(vector<float>) );
@@ -716,7 +716,7 @@ namespace ROOT {
       vector<double> *ptr = 0;
       static ::TVirtualIsAProxy* isa_proxy = new ::TIsAProxy(typeid(vector<double>));
       static ::ROOT::TGenericClassInfo 
-         instance("vector<double>", -2, "vector", 210,
+         instance("vector<double>", -2, "vector", 214,
                   typeid(vector<double>), DefineBehavior(ptr, ptr),
                   &vectorlEdoublegR_Dictionary, isa_proxy, 0,
                   sizeof(vector<double>) );
@@ -779,7 +779,7 @@ namespace ROOT {
       vector<TVector3> *ptr = 0;
       static ::TVirtualIsAProxy* isa_proxy = new ::TIsAProxy(typeid(vector<TVector3>));
       static ::ROOT::TGenericClassInfo 
-         instance("vector<TVector3>", -2, "vector", 210,
+         instance("vector<TVector3>", -2, "vector", 214,
                   typeid(vector<TVector3>), DefineBehavior(ptr, ptr),
                   &vectorlETVector3gR_Dictionary, isa_proxy, 0,
                   sizeof(vector<TVector3>) );
@@ -901,8 +901,8 @@ namespace {
     };
     static const char* includePaths[] = {
 "./include",
-"/home/idarraga/analysis/root-6.04.02/include",
-"/home/idarraga/allpix/",
+"/usr/local/include",
+"/home/emaddox/work/projects/AllPix/allpix/",
 0
     };
     static const char* fwdDeclCode = 
