@@ -938,14 +938,18 @@ void AllPixDetectorConstruction::BuildPixelDevices(map<int, AllPixGeoDsc *> geoM
             //		m_Bumps_Slice_log[(*detItr)]->SetVisAttributes(BumpSliceVisAtt);
 
 
-            parameterization = new Allpix_BumpsParameterization( geoMap[*detItr] );
-            G4int NPixTot = geoMap[*detItr]->GetNPixelsX()*geoMap[*detItr]->GetNPixelsY();
-            new G4PVParameterised(BumpName.second+"phys",
+            // Parametrisation not needed and crashed for case without bumps
+            if(geoMap[*detItr]->GetBumpHeight()!=0.0) {
+
+              parameterization = new Allpix_BumpsParameterization( geoMap[*detItr] );
+              G4int NPixTot = geoMap[*detItr]->GetNPixelsX()*geoMap[*detItr]->GetNPixelsY();
+              new G4PVParameterised(BumpName.second+"phys",
                                   m_Bumps_Cell_log[(*detItr)],        // logical volume
                     m_Bumps_log[(*detItr)],             // mother volume
                     kUndefined,                         // axis
                     NPixTot,                            // replicas
                     parameterization);                  // G4VPVParameterisation
+            }
         }
 
 
