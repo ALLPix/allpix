@@ -69,7 +69,8 @@ Once the Cmake environnement is set, to compile, simply execute :
 
 X is a number of processor 
 	
-make sure allpix-install/bin is added to the PATH environnement variable. 
+make sure allpix-install/bin is added to the PATH environnement variable using : 
+	export PATH=$PATH:PATHTOALLPIXINSTALLBINFOLDER
 	
 NOTE : the pixeldetector.xml file that is used for simulation is picked following a relative path to the allpix execution folder. So execute allpix executable from inside allpix folder, as before
 NOTE : The makefile method is deprecated for this version, please use CMAKE instead 
