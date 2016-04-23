@@ -18,6 +18,8 @@
 
 // Included by newdigitizer.sh script --> Medipix3RX
 #include "AllPixMedipix3RXDigitizer.hh"
+// Included by newdigitizer.sh script --> EdepHistogrammer
+#include "AllPixEdepHistogrammerDigitizer.hh"
 // __endofheader__
 
 // geometry
@@ -144,6 +146,13 @@ void AllPixEventAction::SetupDigitizers(){
 // Included by newdigitizer.sh script --> Medipix3RX
 else if (digitizerName == "Medipix3RX") {
 			AllPixMedipix3RXDigitizer * dp = new AllPixMedipix3RXDigitizer(digitizerModulesNames[itr] , hcName, digitColectionName);
+			dmPtr = static_cast<AllPixDigitizerInterface *> (dp);
+			cout << "    Setting up a " << digitizerName << " digitizer for det : " << detectorId << endl;
+		}
+ 
+// Included by newdigitizer.sh script --> EdepHistogrammer
+else if (digitizerName == "EdepHistogrammer") {
+			AllPixEdepHistogrammerDigitizer * dp = new AllPixEdepHistogrammerDigitizer(digitizerModulesNames[itr] , hcName, digitColectionName);
 			dmPtr = static_cast<AllPixDigitizerInterface *> (dp);
 			cout << "    Setting up a " << digitizerName << " digitizer for det : " << detectorId << endl;
 		}
