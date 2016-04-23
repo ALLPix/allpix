@@ -850,6 +850,37 @@ void AllPixDetectorConstruction::BuildTestStructure(int){
 
 		break;
 	}
+	
+	case 10 :
+	 {
+	
+		G4cout << "Building X-Ray Cabinet" << endl ;
+		// materials
+		G4NistManager* nistman = G4NistManager::Instance();
+		G4Material * Lead = nistman->FindOrBuildMaterial("G4_Pb");
+
+		G4Box *box1=new G4Box("OuterBox",(730./2)*mm,(730./2)*mm,(1140/2)*mm);
+		G4Box *box2=new G4Box("InnerBox",(650./2)*mm,(650./2)*mm,(1060/2)*mm);
+
+		G4SubtractionSolid *cabinet_box = new G4SubtractionSolid("OuterBox-InnerBox",box1,box2);
+
+		m_TestStructure_log = new G4LogicalVolume(cabinet_box,Lead,"box1_log",0,0,0);
+
+		G4VisAttributes * visAtt_bp = new G4VisAttributes(G4Color(0.5, 0.5, 0.5,0.05));
+		visAtt_bp->SetLineWidth(1);
+		visAtt_bp->SetForceSolid(false);
+
+		m_TestStructure_log->SetVisAttributes(visAtt_bp);
+
+		m_TestStructure_phys = new G4PVPlacement(0,
+				G4ThreeVector(0,0,0),
+				m_TestStructure_log,
+				"cabinet_phys",
+				expHall_log,
+				false,
+				0);
+	
+	}
 
 	default:
 	{
