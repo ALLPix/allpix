@@ -125,7 +125,7 @@ void AllPixRunAction::EndOfRunAction(const G4Run* aRun)
 {   
 
   // at the end of the run
-  G4cout << "Filling frames ntuple" << G4endl;
+  //G4cout << "Filling frames ntuple" << G4endl;
   m_AllPixRun->FillFramesNtuple(aRun);
 
   /*
