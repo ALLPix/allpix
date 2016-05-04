@@ -44,6 +44,7 @@ private:
   vector<G4String> m_hitsColName;
   G4PrimaryVertex * m_primaryVertex; // information from EventAction
   TH1D * Edeposition;
+  double detectorThickness;
 
 };
 

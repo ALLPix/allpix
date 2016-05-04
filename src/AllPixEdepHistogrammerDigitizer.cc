@@ -22,10 +22,14 @@ AllPixEdepHistogrammerDigitizer::AllPixEdepHistogrammerDigitizer(G4String modNam
 	// Registration of digits collection name
 	collectionName.push_back(digitColName);
 	m_hitsColName.push_back(hitsColName);
+	AllPixGeoDsc * gD = GetDetectorGeoDscPtr();
+	detectorThickness = gD->GetSensorZ();
+
 
 	// threshold
 	m_digitIn.thl = 0.;
-	Edeposition = new TH1D("","",2000,-10,10);
+	int nbins = int(detectorThickness)*10;
+	Edeposition = new TH1D("","",nbins,-detectorThickness/2,detectorThickness/2);
 
 
 }
@@ -66,7 +70,7 @@ void AllPixEdepHistogrammerDigitizer::Digitize(){
 		G4double zpos = (*hitsCollection)[itr]->GetPosWithRespectToPixel().z()/um;
 		// Dose in Rad , Energy in joule / kg(V*rho)
 		double doseInRad = 1.60217733e-16*((*hitsCollection)[itr]->GetEdep()/keV)/(0.001*0.001*0.01e-6*2532.59);
-		Edeposition->Fill(zpos,doseInRad);
+		Edeposition->Fill(zpos,(*hitsCollection)[itr]->GetEdep()/keV);
 		//G4cout << "Deposition of " << (*hitsCollection)[itr]->GetEdep()/keV << "keV at x,y,z : " << xpos << " " << ypos << " " << zpos << endl;
 		tempPixel.first  = (*hitsCollection)[itr]->GetPixelNbX();
 		tempPixel.second = (*hitsCollection)[itr]->GetPixelNbY();

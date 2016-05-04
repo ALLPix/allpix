@@ -84,7 +84,7 @@
 /gps/pos/type Point
 /gps/ang/type iso 
 /gps/ang/mintheta 0 deg 
-/gps/ang/maxtheta 0.15 deg
+/gps/ang/maxtheta 2.0 deg
 
 
 /gps/pos/centre 0 0 400 mm
@@ -92,7 +92,7 @@
 /gps/ene/type User
 /gps/hist/type energy
 # spectra
-/control/execute macros/XRayCabinet_Spectrum_MeV.mac
+/control/execute macros/XRayCabinet_Spectrum_60keV.mac
 
 ####################################################################
 # Shoot

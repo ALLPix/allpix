@@ -546,9 +546,9 @@
 <npix_y>1</npix_y>
 <npix_z>0</npix_z>
 
-<pixsize_x units="um">500</pixsize_x>
-<pixsize_y units="um">500</pixsize_y>
-<pixsize_z units="um">10.0</pixsize_z>
+<pixsize_x units="um">3162.28</pixsize_x>
+<pixsize_y units="um">3162.28</pixsize_y>
+<pixsize_z units="um">12.5</pixsize_z>
 
 <chip_hx units="um">7040</chip_hx>
 <chip_hy units="um">7040</chip_hy>
@@ -558,9 +558,9 @@
 <chip_posy units="mm">-22.25</chip_posy>
 <chip_posz units="um">0.</chip_posz>
 
-<sensor_hx units="um">500</sensor_hx>
-<sensor_hy units="um">500</sensor_hy>
-<sensor_hz units="um">10.0</sensor_hz>
+<sensor_hx units="um">3162.28</sensor_hx>
+<sensor_hy units="um">3162.28</sensor_hy>
+<sensor_hz units="um">12.5</sensor_hz>
 
 <sensor_gr_excess_htop units="um">50.0</sensor_gr_excess_htop>
 <sensor_gr_excess_hbottom units="um">50.0</sensor_gr_excess_hbottom>
