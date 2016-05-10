@@ -18,6 +18,7 @@
 
 #include <map>
 #include <vector>
+#include <fstream>
 
 using namespace std;
 
@@ -55,6 +56,8 @@ private:
   // Silicon electron and hole transport constants
   G4double Electron_Mobility;
   G4double Electron_Diffusion;
+  G4double Electron_HallFactor;
+  G4double Electron_Beta;
   G4double Boltzmann_kT;
   G4double Electron_ec;
   

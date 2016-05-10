@@ -47,6 +47,7 @@ AllPixCMSp1Digitizer::AllPixCMSp1Digitizer(G4String modName, G4String hitsColNam
 	// Default mobilities
 	Electron_Mobility=1.53e9*TMath::Power(Temperature, -0.87)/(1.01*TMath::Power(Temperature, 1.55))*1e-4; // mu0 from pixelav, m2/volt/s
 	Electron_Diffusion=40.43*cm2/s;
+	Electron_Beta = 0.0257*TMath::Power(Temperature, 0.66); // beta from pixelav
 	
 	Electron_HallFactor = 1.12;
 	Electron_ec = 100*1.01 * TMath::Power(Temperature, 1.55); // ec from pixelav
