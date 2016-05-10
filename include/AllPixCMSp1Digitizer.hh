@@ -37,12 +37,36 @@ public:
 
 private:
 
+  AllPixGeoDsc * gD;
+
   // digitInput typedef is defined in AllPixDigitizerInterface.hh
   digitInput m_digitIn;
 
   AllPixCMSp1DigitsCollection * m_digitsCollection;
   vector<G4String> m_hitsColName;
   G4PrimaryVertex * m_primaryVertex; // information from EventAction
+
+  G4double threshold;
+  G4double elec;
+  G4double Temperature;
+  G4ThreeVector bfield;
+  G4double detectorThickness;
+
+  // Silicon electron and hole transport constants
+  G4double Electron_Mobility;
+  G4double Electron_Diffusion;
+  G4double Boltzmann_kT;
+  G4double Electron_ec;
+  
+  
+  vector<G4double> RKF5Integration(G4ThreeVector position, G4double dt);
+  G4double MobilityElectron(const G4ThreeVector efield);
+  G4ThreeVector ElectronSpeed(const G4ThreeVector efield);
+  G4double DiffusionWidth(const G4double timestep);
+  
+  G4double Propagation(G4ThreeVector& pos);
+
+
 
 };
 
