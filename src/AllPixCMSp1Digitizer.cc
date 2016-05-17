@@ -14,45 +14,27 @@
 #include "AllPixGeoDsc.hh"
 
 #include "CLHEP/Random/RandGauss.h"
+#include "CLHEP/Random/RandFlat.h"
 
+#include "TMath.h"
 #include <ctime>
 
 
-AllPixCMSp1Digitizer::AllPixCMSp1Digitizer(G4String modName, G4String hitsColName, G4String digitColName) 
-: AllPixDigitizerInterface (modName) {
 
+AllPixCMSp1Digitizer::AllPixCMSp1Digitizer(G4String modName, G4String hitsColName, G4String digitColName)
+: AllPixDigitizerInterface (modName) {
+	
 	// Registration of digits collection name
 	collectionName.push_back(digitColName);
 	m_hitsColName.push_back(hitsColName);
-
+	
 	// threshold
 	m_digitIn.thl = 0.;
 	
-	gD = GetDetectorGeoDscPtr();
 	
-	bfield = gD->GetMagField();
-	detectorThickness = gD->GetSensorZ();
-	
-	
-	///////////////////////////////////////////////////
-	// Silicon electron and hole transport constants //
-	///////////////////////////////////////////////////
-	
-	//// Unit for charge in FEIX average e/h pair creation energy in Silicon
-	elec = 3.64*eV;
-	
-	Temperature = gD->GetTemperature();
-	cout << "Temperature: " << Temperature << " K" << endl;
 
-	// Default mobilities
-	Electron_Mobility=1.53e9*TMath::Power(Temperature, -0.87)/(1.01*TMath::Power(Temperature, 1.55))*1e-4; // mu0 from pixelav, m2/volt/s
-	Electron_Diffusion=40.43*cm2/s;
-	Electron_Beta = 0.0257*TMath::Power(Temperature, 0.66); // beta from pixelav
-	
-	Electron_HallFactor = 1.12;
-	Electron_ec = 100*1.01 * TMath::Power(Temperature, 1.55); // ec from pixelav
-	
-	Boltzmann_kT = 8.6173e-5*Temperature; // eV
+	InitVariables();
+
 	
 	
 	
@@ -81,14 +63,59 @@ AllPixCMSp1Digitizer::AllPixCMSp1Digitizer(G4String modName, G4String hitsColNam
 }
 
 AllPixCMSp1Digitizer::~AllPixCMSp1Digitizer(){
+	
+}
 
+void AllPixCMSp1Digitizer::InitVariables(){
+	
+	// gD contains info on sensor and surroundings (bfield, temperature, ...)
+	gD = GetDetectorGeoDscPtr();
+	
+	bfield = gD->GetMagField();
+	detectorThickness = gD->GetSensorZ();
+	Temperature = gD->GetTemperature();
+	flux = gD->GetFlux(); // 1/cm^2
+	
+	///////////////////////////////////////////////////
+	// Silicon electron and hole transport constants //
+	///////////////////////////////////////////////////
+	
+	//// Unit for charge in FEIX average e/h pair creation energy in Silicon
+	elec = 3.64*eV;
+	
+	// Variables for charge drift
+	Electron_Mobility = 1.53e9*TMath::Power(Temperature, -0.87)/(1.01*TMath::Power(Temperature, 1.55))*1e-4; // mu0 from pixelav, m2/volt/s
+	Electron_Beta = 0.0257*TMath::Power(Temperature, 0.66); // beta from pixelav
+	
+	Electron_HallFactor = 1.12;
+	Electron_ec = 100*1.01 * TMath::Power(Temperature, 1.55); // ec from pixelav
+	
+	Boltzmann_kT = 8.6173e-5*Temperature; // eV
+	// Boltzmann_kT = 1.38e-23*Temperature; // J
+	
+	Target_Spatial_Precision = 1e-10;
+	Timestep_max = 0.1e-9;
+	Timestep_min = 0.005e-9;
+	
+	// Variables for Trapping
+	Electron_Trap_beta0 = 5.65e-7; // cm2/s
+	Electron_Trap_kappa = -0.86;
+	Electron_Trap_T0 = 263; // K
+	Electron_Trap_TauNoFluence = 1.;
+	
+	if(flux > 0.){
+		Electron_Trap_TauEff = 1./(flux * Electron_Trap_beta0 * TMath::Power((Temperature/Electron_Trap_T0),Electron_Trap_kappa));
+	}else{
+		Electron_Trap_TauEff = Electron_Trap_TauNoFluence;
+	}
+	
 }
 
 void AllPixCMSp1Digitizer::Digitize(){
-
+	
 	// create the digits collection
 	m_digitsCollection = new AllPixCMSp1DigitsCollection("AllPixCMSp1Digitizer", collectionName[0] );
-
+	
 	// get the digiManager
 	G4DigiManager * digiMan = G4DigiManager::GetDMpointer();
 	

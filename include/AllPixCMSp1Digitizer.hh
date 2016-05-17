@@ -61,6 +61,7 @@ private:
   G4double Boltzmann_kT;
   G4double Electron_ec;
   
+  void InitVariables();
   
   vector<G4double> RKF5Integration(G4ThreeVector position, G4double dt);
   G4double MobilityElectron(const G4ThreeVector efield);
