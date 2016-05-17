@@ -46,11 +46,12 @@ AllPixCMSp1Digitizer::AllPixCMSp1Digitizer(G4String modName, G4String hitsColNam
 	G4ThreeVector pos = G4ThreeVector(130.*um, 130.*um, 0.5*um);
 	G4ThreeVector startpos;
 	G4double drifttime;
+	G4bool trapped;
 	
 	for (size_t i = 0; i < 284; i++) {
 		pos = G4ThreeVector(3130.*um, 3130.*um, (0.5+(double)i)*um);
 		startpos = pos;
-		drifttime = Propagation(pos);
+		Propagation(pos, drifttime, trapped);
 		G4cout << "Endposition: " << pos << G4endl;
 		G4cout << "Total drift time in ns: " << drifttime*1e9 << G4endl;
 		
@@ -231,8 +232,8 @@ vector<G4double>  AllPixCMSp1Digitizer::RKF5Integration(G4ThreeVector position, 
 	G4ThreeVector error;
 	error = (1./360)*k1 + (0.)*k2 + (-128./4275)*k3 + (-2197./75240)*k4 + (1./50)*k5 + (2./55)*k6;
 	
-	double Erreur;
-	Erreur=error.mag2();
+	G4double Erreur;
+	Erreur=error.mag();
 	
 	vector<G4double> deltapoint(4);
 	deltapoint[0]=deltaposition[0];
@@ -271,43 +272,85 @@ G4ThreeVector AllPixCMSp1Digitizer::ElectronSpeed(const G4ThreeVector efield){
 	
 }
 
-G4double AllPixCMSp1Digitizer::DiffusionWidth(const G4double timestep){
+G4ThreeVector AllPixCMSp1Digitizer::DiffusionStep(const G4double timestep, const G4ThreeVector position){
 	
-	// FIXME: Default Mobility or mu(E)?
+	G4ThreeVector diffusionVector;
 	
-	G4double D = Boltzmann_kT*Electron_Mobility;
+	G4ThreeVector electricField = 100.*gD->GetEFieldFromMap(position);
+	G4double D = Boltzmann_kT*MobilityElectron(electricField);
+	G4double Dwidth = TMath::Sqrt(2.*D*timestep);
 	
-	return TMath::Sqrt(2.*D*timestep);
+	for (size_t i = 0; i < 3; i++) {
+		diffusionVector[i] = CLHEP::RandGauss::shoot(0.,Dwidth)*um;
+	}
+	
+	// TMath::Sqrt(2.*D*timestep);
+	return diffusionVector;
 	
 }
 
+void AllPixCMSp1Digitizer::SetDt(G4double& dt, const G4double uncertainty, const G4double z, const G4double dz){
+	
+	G4double dt_init = dt;
+	
+	if(uncertainty > Target_Spatial_Precision){dt *= 0.7;}
+	if(uncertainty < 0.5*Target_Spatial_Precision){dt *= 2;}
+	
+	if(dt > Timestep_max){dt = Timestep_max;}
+	if(dt < Timestep_min){dt = Timestep_min;}
+	
+	if(detectorThickness-z < dz*1.2){dt = dt_init*0.7;}
+	
+}
+
+G4double AllPixCMSp1Digitizer::GetTrappingTime(){
+	
+	return(-Electron_Trap_TauEff*log(CLHEP::RandFlat::shoot()));
+	
+}
 
 /*
 	This function propagates an electron through the sensor and updates the position vector.
 */
 
-G4double AllPixCMSp1Digitizer::Propagation(G4ThreeVector& pos){
+G4double AllPixCMSp1Digitizer::Propagation(G4ThreeVector& pos, G4double& drifttime, G4bool& trapped){
 	
 	vector<G4double> deltapoint(4);
 	
-	G4double drifttime = 0.;
+	drifttime = 0.;
 	G4double dt = 0.01*1e-9;
-	G4double DiffusionW;
 	
+	G4double trappingTime = GetTrappingTime();
+	
+	trapped = false;
+	
+	G4int nsteps=0;
+
 	while(pos[2] > 0 && pos[2] < detectorThickness)
 	{
 		
+		if(drifttime > trappingTime){
+			trapped = true;
+			break;
+		}
+		
 		deltapoint = RKF5Integration(pos,dt);
-		// FIXME: Adapt step size using deltapoint[3], which is the error squared on the RKF step
 		for (size_t i = 0; i < 3; i++) {pos[i]+=deltapoint[i]/nm*um;}
 		drifttime += dt;
-		
-		DiffusionW = DiffusionWidth(dt);
-		for (size_t i = 0; i < 3; i++) {pos[i]+=CLHEP::RandGauss::shoot(0.,DiffusionW)*um;}
-		
+
+
+		pos += DiffusionStep(dt, pos);
+
+
+		// Adapt step size 
+		SetDt(dt, deltapoint[3], pos[2], deltapoint[2]/nm*um);
+
+		nsteps++;
 	}
+	if(trapped) G4cout << "Charge was trapped." << G4endl;
 	// G4cout << "Endposition: " << pos << G4endl;
 	// G4cout << "Total drift time in ns: " << drifttime*1e9 << G4endl;
+	// G4cout << "Step count: " << nsteps << G4endl;
 	
 	return drifttime;
 	
