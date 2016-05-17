@@ -86,6 +86,7 @@ private:
   G4UIcmdWithADoubleAndUnit * m_ClockCmd;
   G4UIcmdWithADoubleAndUnit * m_StepLengthSensor;
   G4UIcmdWithADouble * m_TempCmd;
+  G4UIcmdWithADouble * m_FluxCmd;
 
   G4UIcmdWithoutParameter   * m_UpdateCmd;
 

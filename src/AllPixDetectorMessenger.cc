@@ -131,6 +131,11 @@ AllPixDetectorMessenger::AllPixDetectorMessenger(
 	m_TempCmd->SetGuidance("Detector Temperature.");
 	m_TempCmd->SetParameterName("temperature", true, false);
 	m_TempCmd->AvailableForStates(G4State_PreInit, G4State_Idle);
+	
+	m_FluxCmd = new G4UIcmdWithADouble("/allpix/det/setFlux",this);
+	m_FluxCmd->SetGuidance("Sensor Irradiation Flux.");
+	m_FluxCmd->SetParameterName("flux", true, false);
+	m_FluxCmd->AvailableForStates(G4State_PreInit, G4State_Idle);
 
 	m_ClockCmd = new G4UIcmdWithADoubleAndUnit("/allpix/det/setClock",this);
 	m_ClockCmd->SetGuidance("The clock.");
@@ -302,6 +307,12 @@ void AllPixDetectorMessenger::SetNewValue(G4UIcommand* command, G4String newValu
 	{
 		m_AllPixDetector->SetTemperature(
 				m_TempCmd->GetNewDoubleValue(newValue)
+		);
+	}
+	if( command == m_FluxCmd )
+	{
+		m_AllPixDetector->SetFlux(
+				m_FluxCmd->GetNewDoubleValue(newValue)
 		);
 	}
 	

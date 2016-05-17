@@ -347,6 +347,10 @@ void AllPixDetectorConstruction::SetTemperature(G4double temperature){
 	m_temperatures[*m_detIdItr] = temperature;
 }
 
+void AllPixDetectorConstruction::SetFlux(G4double flux){
+	m_fluxes[*m_detIdItr] = flux;
+}
+
 /**
  * Postition of the test structure.
  * There could be many test structures,
@@ -1045,6 +1049,7 @@ void AllPixDetectorConstruction::BuildPixelDevices(map<int, AllPixGeoDsc *> geoM
 		}else{
 			gD->SetTemperature(300.);
 		}
+		gD->SetFlux(m_fluxes[(*detItr)]);
 		
 		gD->SetMagField(m_magField_cartesian);
 
