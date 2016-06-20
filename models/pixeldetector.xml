@@ -1546,8 +1546,8 @@
 <MIP_Charge>22000.</MIP_Charge>
 <!-- <Counter Depth> 11810 </Counter Depth> -->
 <!-- <Clock Unit> 10e-9 </Clock Unit> -->
-<!-- <Chip Noise>120.</Chip Noise> -->
-<!-- <Chip Threshold>1520.</Chip Threshold> -->
+<Chip_Noise>180.</Chip_Noise>
+<Chip_Threshold>1500.</Chip_Threshold>
 <!-- <Cross Talk>0.0001</Cross Talk> -->
 <!-- <Saturation Energy>350.</Saturation Energy> -->
 

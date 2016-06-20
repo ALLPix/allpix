@@ -1,11 +1,11 @@
 /**
- *  Author:
- *    Paul Schuetze <paul.schuetze@desy.de>
- *
- *  allpix Authors:
- *   John Idarraga <idarraga@cern.ch>
- *   Mathieu Benoit <benoit@lal.in2p3.fr>
- */
+*  Author:
+*    Paul Schuetze <paul.schuetze@desy.de>
+*
+*  allpix Authors:
+*   John Idarraga <idarraga@cern.ch>
+*   Mathieu Benoit <benoit@lal.in2p3.fr>
+*/
 
 #include "AllPixCMSp1Digitizer.hh"
 #include "AllPixTrackerHit.hh"
@@ -28,10 +28,6 @@ AllPixCMSp1Digitizer::AllPixCMSp1Digitizer(G4String modName, G4String hitsColNam
 	collectionName.push_back(digitColName);
 	m_hitsColName.push_back(hitsColName);
 	
-	// threshold
-	m_digitIn.thl = 0.;
-	
-	
 
 	InitVariables();
 
@@ -40,6 +36,7 @@ AllPixCMSp1Digitizer::AllPixCMSp1Digitizer(G4String modName, G4String hitsColNam
 	
 	// Test some Propagations through the sensor.
 	
+	/*
 	ofstream ofile;
 	ofile.open("drifttimeAllpix.txt", std::ofstream::out | std::ofstream::app);
 	
@@ -60,6 +57,7 @@ AllPixCMSp1Digitizer::AllPixCMSp1Digitizer(G4String modName, G4String hitsColNam
 	}
 	
 	ofile.close();
+*/
 
 }
 
@@ -76,6 +74,15 @@ void AllPixCMSp1Digitizer::InitVariables(){
 	detectorThickness = gD->GetSensorZ();
 	Temperature = gD->GetTemperature();
 	flux = gD->GetFlux(); // 1/cm^2
+	
+	PixelSizeX = gD->GetPixelX();
+	PixelSizeY = gD->GetPixelY();
+	NPixelX = gD->GetNPixelsX();
+	NPixelY = gD->GetNPixelsY();
+	SensorPosX = gD->GetSensorXOffset();
+	SensorPosY = gD->GetSensorYOffset();
+	SensorHalfSizeX = gD->GetHalfSensorX();
+	SensorHalfSizeY = gD->GetHalfSensorY();
 	
 	///////////////////////////////////////////////////
 	// Silicon electron and hole transport constants //
@@ -98,6 +105,21 @@ void AllPixCMSp1Digitizer::InitVariables(){
 	Timestep_max = 0.1e-9;
 	Timestep_min = 0.005e-9;
 	
+	Electron_Scaling = 10;
+	
+	// Variables for Smearing and Digitizing
+	threshold = gD->GetThreshold();
+	gainFactor = 1.04;
+	gaussNoise = gD->GetChipNoise();
+	thresholdSmear = 100.;
+	ADCSmear = 2.;
+	gaincalParameters = new G4double[5];
+	gaincalParameters[0] = 0.999745;
+	gaincalParameters[1] = 287117.6;
+	gaincalParameters[2] = 4853.0;
+	gaincalParameters[3] = -257.8;
+	gaincalParameters[4] = 227.6;
+	
 	// Variables for Trapping
 	Electron_Trap_beta0 = 5.65e-7; // cm2/s
 	Electron_Trap_kappa = -0.86;
@@ -109,6 +131,14 @@ void AllPixCMSp1Digitizer::InitVariables(){
 	}else{
 		Electron_Trap_TauEff = Electron_Trap_TauNoFluence;
 	}
+	
+}
+
+inline G4int AllPixCMSp1Digitizer::ADC(const G4double digital){
+	// a = p4 + p3*exp(-t^p2), t = p0 + x/p1 
+	
+	// Magic number: x = Large Vcal = 350 e-
+	return round(gaincalParameters[4] + gaincalParameters[3] * TMath::Exp(-TMath::Power(gaincalParameters[0] + digital*0.00285714285/gaincalParameters[1] , gaincalParameters[2])));
 	
 }
 
@@ -126,52 +156,96 @@ void AllPixCMSp1Digitizer::Digitize(){
 	// And fetch the Hits Collection
 	AllPixTrackerHitsCollection * hitsCollection = 0;
 	hitsCollection = (AllPixTrackerHitsCollection*)(digiMan->GetHitsCollection(hcID));
-
+	
 	// temporary data structure
 	map<pair<G4int, G4int>, G4double > pixelsContent;
 	pair<G4int, G4int> tempPixel;
-
+	pair<G4int, G4int> endPixel;
+	
+	G4double createdElectronsStep = 0;
+	G4double createdElectronsRemaining = 0;
+	G4double nElectrons = 0;
+	
+	G4double drifttime;
+	G4bool chargeTrapped;
+	
 	G4int nEntries = hitsCollection->entries();
 	
+	G4ThreeVector position;
 	
 	for(G4int itr  = 0 ; itr < nEntries ; itr++) {
-
+		
+		// Calculate number of electrons
+		createdElectronsStep = 1e6*eV*CLHEP::RandGauss::shoot((*hitsCollection)[itr]->GetEdep()/elec,TMath::Sqrt((*hitsCollection)[itr]->GetEdep()/elec)*0.118);
+		
 		tempPixel.first  = (*hitsCollection)[itr]->GetPixelNbX();
 		tempPixel.second = (*hitsCollection)[itr]->GetPixelNbY();
-		pixelsContent[tempPixel] += (*hitsCollection)[itr]->GetEdep();
 
-	}
-
-	// Now create digits, one per pixel
-	// Second entry in the map is the energy deposit in the pixel
+		// Loop over all electrons (do (Electron_Scaling) electrons in one step)
+		createdElectronsRemaining = createdElectronsStep;
+		while(createdElectronsRemaining > 0.){
+			
+			// Define number of electrons to be propagated and remove electrons of this step from the total
+			if(Electron_Scaling > createdElectronsRemaining){
+				nElectrons = createdElectronsRemaining;
+			}else{
+				nElectrons = Electron_Scaling;
+			}
+			
+			createdElectronsRemaining -= nElectrons;
+			
+			// Get Position and propagate through sensor
+			position = (*hitsCollection)[itr]->GetPos(); // This is in a global frame!!!!!!!!!!!!
+			
+			position = (*hitsCollection)[itr]->GetPosInLocalReferenceFrame();
+			position[2] += detectorThickness/2.;
+			
+			// G4cout << position << G4endl;
+			Propagation(position, drifttime, chargeTrapped);
+			endPixel.first = floor((position.x()+SensorHalfSizeX)/PixelSizeX);
+			endPixel.second = floor((position.y()+SensorHalfSizeY)/PixelSizeY);
+			
+			if(!chargeTrapped) pixelsContent[endPixel] += nElectrons;
+			
+		} // splitted electrons
+		
+	} // Charge collection
+	
+	// Loop over all pixels for smearing, ADC and storage
+	
+	pair<G4int, G4int> pixel;
+	G4double pixelCharge;
+	G4int pixelADC;
+	
 	map<pair<G4int, G4int>, G4double >::iterator pCItr = pixelsContent.begin();
-
-	// NOTE that there is a nice interface which provides useful info for hits.
-	// For instance, the following member gives you the position of a hit with respect
-	//  to the center of the pixel.
-	// G4ThreeVector vec = (*hitsCollection)[itr]->GetPosWithRespectToPixel();
-	// See class AllPixTrackerHit !
-
-	// Also, you have full access to the detector geometry from this scope
-	// AllPixGeoDsc * GetDetectorGeoDscPtr()
-	// provides you with a pointer to the geometry description.
-	// See class AllPixGeoDsc !
-
+		
 	for( ; pCItr != pixelsContent.end() ; pCItr++)
 	{
-
-		if((*pCItr).second > m_digitIn.thl) // over threshold !
+		pixel = (*pCItr).first;
+		pixelCharge = (*pCItr).second;
+		pixelCharge *= gainFactor;
+		
+		pixelCharge += CLHEP::RandGauss::shoot(0, gaussNoise);
+		
+		G4double smearedThreshold = threshold + CLHEP::RandGauss::shoot(0, thresholdSmear);
+		
+		if(pixelCharge > smearedThreshold)
 		{
-			// Create one digit per pixel, I need to look at all the pixels first
+			
+			pixelADC = ADC(pixelCharge);
+			
+			pixelADC += round(CLHEP::RandGauss::shoot(0, ADCSmear));
+			
 			AllPixCMSp1Digit * digit = new AllPixCMSp1Digit;
-			digit->SetPixelIDX((*pCItr).first.first);
-			digit->SetPixelIDY((*pCItr).first.second);
-			digit->IncreasePixelCounts(); // Counting mode
-
+			digit->SetPixelIDX(pixel.first);
+			digit->SetPixelIDY(pixel.second);
+			digit->SetPixelCounts(pixelADC);
+			digit->SetPixelEnergyDep((*pCItr).second);
+			G4cout << "Pixel (" << pixel.first << "," << pixel.second << "): " << pixelADC << G4endl;
 			m_digitsCollection->insert(digit);
 		}
 	}
-
+	
 	G4int dc_entries = m_digitsCollection->entries();
 	if(dc_entries > 0){
 		G4cout << "--------> Digits Collection : " << collectionName[0]
@@ -326,7 +400,7 @@ G4double AllPixCMSp1Digitizer::Propagation(G4ThreeVector& pos, G4double& driftti
 	
 	G4int nsteps=0;
 
-	while(pos[2] > 0 && pos[2] < detectorThickness)
+	while(pos[2] > 0 && pos[2] < detectorThickness/1000.)
 	{
 		
 		if(drifttime > trappingTime){
@@ -347,7 +421,7 @@ G4double AllPixCMSp1Digitizer::Propagation(G4ThreeVector& pos, G4double& driftti
 
 		nsteps++;
 	}
-	if(trapped) G4cout << "Charge was trapped." << G4endl;
+	// if(trapped) G4cout << "Charge was trapped." << G4endl;
 	// G4cout << "Endposition: " << pos << G4endl;
 	// G4cout << "Total drift time in ns: " << drifttime*1e9 << G4endl;
 	// G4cout << "Step count: " << nsteps << G4endl;

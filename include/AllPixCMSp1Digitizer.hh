@@ -47,16 +47,35 @@ private:
   vector<G4String> m_hitsColName;
   G4PrimaryVertex * m_primaryVertex; // information from EventAction
 
-  G4double threshold;
+
   G4double elec;
   G4double Temperature;
   G4ThreeVector bfield;
   G4double detectorThickness;
   
+  G4double PixelSizeX;
+  G4double PixelSizeY;
+  G4double SensorPosX;
+  G4double SensorPosY;
+  G4double SensorHalfSizeX;
+  G4double SensorHalfSizeY;
+  G4int NPixelX;
+  G4int NPixelY;
+    
   G4double Target_Spatial_Precision;
   G4double Timestep_max;
   G4double Timestep_min;
+  
+  G4int Electron_Scaling;
 
+  // Digitizing and smearing constants
+  G4double threshold;
+  G4double gainFactor;
+  G4double gaussNoise;
+  G4double thresholdSmear;
+  G4double ADCSmear;
+  
+  G4double *gaincalParameters;
 
   // Silicon electron and hole transport constants
   G4double Electron_Mobility;
@@ -80,6 +99,7 @@ private:
   G4ThreeVector DiffusionStep(const G4double timestep, const G4ThreeVector position);
   void SetDt(G4double& dt, const G4double uncertainty, const G4double z, const G4double dz);
   G4double GetTrappingTime();
+  inline G4int ADC(const G4double digital);
   
   G4double Propagation(G4ThreeVector& pos, G4double& drifttime, G4bool& trapped);
 
