@@ -1041,17 +1041,17 @@ void AllPixDetectorConstruction::BuildPixelDevices(map<int, AllPixGeoDsc *> geoM
 
 	// Read electric field from file if necessary
 
-		if(m_EFieldFiles.count(*detItr)>0) gD->SetEFieldMap(m_EFieldFiles[(*detItr)]);
+		if(m_EFieldFiles.count(*detItr)>0) geoMap[*detItr]->SetEFieldMap(m_EFieldFiles[(*detItr)]);
 		
 		if(m_temperatures.count(*detItr)>0)
 		{
-			gD->SetTemperature(m_temperatures[(*detItr)]);
+			geoMap[*detItr]->SetTemperature(m_temperatures[(*detItr)]);
 		}else{
-			gD->SetTemperature(300.);
+			geoMap[*detItr]->SetTemperature(300.);
 		}
-		gD->SetFlux(m_fluxes[(*detItr)]);
+		geoMap[*detItr]->SetFlux(m_fluxes[(*detItr)]);
 		
-		gD->SetMagField(m_magField_cartesian);
+		geoMap[*detItr]->SetMagField(m_magField_cartesian);
 
 
         G4cout << "          detector " << (*detItr) << " ... done" << G4endl;

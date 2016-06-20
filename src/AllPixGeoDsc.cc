@@ -138,10 +138,15 @@ inline G4ThreeVector trilinear(const G4ThreeVector* ecube, const G4ThreeVector p
 
 }
 
-inline int int_floor(double x)
+inline int int_floor(const double x)
 {
   int i = (int)x;
   return i - ( i > x );
+}
+
+inline double fmod2(const double x, const double y)
+{
+	return x-y*int_floor(x/y);
 }
 
 G4ThreeVector AllPixGeoDsc::GetEFieldFromMap(G4ThreeVector ppos){
@@ -154,16 +159,16 @@ G4ThreeVector AllPixGeoDsc::GetEFieldFromMap(G4ThreeVector ppos){
 	
 	// ppos is the position in mm inside one pixel cell
 	
-	ppos = G4ThreeVector(fmod(ppos[0],pixsize_x), fmod(ppos[1],pixsize_y), fmod(ppos[2],pixsize_z));
+	ppos = G4ThreeVector(fmod2(ppos[0],pixsize_x), fmod2(ppos[1],pixsize_y), ppos[2]);
 	
-	// Assuming that point 1 and nx are basically at the same position. The "+1" takes account of the efieldmap starting at the iterator 1.
+	// Assuming that point 1 and nx are basically at the same position. The "-1" takes account of the efieldmap starting at the iterator 1.
 	// Get the position iside the grid
 
 	G4ThreeVector pposgrid;
 	pposgrid[0] = ppos[0]/pixsize_x*(G4double)(m_efieldmap_nx-1);
 	pposgrid[1] = ppos[1]/pixsize_y*(G4double)(m_efieldmap_ny-1);
 	pposgrid[2] = ppos[2]/pixsize_z*(G4double)(m_efieldmap_nz-1);
-	
+
 	// Got the position in units of the map coordinates. Do a 3D interpolation of the electric field.
 	// Get the eight neighbors and do three linear interpolations.
 
