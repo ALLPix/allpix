@@ -62,6 +62,9 @@ public:
   G4String GetTimepixTelescopeFolderName()  {return this->m_TimepixTelescopeFolderName;}
   G4bool   GetTimepixTelescopeDoEventFlag() {return this->m_TimepixTelescopeDoEventFlag;}
   G4bool   GetTimepixTelescopeSumTOTFlag()  {return this->m_TimepixTelescopeSumTOTFlag;}
+  
+  G4bool   GetEUTelescopeWriteFlag()   {return this->m_EUTelescopeWriteFlag;}
+  G4String GetEUTelescopeFolderName()  {return this->m_EUTelescopeFolderName;}
 
   //Write MC hits in ROOT files (nalipour)
   G4bool GetWrite_MC_FilesFlag() {return this->m_Write_MC_FilesFlag;} 
@@ -92,7 +95,11 @@ private:
   G4String m_TimepixTelescopeFolderName;
   G4bool   m_TimepixTelescopeDoEventFlag;
   G4bool   m_TimepixTelescopeSumTOTFlag;
-
+  
+  G4UIcmdWithABool   * m_EUTelescopeWriteCmd;
+  G4UIcmdWithAString * m_EUTelescopeFolderNameCmd;
+  G4bool   m_EUTelescopeWriteFlag;
+  G4String m_EUTelescopeFolderName;
   
   //nalipour: MC hits
   G4UIcmdWithABool   * m_Write_MC_FilesCmd;

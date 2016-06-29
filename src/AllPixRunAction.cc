@@ -67,7 +67,27 @@ AllPixRunAction::AllPixRunAction(AllPixDetectorConstruction * det, TString ds, T
 
   //nalipour: Initilise the ROOT files with the NULL pointer
   writeROOTFile=NULL; 
-
+  
+  //eudaq
+  m_writeEUTelescopeFlag = AllPixMessenger->GetEUTelescopeWriteFlag();
+  
+  if(m_writeEUTelescopeFlag){
+    
+    string eutelFile = AllPixMessenger->GetEUTelescopeFolderName();
+    string eutelRunNrFile = AllPixMessenger->GetEUTelescopeFolderName();
+    
+    
+    eutelRunNrFile.append("runnumber.dat");
+    
+    fstream runNrStr(eutelRunNrFile, ios::in | ios::out | ios::app);
+    runNrStr >> euRunNr;
+    runNrStr.clear();
+    runNrStr << euRunNr+1;
+    runNrStr.close();
+    
+  }
+  
+  
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -142,7 +162,13 @@ void AllPixRunAction::EndOfRunAction(const G4Run* aRun)
     G4cout << "Filling telescope files" << G4endl;
     m_AllPixRun->FillTelescopeFiles(aRun,folderName,eventIDflag,sumTOTflag);
   }
-
+  
+  if(m_writeEUTelescopeFlag) //nalipour: Fill ROOT files
+  {
+    m_AllPixRun->GetEUTelescopeEvent(euRunNr, aRun);
+    
+  }
+  
   if(m_writeMCROOTFilesFlag) //nalipour: Fill ROOT files
     {
       m_AllPixRun->FillROOTFiles(writeROOTFile);
@@ -150,6 +176,15 @@ void AllPixRunAction::EndOfRunAction(const G4Run* aRun)
   timer->Stop();
   G4cout << "event Id = " << aRun->GetNumberOfEvent()
 	 << " " << *timer << G4endl;
+   
+   // create .raw files
+   
+   if(m_writeEUTelescopeFlag){
+    
+    
+    
+     
+   }
 
 }
 

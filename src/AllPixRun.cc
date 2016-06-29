@@ -480,6 +480,84 @@ void AllPixRun::FillTelescopeFiles(const G4Run* aRun, G4String folderName, G4boo
   tpixtelescope_f.close();
 }
 
+
+void AllPixRun::GetEUTelescopeEvent(G4int runnr, const G4Run* aRun){
+  
+  G4int eventnr = aRun->GetRunID();
+  
+  
+  map<int,vector<vector<vector<int> > > >::iterator itr;
+  for (itr = m_data.begin(); itr != m_data.end(); itr++){ // Loop over the planes
+    
+    int detId = itr->first;
+
+    // maps to store multiple hits per pixel
+    map<int,int> map_xyTOT;
+    map<int,vector<int> > map_xyEvent;
+
+    // loop on events
+    vector<vector<vector<int> > > v_events = itr->second;
+    for ( unsigned int i=0; i<v_events.size(); i++ )
+    {
+      // loop on digits for this event
+      vector<vector<int> > v_digits = v_events[i];
+      for ( unsigned int j=0; j<v_digits.size(); j++ )
+      {
+        vector<int> v_data = v_digits[j];
+        int x    = v_data[0];
+        int y    = v_data[1];
+        int tot  = v_data[2];
+        int evID = v_data[3];
+        
+        map_xyTOT[x*1000+y] += tot;
+        map_xyEvent[x*1000+y].push_back(evID);    
+      }
+    }
+    
+    // loop on maps in order to sum up digits in same pixels
+    map<int,int>::iterator map_itr;
+    for (map_itr = map_xyTOT.begin(); map_itr != map_xyTOT.end(); map_itr++)
+    {
+      int index = map_itr->first;
+      div_t division = div(index,1000);
+      int x = division.quot; // pixel x coordinate
+      int y = division.rem;  // pixel y coordinate
+      int tot = map_itr->second;
+      
+      /*
+      * if more than on digit for a given pixel, evID is set to -1
+      * else print eventID
+      *
+      */
+      int evID = 0;
+      if (map_xyEvent[index].size() > 1)
+      {
+        evID = -1;
+      }
+      else
+      {
+        evID = map_xyEvent[index][0];
+      }
+      
+      
+      if(tot>=0)
+      {
+        
+        // Fill x, y and tot for this detector into event and AddEvent <<<-------------------------<<<--------------------
+        if(detId >= 900 && detId < 950){ // CMS detectors
+          
+        }else if(detId >= 300 && detId < 350){ // Telescope planes
+          
+        }
+        
+      }
+    }
+  }
+  
+  
+}
+
+
 /**
  *  Called at the very end of the event
  *  I can get a handle on the HitsCollection here !
