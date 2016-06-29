@@ -400,7 +400,7 @@ G4double AllPixCMSp1Digitizer::Propagation(G4ThreeVector& pos, G4double& driftti
 	
 	G4int nsteps=0;
 
-	while(pos[2] > 0 && pos[2] < detectorThickness/1000.)
+	while(abs(pos[2]) < detectorThickness/1000./2.)
 	{
 		
 		if(drifttime > trappingTime){
