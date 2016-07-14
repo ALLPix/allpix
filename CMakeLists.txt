@@ -92,32 +92,28 @@ endforeach()
 
 #----------------------------------------------------------------------------
 # rootcling - dictionaries
-#add_custom_target(TARGET rootcling PRE_BUILD 
-#COMMAND	@echo "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa")
 
-add_custom_target(rootcling_build ALL DEPENDS ALLPIX)
+find_program(ROOTCLING rootcling
+  PATHS ${ROOTSYS}/bin $ENV{ROOTSYS}/bin)
+
+add_custom_target(rootcling_build ALL)
 
 add_custom_command(TARGET rootcling_build PRE_BUILD
 WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
-COMMAND rootcling -v0 -f SelDict.cc -c -p -I./include
+COMMAND ${ROOTCLING} -v0 -f SelDict.cc -c -p -I./include
 AllPix_Hits_WriteToEntuple.h 
 AllPix_Frames_WriteToEntuple.h allpix_dm.h 
-AllPixDigitAnimation.hh LinkDef.h
+LinkDef.h
 COMMAND mv SelDict.cc ./src/SelDict.cc
-COMMAND mv SelDict_rdict.pcm ${PROJECT_BINARY_DIR}/SelDict_rdict.pcm)
+COMMAND mv SelDict_rdict.pcm ${PROJECT_BINARY_DIR}/SelDict_rdict.pcm
+)
 
-
-
-#rootcint -v0 -f SelDict.cc -c -p -I./include 
-#		AllPix_Hits_WriteToEntuple.h 
-#		AllPix_Frames_WriteToEntuple.h allpix_dm.h 
-#		AllPixDigitAnimation.hh LinkDef.h)
 
 #----------------------------------------------------------------------------
 # Add program to the project targets
 # (this avoids the need of typing the program name after make)
 #
-add_custom_target(ALLPIX DEPENDS allpix)
+add_custom_target(ALLPIX DEPENDS rootcling_build allpix)
 
 #----------------------------------------------------------------------------
 # Install the executable to 'bin' directory under CMAKE_INSTALL_PREFIX
