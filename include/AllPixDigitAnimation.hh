@@ -62,7 +62,7 @@ class AllPixDigitAnimation : public TObject
 	     };
 	     
              ~AllPixDigitAnimation();
-	     //ClassDef(AllPixDigitAnimation,1) // A geometry and event track visualization class
+	     ClassDef(AllPixDigitAnimation,10) // A geometry and event track visualization class
 	     
       
 };

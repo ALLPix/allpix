@@ -39,7 +39,7 @@ using namespace std;
 // packages , see TGeoManager and TGeoTracks classes.	 		//
 //////////////////////////////////////////////////////////////////////////
 
-//ClassImp(AllPixDigitAnimation)
+ClassImp(AllPixDigitAnimation)
 
 //______________________________________________________________________________
 AllPixDigitAnimation::AllPixDigitAnimation(int nx, int ny, double Lz, double pitchx, double pitchy,int nHits, int eventid)

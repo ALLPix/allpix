@@ -100,10 +100,7 @@ add_custom_target(rootcling_build ALL)
 
 add_custom_command(TARGET rootcling_build PRE_BUILD
 WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
-COMMAND ${ROOTCLING} -v0 -f SelDict.cc -c -p -I./include
-AllPix_Hits_WriteToEntuple.h 
-AllPix_Frames_WriteToEntuple.h allpix_dm.h 
-LinkDef.h
+COMMAND ${ROOTCLING} -v0 -f SelDict.cc -c -p -I./include AllPix_Hits_WriteToEntuple.h AllPix_Frames_WriteToEntuple.h AllPixDigitAnimation.hh allpix_dm.h LinkDef.h
 COMMAND mv SelDict.cc ./src/SelDict.cc
 COMMAND mv SelDict_rdict.pcm ${PROJECT_BINARY_DIR}/SelDict_rdict.pcm
 )
