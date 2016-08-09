@@ -58,9 +58,9 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include
                     ${Geant4_INCLUDE_DIR})
 file(GLOB sources ${PROJECT_SOURCE_DIR}/src/SelDict.cc ${PROJECT_SOURCE_DIR}/src/*.cc)
 
-MESSAGE( STATUS "Sources ${sources}" )
+#MESSAGE( STATUS "Sources ${sources}" )
 #set( sources ${PROJECT_SOURCE_DIR}/src/SelDict.cc ${sources} )
-MESSAGE( STATUS "Sources ${sources}" )
+#MESSAGE( STATUS "Sources ${sources}" )
 
 set_source_files_properties( ${PROJECT_SOURCE_DIR}/src/SelDict.cc PROPERTIES GENERATED TRUE )
 
