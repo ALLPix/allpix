@@ -83,6 +83,13 @@ else()
         message(STATUS "The compiler ${CMAKE_CXX_COMPILER} has no C++11 support. Please use a different C++ compiler.")
 endif()
 
+
+include_directories(/work1/Kilian.Lohmann/ILCSOFT/v01-17-09/lcio/v02-07/include)
+link_directories(/work1/Kilian.Lohmann/ILCSOFT/v01-17-09/lcio/v02-07/lib)
+add_executable(EUTelConverter share/EUTelConverter/RootFileConverter.cc ${sources} ${headers} )
+target_link_libraries(EUTelConverter ${Geant4_LIBRARIES} ${ROOT_LIBRARIES} lcio)
+
+
 #----------------------------------------------------------------------------
 # Copy all scripts to the build directory, i.e. the directory in which we
 # build B5. This is so that we can run the executable directly because it
@@ -125,5 +132,5 @@ add_custom_target(ALLPIX DEPENDS rootcling_build allpix)
 #----------------------------------------------------------------------------
 # Install the executable to 'bin' directory under CMAKE_INSTALL_PREFIX
 #
-install(TARGETS allpix DESTINATION bin)
+install(TARGETS allpix EUTelConverter DESTINATION bin)
 
