@@ -83,11 +83,28 @@ else()
         message(STATUS "The compiler ${CMAKE_CXX_COMPILER} has no C++11 support. Please use a different C++ compiler.")
 endif()
 
+#----------------------------------------------------------------------------
+# In case the EUTelescoep converter should be built, we need LCIO 
+#
+option(BUILD_EUTELCONV "Compile Python EUDAQ binding library?" OFF)
+IF(BUILD_EUTELCONV)
 
-include_directories(/work1/Kilian.Lohmann/ILCSOFT/v01-17-09/lcio/v02-07/include)
-link_directories(/work1/Kilian.Lohmann/ILCSOFT/v01-17-09/lcio/v02-07/lib)
-add_executable(EUTelConverter share/EUTelConverter/RootFileConverter.cc ${sources} ${headers} )
-target_link_libraries(EUTelConverter ${Geant4_LIBRARIES} ${ROOT_LIBRARIES} lcio)
+	FIND_PACKAGE( ILCUTIL COMPONENTS ILCSOFT_CMAKE_MODULES REQUIRED ILCTEST)
+
+	# load default settings from ILCSOFT_CMAKE_MODULES
+	INCLUDE( ilcsoft_default_settings )
+
+	FIND_PACKAGE( LCIO REQUIRED ) 
+
+	INCLUDE_DIRECTORIES(SYSTEM ${LCIO_INCLUDE_DIRS} )
+    LINK_LIBRARIES( ${LCIO_LIBRARIES} )
+    message(STATUS ${LCIO_LIBRARIES} )
+	ADD_DEFINITIONS ( ${LCIO_DEFINITIONS} )
+
+	add_executable(EUTelConverter share/EUTelConverter/RootFileConverter.cc ${sources} ${headers} )
+	target_link_libraries(EUTelConverter ${Geant4_LIBRARIES} ${ROOT_LIBRARIES} )
+	install(TARGETS EUTelConverter DESTINATION bin)
+ENDIF()
 
 
 #----------------------------------------------------------------------------
@@ -132,5 +149,5 @@ add_custom_target(ALLPIX DEPENDS rootcling_build allpix)
 #----------------------------------------------------------------------------
 # Install the executable to 'bin' directory under CMAKE_INSTALL_PREFIX
 #
-install(TARGETS allpix EUTelConverter DESTINATION bin)
+install(TARGETS allpix DESTINATION bin)
 
