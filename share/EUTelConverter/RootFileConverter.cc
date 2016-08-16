@@ -18,6 +18,7 @@
 #include <IMPL/LCRunHeaderImpl.h>
 #include <IMPL/LCGenericObjectImpl.h>
 #include <IMPL/TrackerDataImpl.h>
+#include <IMPL/TrackerHitImpl.h>
 #include <UTIL/CellIDEncoder.h>
 
 #include "AllPix_Hits_WriteToEntuple.h"
@@ -175,14 +176,14 @@ int main(int argc, char* argv[]) {
 		std::string encoding_string = "sensorID:7,sparsePixelType:5";
 
 		//Telescope data collection
-		LCCollectionVec* sensor_hit_coll = new LCCollectionVec(LCIO::TRACKERDATA);
+		LCCollectionVec* sensor_hit_coll = new LCCollectionVec(LCIO::TRACKERHIT);
+		//CellIDEncoder<TrackerHitImpl> true_hit_encoder_sensor(encoding_string, sensor_hit_coll);
 		LCCollectionVec* sensor_frame_coll = new LCCollectionVec(LCIO::TRACKERDATA);
-		CellIDEncoder<TrackerDataImpl> id_encoder_telescope(encoding_string, sensor_hit_coll);
+		CellIDEncoder<TrackerDataImpl> frame_encoder_sensor(encoding_string, sensor_frame_coll);
 
 		//fil telescope collection
 		for (int j = 0; j < n_sensors; j++) {
 
-			TrackerDataImpl* true_hit_data = new TrackerDataImpl();
 			TrackerDataImpl* frame_data = new TrackerDataImpl();
 
 			true_hit_trees[j]->SetBranchAddress("SimpleHits", &root_hit);
@@ -190,28 +191,29 @@ int main(int argc, char* argv[]) {
 			frame_trees[j]->SetBranchAddress("FramesData", &root_frame);
 			frame_trees[j]->GetEntry(i);
 
-
-			id_encoder_telescope.reset();
-			id_encoder_telescope["sensorID"] = j;
-			id_encoder_telescope["sparsePixelType"] = 2;
-			id_encoder_telescope.setCellID(true_hit_data);
-			id_encoder_telescope.setCellID(frame_data);
+			frame_encoder_sensor.reset();
+			frame_encoder_sensor["sensorID"] = j;
+			frame_encoder_sensor["sparsePixelType"] = 2;
+			frame_encoder_sensor.setCellID(frame_data);
 
 			//loop over true hits
-			std::vector<float> charge_vec;
+			double* hit_pos = new double[3];
 			for (unsigned int k = 0; k < root_hit->pos.size(); k++) {
 
-				charge_vec.push_back(root_hit->pos[k].X());
-				charge_vec.push_back(root_hit->pos[k].Y());
-				charge_vec.push_back(root_hit->edep[k]);
-				charge_vec.push_back(0);
+				TrackerHitImpl* true_hit_data = new TrackerHitImpl();
+
+				hit_pos[0] = root_hit->pos[k].X();
+				hit_pos[1] = root_hit->pos[k].Y();
+				hit_pos[2] = root_hit->pos[k].Z();
+
+				true_hit_data->setPosition(hit_pos);
+				true_hit_data->setEDep(root_hit->edep[k]);
+
+				sensor_hit_coll->addElement(true_hit_data);
 			}
 
-			true_hit_data->setChargeValues(charge_vec);
-			sensor_hit_coll->addElement(true_hit_data);
-			charge_vec.clear();
-
 			//loop over hits from frame
+			std::vector<float> charge_vec;
 			for (auto it = root_frame->GetHitMap().begin(); it != root_frame->GetHitMap().end(); ++it) {
 
 				//the key contains position of hit in the format key = y*width + x
@@ -227,7 +229,9 @@ int main(int argc, char* argv[]) {
 
 			frame_data->setChargeValues(charge_vec);
 			sensor_frame_coll->addElement(frame_data);
+
 			charge_vec.clear();
+			delete [] hit_pos;
 		}
 
 		event->addCollection(sensor_hit_coll, "true_hits_m26");
@@ -236,13 +240,13 @@ int main(int argc, char* argv[]) {
 		//write DUT true hit data collection if there are DUTs present
 		if (n_DUTs > 0) {
 
-			LCCollectionVec* DUT_hit_coll = new LCCollectionVec(LCIO::TRACKERDATA);
+			LCCollectionVec* DUT_hit_coll = new LCCollectionVec(LCIO::TRACKERHIT);
+			CellIDEncoder<TrackerHitImpl> true_hit_encoder_DUT(encoding_string, DUT_hit_coll);
 			LCCollectionVec* DUT_frame_coll = new LCCollectionVec(LCIO::TRACKERDATA);
-			CellIDEncoder<TrackerDataImpl> id_encoder_DUT(encoding_string, DUT_hit_coll);
+			CellIDEncoder<TrackerDataImpl> frame_encoder_DUT(encoding_string, DUT_frame_coll);
 
 			for (int j = 0; j < n_DUTs; j++) {
 
-				TrackerDataImpl* true_hit_data = new TrackerDataImpl();
 				TrackerDataImpl* frame_data = new TrackerDataImpl();
 
 				true_hit_trees[j+n_sensors]->SetBranchAddress("SimpleHits", &root_hit);
@@ -250,25 +254,27 @@ int main(int argc, char* argv[]) {
 				frame_trees[j+n_sensors]->SetBranchAddress("FramesData", &root_frame);
 				frame_trees[j+n_sensors]->GetEntry(i);
 
-				id_encoder_DUT.reset();
-				id_encoder_DUT["sensorID"] = j + 6;
-				id_encoder_DUT["sparsePixelType"] = 2;
-				id_encoder_DUT.setCellID(true_hit_data);
-				id_encoder_DUT.setCellID(frame_data);
+				frame_encoder_DUT.reset();
+				frame_encoder_DUT["sensorID"] = j + 6;
+				frame_encoder_DUT["sparsePixelType"] = 2;
+				frame_encoder_DUT.setCellID(frame_data);
 
-				std::vector<float> charge_vec;
+				double* hit_pos = new double[3];
 				for (unsigned int k = 0; k < root_hit->pos.size(); k++) {
 
-					charge_vec.push_back(root_hit->pos[k].X());
-					charge_vec.push_back(root_hit->pos[k].Y());
-					charge_vec.push_back(root_hit->edep[k]);
-					charge_vec.push_back(0);
+					TrackerHitImpl* true_hit_data = new TrackerHitImpl();
+
+					hit_pos[0] = root_hit->pos[k].X();
+					hit_pos[1] = root_hit->pos[k].Y();
+					hit_pos[2] = root_hit->pos[k].Z();
+
+					true_hit_data->setPosition(hit_pos);
+					true_hit_data->setEDep(root_hit->edep[k]);
+
+					DUT_hit_coll->addElement(true_hit_data);
 				}
 
-				true_hit_data->setChargeValues(charge_vec);
-				DUT_hit_coll->addElement(true_hit_data);
-				charge_vec.clear();
-
+				std::vector<float> charge_vec;
 				for (auto it = root_frame->GetHitMap().begin(); it != root_frame->GetHitMap().end(); ++it) {
 
 					float x = (it->first)%root_frame->GetWidth();
@@ -283,7 +289,9 @@ int main(int argc, char* argv[]) {
 
 				frame_data->setChargeValues(charge_vec);
 				DUT_frame_coll->addElement(frame_data);
+
 				charge_vec.clear();
+				delete [] hit_pos;
 			}
 
 			event->addCollection(DUT_hit_coll, "true_hits_DUT");
