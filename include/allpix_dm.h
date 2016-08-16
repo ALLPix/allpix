@@ -124,6 +124,7 @@ private:
 	TString  fMPXDataSetNumber;
 
 public:
+	FrameStruct(){};
 	FrameStruct(TString);
 	~FrameStruct(){};
 
