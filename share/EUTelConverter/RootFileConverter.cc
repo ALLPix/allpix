@@ -204,15 +204,12 @@ int main(int argc, char* argv[]) {
 
 					TrackerHitImpl* true_hit_data = new TrackerHitImpl();
 
-					true_hit_trees[j]->SetBranchAddress("SimpleHits", &root_hit);
-					true_hit_trees[j]->GetEntry(i);
-
 					hit_pos[0] = root_hit->pos[k].X();
 					hit_pos[1] = root_hit->pos[k].Y();
 					hit_pos[2] = root_hit->pos[k].Z();
 
 					true_hit_data->setCellID0(300+j);
-					true_hit_data->setCellID1(sensor_hit_incrs[j]);
+					true_hit_data->setType(sensor_hit_incrs[j]);
 					true_hit_data->setPosition(hit_pos);
 					true_hit_data->setEDep(root_hit->edep[k]);
 
@@ -274,15 +271,12 @@ int main(int argc, char* argv[]) {
 
 						TrackerHitImpl* true_hit_data = new TrackerHitImpl();
 
-						true_hit_trees[j+n_sensors]->SetBranchAddress("SimpleHits", &root_hit);
-						true_hit_trees[j+n_sensors]->GetEntry(i);
-
 						hit_pos[0] = root_hit->pos[k].X();
 						hit_pos[1] = root_hit->pos[k].Y();
 						hit_pos[2] = root_hit->pos[k].Z();
 
 						true_hit_data->setCellID0(DUT_IDs[j]);
-						true_hit_data->setCellID1(DUT_hit_incrs[j]);
+						true_hit_data->setType(DUT_hit_incrs[j]);
 						true_hit_data->setPosition(hit_pos);
 						true_hit_data->setEDep(root_hit->edep[k]);
 
@@ -323,7 +317,7 @@ int main(int argc, char* argv[]) {
 		if (((i+1)%1000 == 0) || (i == 0)) std::cout << "succesfully recorded event " << i+1 << endl;
 	}
 
-	std::cout << "succesfully read in all data\n";
+	std::cout << "succesfully recorder all events\n";
 
 	writer->flush();
 	writer->close();
