@@ -237,6 +237,7 @@ int main(int argc, char* argv[]) {
 
 			frame_data->setChargeValues(charge_vec);
 			sensor_frame_coll->addElement(frame_data);
+		}
 
 		event->addCollection(sensor_hit_coll, "true_hits_m26");
 		event->addCollection(sensor_frame_coll, "zsdata_m26");
