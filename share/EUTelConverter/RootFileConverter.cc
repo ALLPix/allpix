@@ -24,35 +24,9 @@
 #include <UTIL/CellIDEncoder.h>
 
 #include "AllPix_Hits_WriteToEntuple.h"
-#include "AllPix_Frames_WriteToEntuple.h"
 #include "allpix_dm.h"
 
 using namespace lcio;
-
-/*struct TrueHit {
-
-	double edep_total;
-	double sensor_ID;
-
-	std::vector<double*> pos;
-	std::vector<int> pdgId;
-	std::vector<float> edep;
-
-	~TrueHit() {
-
-		for (unsigned int i = 0; i < pos.size(); i++) delete [] pos[i];
-	}
-};
-
-struct Event {
-
-	std::vector<TrueHit*> hits;
-
-	~Event() {
-
-		for (unsigned int i = 0; i < hits.size(); i++) delete hits[i];
-	}
-};*/
 
 void print_info();
 
@@ -71,16 +45,11 @@ int main(int argc, char* argv[]) {
 
 		input_file_path = argv[1];
 		output_file = argv[2];
-		sscanf(argv[3], "%d", &n_sensors);
+		n_sensors = static_cast<size_t>(atoi(argv[3]));//atoi converts the input string to an int
 
 		if (argc > 4) {
 
-			for (int i = 0; i < 4-argc; i++) {
-
-				int temp = 0;
-				sscanf(argv[4+i], "%d", &temp);
-				DUT_IDs.push_back(temp);
-			}
+			for (int i = 0; i < 4-argc; i++) DUT_IDs.push_back(atoi(argv[4+i]));
 		}
 	}
 
@@ -144,9 +113,6 @@ int main(int argc, char* argv[]) {
 	true_hit_trees[0]->GetEntry(n_entries-1);
 	size_t n_runs = root_hits[0]->run;
 
-	/*Event** hit_events = new Event*[n_runs];
-	for (int i = 0; i < n_runs; i++) hit_events[i] = new Event();*/
-
 	std::vector<int> hit_incrs(totSensorSize, 0);
 
 	size_t run_number = 0;
@@ -209,7 +175,6 @@ int main(int argc, char* argv[]) {
 		//Telescope data collection
 		LCCollectionVec* sensor_hit_coll = new LCCollectionVec(LCIO::TRACKERHIT);
 		LCCollectionVec* sensor_frame_coll = new LCCollectionVec(LCIO::TRACKERDATA);
-		//LCCollectionVec* sensor_vertex_coll = new LCCollectionVec(LCIO::TRACKERHIT);
 		CellIDEncoder<TrackerDataImpl> frame_encoder_sensor(encoding_string, sensor_frame_coll);
 
 		//fil telescope collection
@@ -230,16 +195,8 @@ int main(int argc, char* argv[]) {
 			//the first for loop (looping over run numbers)
 			while (true_hit_trees[j]->GetEntry(hit_incrs[j]) and root_hits[j]->run == (int)i) {
 
-				/*hit_events[i]->hits.push_back(new TrueHit());
-				hit_events[i]->hits.back()->sensor_ID = 300+j;
-				hit_events[i]->hits.back()->edep_total = root_hits[j]->edepTotal;
-				hit_events[i]->hits.back()->pdgId = root_hits[j]->pdgId;
-				hit_events[i]->hits.back()->edep = root_hits[j]->edep;*/
-
 				auto hit_pos = std::array<double,3>();
 				for (size_t k = 0; k < root_hits[j]->pos.size(); k++) {
-
-					//hit_events[i]->hits.back()->pos.push_back(hit_pos);
 
 					if (k == root_hits[j]->pos.size()/2 - 1) {
 
@@ -259,7 +216,6 @@ int main(int argc, char* argv[]) {
 
 					}
 				}
-				//if ((i%10 == 0) || (i == 0)) cout << root_hits[j]->event << endl;
 
 				hit_incrs[j]++;
 			}
@@ -282,34 +238,6 @@ int main(int argc, char* argv[]) {
 			frame_data->setChargeValues(charge_vec);
 			sensor_frame_coll->addElement(frame_data);
 
-			//loop over the primary vertices stored in the frame file
-			/*double* vertex_pos = new double[3];
-			for (unsigned int k = 0; k < root_frames[j]->GetVertex_x().size(); k++) {
-
-				TrackerHitImpl* frame_vertex = new TrackerHitImpl();
-
-				vertex_pos[0] = root_frames[j]->GetVertex_x()[k];
-				vertex_pos[1] = root_frames[j]->GetVertex_y()[k];
-				vertex_pos[2] = root_frames[j]->GetVertex_z()[k];
-
-				frame_vertex->setCellID0(300+j);
-				frame_vertex->setPosition(vertex_pos);
-
-				sensor_vertex_coll->addElement(frame_vertex);
-			}
-
-			delete [] vertex_pos;*/
-		}
-
-		/*TrackerHitImpl* test = new TrackerHitImpl();
-
-		test->setCellID0(hit_events[i]->hits.back()->sensor_ID);
-		test->setType(hit_events[i]->hits.back()->pdgId[hit_events[i]->hits.back()->pdgId.size()/2-1]);
-		test->setPosition(hit_events[i]->hits.back()->pos[hit_events[i]->hits.back()->pos.size()/2-1]);
-		test->setEDep(hit_events[i]->hits.back()->edep_total);
-
-		sensor_hit_coll->addElement(test);*/
-
 		event->addCollection(sensor_hit_coll, "true_hits_m26");
 		event->addCollection(sensor_frame_coll, "zsdata_m26");
 		//event->addCollection(sensor_vertex_coll, "MC_vertices_m26");
@@ -319,7 +247,6 @@ int main(int argc, char* argv[]) {
 
 			LCCollectionVec* DUT_hit_coll = new LCCollectionVec(LCIO::TRACKERHIT);
 			LCCollectionVec* DUT_frame_coll = new LCCollectionVec(LCIO::TRACKERDATA);
-			//LCCollectionVec* DUT_vertex_coll = new LCCollectionVec(LCIO::TRACKERHIT);
 			CellIDEncoder<TrackerDataImpl> frame_encoder_DUT(encoding_string, DUT_frame_coll);
 
 			for (size_t j = 0; j < n_DUTs; j++) {
@@ -335,16 +262,8 @@ int main(int argc, char* argv[]) {
 
 				while (true_hit_trees[j+n_sensors]->GetEntry(hit_incrs[j+n_sensors]) and root_hits[j+n_sensors]->run == (int)i) {
 
-					/*hit_events[i]->hits.push_back(new TrueHit());
-					hit_events[i]->hits.back()->sensor_ID = DUT_IDs[j];
-					hit_events[i]->hits.back()->edep_total = root_hits[j]->edepTotal;
-					hit_events[i]->hits.back()->pdgId = root_hits[j]->pdgId;
-					hit_events[i]->hits.back()->edep = root_hits[j]->edep;*/
-
 					auto hit_pos = std::array<double,3>();
 					for (size_t k = 0; k < root_hits[j+n_sensors]->pos.size(); k++) {
-
-						//hit_events[i]->hits.back()->pos.push_back(hit_pos);
 
 						if (k == root_hits[j+n_sensors]->pos.size()/2 - 1) {
 
@@ -382,29 +301,10 @@ int main(int argc, char* argv[]) {
 
 				frame_data->setChargeValues(charge_vec);
 				DUT_frame_coll->addElement(frame_data);
-
-
-				/*double* vertex_pos = new double[3];
-				for (unsigned int k = 0; k < root_frames[j]->GetVertex_x().size(); k++) {
-
-					TrackerHitImpl* frame_vertex = new TrackerHitImpl();
-
-					vertex_pos[0] = root_frames[j]->GetVertex_x()[k];
-					vertex_pos[1] = root_frames[j]->GetVertex_y()[k];
-					vertex_pos[2] = root_frames[j]->GetVertex_z()[k];
-
-					frame_vertex->setCellID0(DUT_IDs[j]);
-					frame_vertex->setPosition(vertex_pos);
-
-					DUT_vertex_coll->addElement(frame_vertex);
-				}
-
-				delete [] vertex_pos;*/
 			}
 
 			event->addCollection(DUT_hit_coll, "true_hits_DUT");
 			event->addCollection(DUT_frame_coll, "zsdata_DUT");
-			//event->addCollection(DUT_vertex_coll, "MC_vertices_DUT");
 		}
 
 
@@ -430,12 +330,6 @@ int main(int argc, char* argv[]) {
 		delete root_frames[i];
 	}
 
-	/*for (int i = 0; i < n_runs; i++) {
-
-		delete hit_events[i];
-	}
-
-	delete [] hit_events;*/
 	return 0;
 }
 
