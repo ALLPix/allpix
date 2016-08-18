@@ -140,6 +140,9 @@ public:
 	void SetnY(int y){fHeight = y;};
 	Int_t GetWidth() {return fWidth;};
 	Int_t GetHeight() {return fHeight;};
+	std::vector<Double_t> const& GetVertex_x() const {return m_primaryVertex_x;};
+	std::vector<Double_t> const& GetVertex_y() const {return m_primaryVertex_y;};
+	std::vector<Double_t> const& GetVertex_z() const {return m_primaryVertex_z;};
 
 	ClassDef(FrameStruct,4)
 };
