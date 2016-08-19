@@ -28,6 +28,12 @@
 
 using namespace lcio;
 
+enum HitProperties {
+	kHitInGlobalCoord  = 1L << 0,
+	kFittedHit         = 1L << 1,
+	kSimulatedHit      = 1L << 2
+};
+
 void print_info();
 
 int main(int argc, char* argv[]) {
@@ -49,7 +55,7 @@ int main(int argc, char* argv[]) {
 
 		if (argc > 4) {
 
-			for (int i = 0; i < 4-argc; i++) DUT_IDs.push_back(atoi(argv[4+i]));
+			for (int i = 0; i < argc-4; i++) DUT_IDs.push_back(atoi(argv[4+i]));
 		}
 	}
 
@@ -171,9 +177,11 @@ int main(int argc, char* argv[]) {
 
 		//ID encoder info
 		std::string encoding_string = "sensorID:7,sparsePixelType:5";
+		std::string encoding_string_hit = "sensorID:7,properties:7";
 
 		//Telescope data collection
-		LCCollectionVec* sensor_hit_coll = new LCCollectionVec(LCIO::TRACKERHIT);
+		LCCollectionVec* hit_coll = new LCCollectionVec(LCIO::TRACKERHIT);
+		CellIDEncoder<TrackerHitImpl> true_hit_encoder(encoding_string_hit, hit_coll);
 		LCCollectionVec* sensor_frame_coll = new LCCollectionVec(LCIO::TRACKERDATA);
 		CellIDEncoder<TrackerDataImpl> frame_encoder_sensor(encoding_string, sensor_frame_coll);
 
@@ -188,6 +196,10 @@ int main(int argc, char* argv[]) {
 			frame_encoder_sensor["sensorID"] = j;
 			frame_encoder_sensor["sparsePixelType"] = 2;
 			frame_encoder_sensor.setCellID(frame_data);
+
+			true_hit_encoder.reset();
+			true_hit_encoder["sensorID"] = j;
+			true_hit_encoder["properties"] = kHitInGlobalCoord + kSimulatedHit;
 
 			//loop over true hits
 			//there are multiple entries with the same run (aka event) number,
@@ -206,13 +218,13 @@ int main(int argc, char* argv[]) {
 						hit_pos[1] = root_hits[j]->pos[k].Y();
 						hit_pos[2] = root_hits[j]->pos[k].Z();
 
-						true_hit_data->setCellID0(300+j);
 						true_hit_data->setQuality(root_hits[j]->event);
 						true_hit_data->setType(root_hits[j]->pdgId[k]);
 						true_hit_data->setPosition(hit_pos.data());
 						true_hit_data->setEDep(root_hits[j]->edepTotal);
 
-						sensor_hit_coll->addElement(true_hit_data);
+						true_hit_encoder.setCellID(true_hit_data);
+						hit_coll->addElement(true_hit_data);
 
 					}
 				}
@@ -239,14 +251,9 @@ int main(int argc, char* argv[]) {
 			sensor_frame_coll->addElement(frame_data);
 		}
 
-		event->addCollection(sensor_hit_coll, "true_hits_m26");
-		event->addCollection(sensor_frame_coll, "zsdata_m26");
-		//event->addCollection(sensor_vertex_coll, "MC_vertices_m26");
-
 		//write DUT true hit data collection if there are DUTs present
 		if (n_DUTs > 0) {
 
-			LCCollectionVec* DUT_hit_coll = new LCCollectionVec(LCIO::TRACKERHIT);
 			LCCollectionVec* DUT_frame_coll = new LCCollectionVec(LCIO::TRACKERDATA);
 			CellIDEncoder<TrackerDataImpl> frame_encoder_DUT(encoding_string, DUT_frame_coll);
 
@@ -257,9 +264,13 @@ int main(int argc, char* argv[]) {
 				frame_trees[j+n_sensors]->GetEntry(i);
 
 				frame_encoder_DUT.reset();
-				frame_encoder_DUT["sensorID"] = j + 6;
+				frame_encoder_DUT["sensorID"] = j + 20;
 				frame_encoder_DUT["sparsePixelType"] = 2;
 				frame_encoder_DUT.setCellID(frame_data);
+
+				true_hit_encoder.reset();
+				true_hit_encoder["sensorID"] = j + 20;
+				true_hit_encoder["properties"] = kHitInGlobalCoord + kSimulatedHit;
 
 				while (true_hit_trees[j+n_sensors]->GetEntry(hit_incrs[j+n_sensors]) and root_hits[j+n_sensors]->run == (int)i) {
 
@@ -274,13 +285,13 @@ int main(int argc, char* argv[]) {
 							hit_pos[1] = root_hits[j+n_sensors]->pos[k].Y();
 							hit_pos[2] = root_hits[j+n_sensors]->pos[k].Z();
 
-							true_hit_data->setCellID0(DUT_IDs[j]);
 							true_hit_data->setQuality(root_hits[j+n_sensors]->event);
 							true_hit_data->setType(root_hits[j+n_sensors]->pdgId[k]);
 							true_hit_data->setPosition(hit_pos.data());
 							true_hit_data->setEDep(root_hits[j+n_sensors]->edepTotal);
 
-							DUT_hit_coll->addElement(true_hit_data);
+							true_hit_encoder.setCellID(true_hit_data);
+							hit_coll->addElement(true_hit_data);
 						}
 					}
 
@@ -304,10 +315,11 @@ int main(int argc, char* argv[]) {
 				DUT_frame_coll->addElement(frame_data);
 			}
 
-			event->addCollection(DUT_hit_coll, "true_hits_DUT");
 			event->addCollection(DUT_frame_coll, "zsdata_DUT");
 		}
 
+		event->addCollection(hit_coll, "true_hits");
+		event->addCollection(sensor_frame_coll, "zsdata_m26");
 
 		writer->writeEvent(event);
 		delete event;
