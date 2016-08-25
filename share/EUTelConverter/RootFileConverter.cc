@@ -173,17 +173,24 @@ int main(int argc, char* argv[]) {
 			}
 
 			event->addCollection(eudrb_setup, "eudrbSetup");
+
+			//check if there is a DUT
+			if (n_DUTs > 0) {
+
+				LCCollectionVec* DUT_setup = new LCCollectionVec(LCIO::LCGENERICOBJECT);
+				event->addCollection(DUT_setup, "DUTSetup");
+			}
 		}
 
 		//ID encoder info
-		std::string encoding_string = "sensorID:7,sparsePixelType:5";
+		std::string encoding_string_frame = "sensorID:7,sparsePixelType:5";
 		std::string encoding_string_hit = "sensorID:7,properties:7";
 
 		//Telescope data collection
 		LCCollectionVec* hit_coll = new LCCollectionVec(LCIO::TRACKERHIT);
 		CellIDEncoder<TrackerHitImpl> true_hit_encoder(encoding_string_hit, hit_coll);
 		LCCollectionVec* sensor_frame_coll = new LCCollectionVec(LCIO::TRACKERDATA);
-		CellIDEncoder<TrackerDataImpl> frame_encoder_sensor(encoding_string, sensor_frame_coll);
+		CellIDEncoder<TrackerDataImpl> frame_encoder_sensor(encoding_string_frame, sensor_frame_coll);
 
 		//fil telescope collection
 		for (size_t j = 0; j < n_sensors; j++) {
@@ -208,8 +215,10 @@ int main(int argc, char* argv[]) {
 			while (true_hit_trees[j]->GetEntry(hit_incrs[j]) and root_hits[j]->run == (int)i) {
 
 				auto hit_pos = std::array<double,3>();
+				//double z_pos = (root_hits[j]->pos.front().Z() + root_hits[j]->pos.back().Z() - 1e-3)/2.0;
 				for (size_t k = 0; k < root_hits[j]->pos.size(); k++) {
 
+					//if (abs(root_hits[j]->pos[k].Z()-z_pos) < 7e-4) {
 					if (k == root_hits[j]->pos.size()/2 - 1) {
 
 						TrackerHitImpl* true_hit_data = new TrackerHitImpl();
@@ -218,10 +227,12 @@ int main(int argc, char* argv[]) {
 						hit_pos[1] = root_hits[j]->pos[k].Y();
 						hit_pos[2] = root_hits[j]->pos[k].Z();
 
-						true_hit_data->setQuality(root_hits[j]->event);
-						true_hit_data->setType(root_hits[j]->pdgId[k]);
+						true_hit_data->setType(root_hits[j]->event);
+						true_hit_data->setQuality(root_hits[j]->trackId[k]);
 						true_hit_data->setPosition(hit_pos.data());
-						true_hit_data->setEDep(root_hits[j]->edepTotal);
+						true_hit_data->setEDep(root_hits[j]->edep[k]);
+						//true_hit_data->setEDepError(z_pos);
+						//true_hit_data->setTime(root_hits[j]->parentId[k]);
 
 						true_hit_encoder.setCellID(true_hit_data);
 						hit_coll->addElement(true_hit_data);
@@ -255,7 +266,7 @@ int main(int argc, char* argv[]) {
 		if (n_DUTs > 0) {
 
 			LCCollectionVec* DUT_frame_coll = new LCCollectionVec(LCIO::TRACKERDATA);
-			CellIDEncoder<TrackerDataImpl> frame_encoder_DUT(encoding_string, DUT_frame_coll);
+			CellIDEncoder<TrackerDataImpl> frame_encoder_DUT(encoding_string_frame, DUT_frame_coll);
 
 			for (size_t j = 0; j < n_DUTs; j++) {
 
@@ -263,13 +274,16 @@ int main(int argc, char* argv[]) {
 
 				frame_trees[j+n_sensors]->GetEntry(i);
 
+				std::string DUT_ID = to_string(DUT_IDs[j]);
+				std::string DUT_ID_shortened = DUT_ID.erase(DUT_ID.find_last_of('0'), 1);
+
 				frame_encoder_DUT.reset();
-				frame_encoder_DUT["sensorID"] = j + 20;
+				frame_encoder_DUT["sensorID"] = atoi(DUT_ID_shortened.data());
 				frame_encoder_DUT["sparsePixelType"] = 2;
 				frame_encoder_DUT.setCellID(frame_data);
 
 				true_hit_encoder.reset();
-				true_hit_encoder["sensorID"] = j + 20;
+				true_hit_encoder["sensorID"] = atoi(DUT_ID_shortened.data());
 				true_hit_encoder["properties"] = kHitInGlobalCoord + kSimulatedHit;
 
 				while (true_hit_trees[j+n_sensors]->GetEntry(hit_incrs[j+n_sensors]) and root_hits[j+n_sensors]->run == (int)i) {
@@ -285,8 +299,8 @@ int main(int argc, char* argv[]) {
 							hit_pos[1] = root_hits[j+n_sensors]->pos[k].Y();
 							hit_pos[2] = root_hits[j+n_sensors]->pos[k].Z();
 
-							true_hit_data->setQuality(root_hits[j+n_sensors]->event);
-							true_hit_data->setType(root_hits[j+n_sensors]->pdgId[k]);
+							true_hit_data->setType(root_hits[j]->event);
+							true_hit_data->setQuality(root_hits[j]->trackId[k]);
 							true_hit_data->setPosition(hit_pos.data());
 							true_hit_data->setEDep(root_hits[j+n_sensors]->edepTotal);
 
@@ -299,10 +313,10 @@ int main(int argc, char* argv[]) {
 				}
 
 				std::vector<float> charge_vec;
-				for (auto& hit: root_frames[j]->GetHitMap()) {
+				for (auto& hit: root_frames[j+n_sensors]->GetHitMap()) {
 
-					float x = (hit.first)%root_frames[j]->GetWidth();
-					float y = (hit.first)/root_frames[j]->GetWidth();
+					float x = (hit.first)%root_frames[j+n_sensors]->GetWidth();
+					float y = (hit.first)/root_frames[j+n_sensors]->GetWidth();
 					float TOT = hit.second;
 
 					charge_vec.push_back(x);
@@ -350,8 +364,9 @@ void print_info() {
 
 	std::cout << "Converts allpix generated root files into LCIO format" << std::endl;
 	std::cout << "Usage: compile and run with the arguments in the following order:" << std::endl;
-	std::cout << "<input file path+prefix> <output file name> <number of telescope planes> <list of DUT sensor IDs>" << std::endl;
-	std::cout << "Here, input file path+prefix refers to the path following the command /allpix/config/setOutputPrefixWithPath in the allpix macro. If this is a directory, it must end with a '/' or it will be misinterpreted." << std::endl;
+	std::cout << "<input file path+prefix> <output file name> <number of telescope planes> <list of DUT sensor IDs>" << std::endl << std::endl;
+	std::cout << "Here, input file path+prefix refers to the path following the command /allpix/config/setOutputPrefixWithPath in the allpix macro. If this is a directory, it must end with a '/' or it will be misinterpreted." << std::endl << std::endl;
+	std::cout << "The DUT sensor IDs that will be input into the lcio file in the CellID fields via the CellIDEncoder are the given DUT sensor IDs with the last occurence of the character '0' removed, so as to fit in the limited bit space of the CellID" << std::endl << std::endl;
 
 	return;
 }
