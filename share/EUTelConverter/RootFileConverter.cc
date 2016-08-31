@@ -215,31 +215,72 @@ int main(int argc, char* argv[]) {
 			while (true_hit_trees[j]->GetEntry(hit_incrs[j]) and root_hits[j]->run == (int)i) {
 
 				auto hit_pos = std::array<double,3>();
-				//double z_pos = (root_hits[j]->pos.front().Z() + root_hits[j]->pos.back().Z() - 1e-3)/2.0;
-				for (size_t k = 0; k < root_hits[j]->pos.size(); k++) {
+				if (root_hits[j]->trackId.back() == 1) {//only a single track in this event
 
-					//if (abs(root_hits[j]->pos[k].Z()-z_pos) < 7e-4) {
-					if (k == root_hits[j]->pos.size()/2 - 1) {
+					for (size_t k = 0; k < root_hits[j]->pos.size(); k++) {
 
-						TrackerHitImpl* true_hit_data = new TrackerHitImpl();
+						if (k == root_hits[j]->pos.size()/2 - 1) {
 
-						hit_pos[0] = root_hits[j]->pos[k].X();
-						hit_pos[1] = root_hits[j]->pos[k].Y();
-						hit_pos[2] = root_hits[j]->pos[k].Z();
+							TrackerHitImpl* true_hit_data = new TrackerHitImpl();
 
-						true_hit_data->setType(root_hits[j]->event);
-						true_hit_data->setQuality(root_hits[j]->trackId[k]);
-						true_hit_data->setPosition(hit_pos.data());
-						true_hit_data->setEDep(root_hits[j]->edep[k]);
-						//true_hit_data->setEDepError(z_pos);
-						//true_hit_data->setTime(root_hits[j]->parentId[k]);
+							hit_pos[0] = root_hits[j]->pos[k].X();
+							hit_pos[1] = root_hits[j]->pos[k].Y();
+							hit_pos[2] = root_hits[j]->pos[k].Z();
 
-						true_hit_encoder.setCellID(true_hit_data);
-						hit_coll->addElement(true_hit_data);
+							true_hit_data->setTime(root_hits[j]->event);
+							true_hit_data->setType(root_hits[j]->parentId[k]);
+							true_hit_data->setQuality(root_hits[j]->trackId[k]);
+							true_hit_data->setPosition(hit_pos.data());
+							true_hit_data->setEDep(root_hits[j]->edep[k]);
 
+							true_hit_encoder.setCellID(true_hit_data);
+							hit_coll->addElement(true_hit_data);
+						}
 					}
 				}
+				else {//more than one track in this event
 
+					vector<SimpleHits> hits;
+					int hits_index = -1;
+					for (size_t k = 0; k < root_hits[j]->pos.size(); k++) {
+
+						if ((k == 0) || (root_hits[j]->trackId[k] != root_hits[j]->trackId[k-1]) || (root_hits[j]->interactions[k-1] == "Transportation")) {
+
+							hits.push_back(SimpleHits());
+							hits_index++;
+						}
+
+						hits[hits_index].pos.push_back(root_hits[j]->pos[k]);
+						hits[hits_index].edep.push_back(root_hits[j]->edep[k]);
+						hits[hits_index].trackId.push_back(root_hits[j]->trackId[k]);
+						hits[hits_index].parentId.push_back(root_hits[j]->parentId[k]);
+					}
+
+					for (size_t k = 0; k < hits.size(); k++) {
+
+						for (size_t l = 0; l < hits[k].pos.size(); l++) {
+
+							if ((l == hits[k].pos.size()/2 - 1) || (hits[k].pos.size() == 1)) {
+
+								TrackerHitImpl* true_hit_data = new TrackerHitImpl();
+
+								hit_pos[0] = hits[k].pos[l].X();
+								hit_pos[1] = hits[k].pos[l].Y();
+								hit_pos[2] = hits[k].pos[l].Z();
+
+								true_hit_data->setTime(root_hits[j]->event);
+								true_hit_data->setType(hits[k].parentId[l]);
+								true_hit_data->setQuality(hits[k].trackId[l]);
+								true_hit_data->setPosition(hit_pos.data());
+								true_hit_data->setEDep(hits[k].edep[l]);
+
+								true_hit_encoder.setCellID(true_hit_data);
+								hit_coll->addElement(true_hit_data);
+							}
+						}
+					}
+				}
+						
 				hit_incrs[j]++;
 			}
 
@@ -289,23 +330,69 @@ int main(int argc, char* argv[]) {
 				while (true_hit_trees[j+n_sensors]->GetEntry(hit_incrs[j+n_sensors]) and root_hits[j+n_sensors]->run == (int)i) {
 
 					auto hit_pos = std::array<double,3>();
-					for (size_t k = 0; k < root_hits[j+n_sensors]->pos.size(); k++) {
+					if (root_hits[j+n_sensors]->trackId.back() == 1) {
 
-						if (k == root_hits[j+n_sensors]->pos.size()/2 - 1) {
+						for (size_t k = 0; k < root_hits[j+n_sensors]->pos.size(); k++) {
 
-							TrackerHitImpl* true_hit_data = new TrackerHitImpl();
+							if (k == root_hits[j+n_sensors]->pos.size()/2 - 1) {
 
-							hit_pos[0] = root_hits[j+n_sensors]->pos[k].X();
-							hit_pos[1] = root_hits[j+n_sensors]->pos[k].Y();
-							hit_pos[2] = root_hits[j+n_sensors]->pos[k].Z();
+								TrackerHitImpl* true_hit_data = new TrackerHitImpl();
 
-							true_hit_data->setType(root_hits[j]->event);
-							true_hit_data->setQuality(root_hits[j]->trackId[k]);
-							true_hit_data->setPosition(hit_pos.data());
-							true_hit_data->setEDep(root_hits[j+n_sensors]->edepTotal);
+								hit_pos[0] = root_hits[j+n_sensors]->pos[k].X();
+								hit_pos[1] = root_hits[j+n_sensors]->pos[k].Y();
+								hit_pos[2] = root_hits[j+n_sensors]->pos[k].Z();
 
-							true_hit_encoder.setCellID(true_hit_data);
-							hit_coll->addElement(true_hit_data);
+								true_hit_data->setTime(root_hits[j+n_sensors]->event);
+								true_hit_data->setType(root_hits[j+n_sensors]->parentId[k]);
+								true_hit_data->setQuality(root_hits[j+n_sensors]->trackId[k]);
+								true_hit_data->setPosition(hit_pos.data());
+								true_hit_data->setEDep(root_hits[j+n_sensors]->edepTotal);
+
+								true_hit_encoder.setCellID(true_hit_data);
+								hit_coll->addElement(true_hit_data);
+							}
+						}
+					}
+					else {
+
+						vector<SimpleHits> hits;
+						int hits_index = -1;
+						for (size_t k = 0; k < root_hits[j+n_sensors]->pos.size(); k++) {
+
+							if ((k == 0) || (root_hits[j+n_sensors]->trackId[k] != root_hits[j+n_sensors]->trackId[k-1]) || (root_hits[j+n_sensors]->interactions[k-1] == "Transportation")) {
+
+								hits.push_back(SimpleHits());
+								hits_index++;
+							}
+
+							hits[hits_index].pos.push_back(root_hits[j+n_sensors]->pos[k]);
+							hits[hits_index].edep.push_back(root_hits[j+n_sensors]->edep[k]);
+							hits[hits_index].trackId.push_back(root_hits[j+n_sensors]->trackId[k]);
+							hits[hits_index].parentId.push_back(root_hits[j+n_sensors]->parentId[k]);
+						}
+
+						for (size_t k = 0; k < hits.size(); k++) {
+
+							for (size_t l = 0; l < hits[k].pos.size(); l++) {
+
+								if ((l == hits[k].pos.size()/2 - 1) || (hits[k].pos.size() == 1)) {
+
+									TrackerHitImpl* true_hit_data = new TrackerHitImpl();
+
+									hit_pos[0] = hits[k].pos[l].X();
+									hit_pos[1] = hits[k].pos[l].Y();
+									hit_pos[2] = hits[k].pos[l].Z();
+
+									true_hit_data->setTime(root_hits[j+n_sensors]->event);
+									true_hit_data->setType(hits[k].parentId[l]);
+									true_hit_data->setQuality(hits[k].trackId[l]);
+									true_hit_data->setPosition(hit_pos.data());
+									true_hit_data->setEDep(hits[k].edep[l]);
+
+									true_hit_encoder.setCellID(true_hit_data);
+									hit_coll->addElement(true_hit_data);
+								}
+							}
 						}
 					}
 
