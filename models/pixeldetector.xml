@@ -105,7 +105,7 @@
 <digitizer>FEI3Standard</digitizer>
 
 <npix_x>80</npix_x>
-<npix_y>360</npix_y>
+<npix_y>336</npix_y>
 <npix_z>0</npix_z>
 
 <pixsize_x units="um">125.</pixsize_x>
@@ -113,7 +113,7 @@
 <pixsize_z units="um">125.</pixsize_z>
 
 <chip_hx units="um">10000</chip_hx>
-<chip_hy units="um">9000</chip_hy>
+<chip_hy units="um">8400</chip_hy>
 <chip_hz units="um">195.0</chip_hz>
 
 
@@ -136,7 +136,7 @@
 <chip_posz units="um">0.</chip_posz>
 
 <sensor_hx units="um">10000</sensor_hx>
-<sensor_hy units="um">9000</sensor_hy>
+<sensor_hy units="um">8400</sensor_hy>
 <sensor_hz units="um">125.0</sensor_hz>
 
 <sensor_gr_excess_htop units="um">100.0</sensor_gr_excess_htop>
