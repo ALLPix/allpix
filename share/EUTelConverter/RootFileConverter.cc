@@ -232,6 +232,7 @@ int main(int argc, char* argv[]) {
 							true_hit_data->setQuality(root_hits[j]->trackId[k]);
 							true_hit_data->setPosition(hit_pos.data());
 							true_hit_data->setEDep(root_hits[j]->edep[k]);
+							true_hit_data->setEDepError(root_hits[j]->edepTotal);
 
 							true_hit_encoder.setCellID(true_hit_data);
 							hit_coll->addElement(true_hit_data);
@@ -273,6 +274,7 @@ int main(int argc, char* argv[]) {
 								true_hit_data->setQuality(hits[k].trackId[l]);
 								true_hit_data->setPosition(hit_pos.data());
 								true_hit_data->setEDep(hits[k].edep[l]);
+								true_hit_data->setEDepError(hits[k].edepTotal);
 
 								true_hit_encoder.setCellID(true_hit_data);
 								hit_coll->addElement(true_hit_data);
@@ -346,7 +348,8 @@ int main(int argc, char* argv[]) {
 								true_hit_data->setType(root_hits[j+n_sensors]->parentId[k]);
 								true_hit_data->setQuality(root_hits[j+n_sensors]->trackId[k]);
 								true_hit_data->setPosition(hit_pos.data());
-								true_hit_data->setEDep(root_hits[j+n_sensors]->edepTotal);
+								true_hit_data->setEDep(root_hits[j+n_sensors]->edep[k]);
+								true_hit_data->setEDepError(root_hits[j+n_sensors]->edepTotal);
 
 								true_hit_encoder.setCellID(true_hit_data);
 								hit_coll->addElement(true_hit_data);
@@ -388,6 +391,7 @@ int main(int argc, char* argv[]) {
 									true_hit_data->setQuality(hits[k].trackId[l]);
 									true_hit_data->setPosition(hit_pos.data());
 									true_hit_data->setEDep(hits[k].edep[l]);
+									true_hit_data->setEDepError(hits[k].edepTotal);
 
 									true_hit_encoder.setCellID(true_hit_data);
 									hit_coll->addElement(true_hit_data);
