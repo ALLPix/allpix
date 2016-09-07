@@ -146,7 +146,7 @@ int main(int argc, char* argv[]) {
 	run_header->parameters().setValue  ("EUDRBMode"       , "ZS2");
 	writer->writeRunHeader(run_header.get());
 
-	for (size_t i = 0; i < n_runs; i++) {
+	for (size_t i = 0; i < n_runs+1; i++) {
 
 		LCEventImpl* event = new LCEventImpl();
 		event->setRunNumber(run_number);
