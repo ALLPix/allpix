@@ -251,6 +251,7 @@ int main(int argc, char* argv[]) {
 							hits_index++;
 						}
 
+						hits[hits_index].edepTotal = root_hits[j]->edepTotal;
 						hits[hits_index].pos.push_back(root_hits[j]->pos[k]);
 						hits[hits_index].edep.push_back(root_hits[j]->edep[k]);
 						hits[hits_index].trackId.push_back(root_hits[j]->trackId[k]);
@@ -368,6 +369,7 @@ int main(int argc, char* argv[]) {
 								hits_index++;
 							}
 
+							hits[hits_index].edepTotal = root_hits[j+n_sensors]->edepTotal;
 							hits[hits_index].pos.push_back(root_hits[j+n_sensors]->pos[k]);
 							hits[hits_index].edep.push_back(root_hits[j+n_sensors]->edep[k]);
 							hits[hits_index].trackId.push_back(root_hits[j+n_sensors]->trackId[k]);
