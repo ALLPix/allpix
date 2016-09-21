@@ -192,10 +192,6 @@ int main(int argc, char* argv[]) {
 		LCCollectionVec* sensor_frame_coll = new LCCollectionVec(LCIO::TRACKERDATA);
 		CellIDEncoder<TrackerDataImpl> frame_encoder_sensor(encoding_string_frame, sensor_frame_coll);
 
-		//Primary vertices collection
-		LCCollectionVec* vertex_coll = new LCCollectionVec(LCIO::TRACKERHIT);
-		CellIDEncoder<TrackerHitImpl> vertex_encoder(encoding_string_hit, vertex_coll);
-
 		//fil telescope collection
 		for (size_t j = 0; j < n_sensors; j++) {
 
@@ -308,33 +304,7 @@ int main(int argc, char* argv[]) {
 
 			frame_data->setChargeValues(charge_vec);
 			sensor_frame_coll->addElement(frame_data);
-
-			//add primary vertex data
-			vertex_encoder.reset();
-			vertex_encoder["sensorID"] = j;
-			vertex_encoder["properties"] = kHitInGlobalCoord + kSimulatedHit;
-
-			std::vector<double> vertex_x = root_frames[j]->GetVertex_x();
-			std::vector<double> vertex_y = root_frames[j]->GetVertex_y();
-			std::vector<double> vertex_z = root_frames[j]->GetVertex_z();
-			std::array<double, 3> vertex_pos;
-			if (vertex_x.size() != root_frames[j]->GetHitMap().size()) std::cout << "vertices vectors have different size than number of hit pixels at event " << i << " and sensor " << j << std::endl;
-			for (size_t k = 0; k < vertex_x.size(); k++) {
-
-				TrackerHitImpl* vertex = new TrackerHitImpl();
-
-				vertex_pos[0] = vertex_x[k];
-				vertex_pos[1] = vertex_y[k];
-				vertex_pos[2] = vertex_z[k];
-
-				vertex->setPosition(vertex_pos.data());
-
-				vertex_encoder.setCellID(vertex);
-				vertex_coll->addElement(vertex);
-			}
 		}
-		//add primary vertex collection to the lcio file
-		event->addCollection(vertex_coll, "primary_vertices");
 
 		//write DUT true hit data collection if there are DUTs present
 		if (n_DUTs > 0) {
