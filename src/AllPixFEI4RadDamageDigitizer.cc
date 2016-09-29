@@ -344,6 +344,7 @@ G4double AllPixFEI4RadDamageDigitizer::GetTimeToElectrode(G4double z, G4bool isH
 
 G4double AllPixFEI4RadDamageDigitizer::GetTanLorentz(G4double electricField, G4bool isHole){
   G4double hallEffect = 1.13 + 0.0008*(temperature - 273.0); //Hall Scattering Factor - taken from https://cds.cern.ch/record/684187/files/indet-2001-004.pdf
+  if (isHole) hallEffect = 0.72 - 0.0005*(temperature - 273.0);
   G4double mobility = AllPixFEI4RadDamageDigitizer::GetMobility(electricField, isHole);
   G4double tanLorentz = hallEffect*mobility*bField*(1.0E-3);  //unit conversion
   return tanLorentz;
