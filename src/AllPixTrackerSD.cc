@@ -187,6 +187,7 @@ G4bool AllPixTrackerSD::ProcessHits(G4Step * aStep, G4TouchableHistory *)
 	G4int copyIDy_post = -1;
 	G4int copyIDx_post = -1;
 	G4ThreeVector correctedPos(0,0,0);
+	G4ThreeVector PosOnChip(0,0,0);
 
 	if (m_thisIsAPixelDetector) {
 		// This positions are global, I will bring them to pixel-centered frame
@@ -207,6 +208,7 @@ G4bool AllPixTrackerSD::ProcessHits(G4Step * aStep, G4TouchableHistory *)
 		correctedPos -= absCenterOfDetector;
 		// apply rotation !
 		correctedPos = invRot * correctedPos;
+		PosOnChip = correctedPos - m_relativePosOfSD;
 
 		// Now let's finally provide pixel-centered coordinates for each hit
 		// Build the center of the Pixel
@@ -266,6 +268,7 @@ G4bool AllPixTrackerSD::ProcessHits(G4Step * aStep, G4TouchableHistory *)
 	newHit->SetPos(aStep->GetPostStepPoint()->GetPosition());
 
 	newHit->SetPosWithRespectToPixel( correctedPos );
+	newHit->SetPosInLocalReferenceFrame(PosOnChip);
 
 	newHit->SetProcessName(aProcessPointer->GetProcessName());
 	newHit->SetTrackPdgId(aParticle->GetPDGEncoding());

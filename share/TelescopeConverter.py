@@ -76,6 +76,7 @@ def parseFrameFile( inputFile ):
                 DUTData[sensorID].append( x )
                 DUTData[sensorID].append( y )
                 DUTData[sensorID].append( e )
+                DUTData[sensorID].append( 0 )
 
                 telescopeTestDict[sensorID] += 1
 
@@ -100,13 +101,15 @@ def convertRun( inputTarFile, outputFileName ):
     #nEvents = len( fileNames )
 
     inputFiles = []
-    tar = tarfile.open( inputTarFile, 'r:*' )
-    for member in tar:
-         inputFiles.append( tar.extractfile(member) )
-
+    tar = tarfile.open( inputTarFile, 'r:gz' )
+    for member in tar.getmembers():
+        if not member.isfile():
+            continue
+        inputFiles.append( tar.extractfile(member) )
+    
     # get run number from first file (same for the rest) assuming filename is this form: mpx-YYMMDD-HHmmSS-RUN_FRAME.txt
     runNumber = int( inputFiles[0].name.split('-')[-1].split('_')[0] )
-    #runNumber = 999999
+    runNumber = int( inputTarFile.split('n')[-1].split('.')[0] )
 
     # define detector name
     detectorName = 'EUTelescope'
@@ -115,6 +118,7 @@ def convertRun( inputTarFile, outputFileName ):
     writer = IOIMPL.LCFactory.getInstance().createLCWriter()
     writer.open( outputFileName, EVENT.LCIO.WRITE_NEW )
 
+    print "Runnumber: " + str(runNumber)
     # create a run header and add it to the file
     run = IMPL.LCRunHeaderImpl()
     run.setRunNumber( runNumber )

@@ -1481,5 +1481,78 @@
 
 </pixeldet>
 
+<!-- CMS -->
+<pixeldet id="900, 901, 902, 903, 904, 905">
+
+<digitizer>CMSp1</digitizer>
+
+<npix_x>52</npix_x>
+<npix_y>80</npix_y>
+<npix_z>0</npix_z>
+
+
+<!-- # Pixel matrix dimensions, pixel sizes are given in Half-Length ex: 55um pixel pitch -> pixsize_x = 27.5,
+# pixsize_z should be set at the same half-thickness ass the sensor -->
+<pixsize_x units="um">75.</pixsize_x>
+<pixsize_y units="um">50.</pixsize_y>
+<pixsize_z units="um">142.5</pixsize_z>
+
+<!-- # Sensor dimension, should be coherent with matrix dimensions, gr_excess define the size of the Guard Rings (Inactive Volumes)
+# around the active Matrix, sensor_pos describe the position of the sensor with regard to the PCB volume center (X,Y) -->
+<sensor_hx units="um">3900</sensor_hx>
+<sensor_hy units="um">4000</sensor_hy>
+<sensor_hz units="um">142.5</sensor_hz>
+
+<sensor_gr_excess_htop units="um">430.0</sensor_gr_excess_htop>
+<sensor_gr_excess_hbottom units="um">570.0</sensor_gr_excess_hbottom>
+<sensor_gr_excess_hright units="um">430.0</sensor_gr_excess_hright>
+<sensor_gr_excess_hleft units="um">430.0</sensor_gr_excess_hleft>
+
+<sensor_posx units="mm">0.</sensor_posx>
+<sensor_posy units="mm">-0.4</sensor_posy>
+<sensor_posz units="mm">0.</sensor_posz>
+
+<!-- # chip Geometry : Define the size of the Chip side of a Pixel detector
+# chip_offset describe the offset between the chip and sensor volume sensors, for example, if bonding pads are present  -->
+<chip_hx units="um">4030.</chip_hx>
+<chip_hy units="um">5225.</chip_hy>
+<chip_hz units="um">90.</chip_hz>
+
+<chip_offsetx units="um">0.</chip_offsetx>
+<chip_offsety units="um">-1200.0</chip_offsety>
+<chip_offsetz units="um">0.</chip_offsetz>
+
+<!-- <chip_posx units="um">0.</chip_posx>
+<chip_posy units="um">0.</chip_posy>
+<chip_posz units="um">0.</chip_posz> -->
+
+<!-- # Bump-Bonding geometry : Bump bonds are modeled as the union of a
+# Cylinder(height ->bump_height, radius ->(bump_radius - bump_dr) ) and a Sphere(r->bump_radius). Offset is relative to the center of the pixel -->
+<bump_radius units="um">15.</bump_radius>
+<bump_height units="um">30.</bump_height>
+<bump_offset_x units="um">25.</bump_offset_x>
+<bump_offset_y units="um">0.</bump_offset_y>
+<bump_dr units="um">5.0</bump_dr>
+
+<!-- # PCB Geometry : Size and thickness of the PCB, Default material is G10 -->
+<pcb_hx units="mm">20.875</pcb_hx>
+<pcb_hy units="mm">19.95</pcb_hy>
+<pcb_hz units="mm">0.80</pcb_hz>
+
+
+<!-- # Digitizer specific parameters, these are set to 0 if not defined -->
+<sensor_resistivity>10000.0</sensor_resistivity>
+<!-- <MIP Tot> 200 </MIP Tot> -->
+<MIP_Charge>22000.</MIP_Charge>
+<!-- <Counter Depth> 11810 </Counter Depth> -->
+<!-- <Clock Unit> 10e-9 </Clock Unit> -->
+<Chip_Noise>180.</Chip_Noise>
+<Chip_Threshold>1500.</Chip_Threshold>
+<!-- <Cross Talk>0.0001</Cross Talk> -->
+<!-- <Saturation Energy>350.</Saturation Energy> -->
+
+
+</pixeldet>
+
 
 </detectors>
