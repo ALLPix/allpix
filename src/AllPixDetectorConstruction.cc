@@ -159,10 +159,6 @@ G4VPhysicalVolume * AllPixDetectorConstruction::Construct()
     // Air
     G4NistManager * nistman = G4NistManager::Instance();
     m_Air = nistman->FindOrBuildMaterial("G4_AIR");
-<<<<<<< HEAD
-
-=======
->>>>>>> 9f2a0b5cfcc62a94fd0188556295485f859e778f
     //nistman->ListMaterials("all");
 
     // Air is the default.  Can be changed from the messenger using
