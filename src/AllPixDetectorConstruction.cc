@@ -653,9 +653,9 @@ void AllPixDetectorConstruction::BuildPixelDevices(map<int, AllPixGeoDsc *> geoM
                << G4endl;
 
         G4Box* wrapper_box = new G4Box(wrapperName.second,
-                                       wrapperHX,
-                                       wrapperHY,
-                                       wrapperHZ);
+                                       2.*wrapperHX,
+                                       2.*wrapperHY,
+                                       2.*wrapperHZ);
 
         //G4RotationMatrix yRot45deg;   // Rotates X and Z axes only
         //yRot45deg.rotateY(M_PI/4.*rad);
@@ -851,6 +851,7 @@ void AllPixDetectorConstruction::BuildPixelDevices(map<int, AllPixGeoDsc *> geoM
                     - 2.*geoMap[*detItr]->GetHalfCoverlayerZ()
                     - bump_height
                     - geoMap[*detItr]->GetHalfChipZ()
+                    + geoMap[*detItr]->GetChipZOffset()
                     );
 
             //posDevice.z() -
