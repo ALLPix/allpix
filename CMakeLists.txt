@@ -6,6 +6,22 @@ project(ALLPIX)
 # ROOT
 include(FindROOT.cmake)
 
+#----------------------------------------------------------------------------
+# rootcling - dictionaries
+
+find_program(ROOTCLING rootcling
+  PATHS ${ROOTSYS}/bin $ENV{ROOTSYS}/bin)
+
+add_custom_target(rootcling_build ALL)
+
+add_custom_command( OUTPUT ${PROJECT_SOURCE_DIR}/src/SelDict.cc ${PROJECT_BINARY_DIR}/SelDict_rdict.pcm
+WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
+COMMAND ${ROOTCLING} -v0 -f SelDict.cc -c -p -I./include AllPix_Hits_WriteToEntuple.h AllPix_Frames_WriteToEntuple.h AllPixDigitAnimation.hh allpix_dm.h LinkDef.h
+COMMAND mv SelDict.cc ./src/SelDict.cc
+COMMAND mv SelDict_rdict.pcm ${PROJECT_BINARY_DIR}/SelDict_rdict.pcm
+)
+
+
 set(INCLUDE_DIRECTORIES
 	${ROOT_INCLUDE_DIR} 
 )
@@ -41,12 +57,19 @@ include(${Geant4_USE_FILE})
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include 
                     ${Geant4_INCLUDE_DIR})
 file(GLOB sources ${PROJECT_SOURCE_DIR}/src/SelDict.cc ${PROJECT_SOURCE_DIR}/src/*.cc)
+
+#MESSAGE( STATUS "Sources ${sources}" )
+#set( sources ${PROJECT_SOURCE_DIR}/src/SelDict.cc ${sources} )
+#MESSAGE( STATUS "Sources ${sources}" )
+
+set_source_files_properties( ${PROJECT_SOURCE_DIR}/src/SelDict.cc PROPERTIES GENERATED TRUE )
+
 file(GLOB headers ${PROJECT_SOURCE_DIR}/include/*.hh)
 
 #----------------------------------------------------------------------------
 # Add the executable, and link it to the Geant4 libraries
 #
-add_executable(allpix allpix.cc ${sources} ${headers})
+add_executable(allpix allpix.cc ${sources} ${headers} ${PROJECT_SOURCE_DIR}/src/SelDict.cc )
 target_link_libraries(allpix ${Geant4_LIBRARIES} ${ROOT_LIBRARIES})
 
 include(CheckCXXCompilerFlag)
@@ -90,34 +113,14 @@ foreach(_script ${ALLPIX_SCRIPTS})
     )
 endforeach()
 
-#----------------------------------------------------------------------------
-# rootcling - dictionaries
-#add_custom_target(TARGET rootcling PRE_BUILD 
-#COMMAND	@echo "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa")
-
-add_custom_target(rootcling_build ALL DEPENDS ALLPIX)
-
-add_custom_command(TARGET rootcling_build PRE_BUILD
-WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
-COMMAND rootcling -v0 -f SelDict.cc -c -p -I./include
-AllPix_Hits_WriteToEntuple.h 
-AllPix_Frames_WriteToEntuple.h allpix_dm.h 
-AllPixDigitAnimation.hh LinkDef.h
-COMMAND mv SelDict.cc ./src/SelDict.cc
-COMMAND mv SelDict_rdict.pcm ${PROJECT_BINARY_DIR}/SelDict_rdict.pcm)
 
 
-
-#rootcint -v0 -f SelDict.cc -c -p -I./include 
-#		AllPix_Hits_WriteToEntuple.h 
-#		AllPix_Frames_WriteToEntuple.h allpix_dm.h 
-#		AllPixDigitAnimation.hh LinkDef.h)
 
 #----------------------------------------------------------------------------
 # Add program to the project targets
 # (this avoids the need of typing the program name after make)
 #
-add_custom_target(ALLPIX DEPENDS allpix)
+add_custom_target(ALLPIX DEPENDS rootcling_build allpix)
 
 #----------------------------------------------------------------------------
 # Install the executable to 'bin' directory under CMAKE_INSTALL_PREFIX

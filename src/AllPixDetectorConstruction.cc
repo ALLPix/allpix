@@ -149,17 +149,34 @@ G4VPhysicalVolume * AllPixDetectorConstruction::Construct()
     // materials
     // Vacuum
     G4double z,a,density;
-    m_Vacuum = new G4Material("Vacuum", z=1 , a=1.01*g/mole, density= 0.0001*g/cm3);
 
+    // FIXME: AllPixDetectorConstruction::Construct() is performed twice
+    // This generates the following warning:
+    // G4Material WARNING: duplicate name of material Vacuum
+    if (m_Vacuum==0) {
+      m_Vacuum = new G4Material("Vacuum", z=1 , a=1.01*g/mole, density= 0.0001*g/cm3);
+    }
     // Air
     G4NistManager * nistman = G4NistManager::Instance();
     m_Air = nistman->FindOrBuildMaterial("G4_AIR");
+<<<<<<< HEAD
+
+=======
+>>>>>>> 9f2a0b5cfcc62a94fd0188556295485f859e778f
     //nistman->ListMaterials("all");
 
     // Air is the default.  Can be changed from the messenger using
     // /allpix/extras/setWorldMaterial
     // which calls AllPixDetectorConstruction::SetWorldMaterial(G4String mat)
-    if(!m_userDefinedWorldMaterial) m_fillingWorldMaterial = m_Air;
+
+    if(!m_userDefinedWorldMaterial) {
+    	m_fillingWorldMaterial = m_Air;
+    }
+    else {
+    	if (m_world_material_name=="Vacuum") m_fillingWorldMaterial= m_Vacuum;
+    }
+
+    G4cout << "Material of world: " << m_fillingWorldMaterial->GetName() << G4endl;
 
     /////////////////////////////////////////
     // The experimental Hall.  World
@@ -273,7 +290,17 @@ void AllPixDetectorConstruction::SetDetectorID(G4int id){
     // get the iterator informed
     m_detIdItr = m_detId.end() - 1;
 
-    m_nIds++;
+	m_nIds++;
+}
+
+void AllPixDetectorConstruction::SetEFieldFile(G4String file){
+	if(m_detId.empty()){
+		_BUILD_MEDIPIX_MSG();
+		exit(1);
+	}
+
+	m_EFieldFiles[*m_detIdItr] = file;
+
 }
 
 void AllPixDetectorConstruction::SetDetectorPosition(G4ThreeVector pos){
@@ -316,7 +343,15 @@ void AllPixDetectorConstruction::SetDetectorRotation(G4ThreeVector rot){
 }
 
 void AllPixDetectorConstruction::SetLowTHL(G4double lowTHL){
-    m_lowThlVector.push_back(lowTHL);
+	m_lowThlVector.push_back(lowTHL);
+}
+
+void AllPixDetectorConstruction::SetTemperature(G4double temperature){
+	m_temperatures[*m_detIdItr] = temperature;
+}
+
+void AllPixDetectorConstruction::SetFlux(G4double flux){
+	m_fluxes[*m_detIdItr] = flux;
 }
 
 /**
@@ -363,7 +398,8 @@ void AllPixDetectorConstruction::SetWorldMaterial(G4String mat){
 
     if(mat == "Vacuum") {
         G4cout << "User action --> World volume material : Vacuum " << endl;
-        m_fillingWorldMaterial = m_Vacuum;
+        m_world_material_name = "Vacuum";
+        //m_fillingWorldMaterial = m_Vacuum;
         m_userDefinedWorldMaterial = true;
     }
     // else default Air
@@ -1013,6 +1049,21 @@ void AllPixDetectorConstruction::BuildPixelDevices(map<int, AllPixGeoDsc *> geoM
         // Store the hit Collection name in the geometry
         geoMap[*detItr]->SetHitsCollectionName( aTrackerSD->GetHitsCollectionName() );
 
+	// Read electric field from file if necessary
+
+		if(m_EFieldFiles.count(*detItr)>0) geoMap[*detItr]->SetEFieldMap(m_EFieldFiles[(*detItr)]);
+		
+		if(m_temperatures.count(*detItr)>0)
+		{
+			geoMap[*detItr]->SetTemperature(m_temperatures[(*detItr)]);
+		}else{
+			geoMap[*detItr]->SetTemperature(300.);
+		}
+		geoMap[*detItr]->SetFlux(m_fluxes[(*detItr)]);
+		
+		geoMap[*detItr]->SetMagField(m_magField_cartesian);
+
+
         G4cout << "          detector " << (*detItr) << " ... done" << G4endl;
 
         //m_wrapper_phys[(*detItr)]->SetTranslation(posWrapper-posDevice);
@@ -1081,23 +1132,25 @@ void AllPixDetectorConstruction::SetMaxStepLengthSensor(G4double val) {
 #include "G4UniformMagField.hh"
 #include "MorourgoMagField.hh"
 #include "G4PropagatorInField.hh"
-void AllPixDetectorConstruction::SetPeakMagField(G4double fieldValue)
+void AllPixDetectorConstruction::SetPeakMagField(G4ThreeVector fieldValues)
 {
-    //apply a global uniform magnetic field along Z axis
-    G4FieldManager * fieldMgr
-            = G4TransportationManager::GetTransportationManager()->GetFieldManager();
-    G4TransportationManager* tmanager = G4TransportationManager::GetTransportationManager();
-    tmanager->GetPropagatorInField()->SetLargestAcceptableStep(1*mm);
-    if ( fieldValue != 0. )
-    {
+	//apply a global uniform magnetic field along Z axis
+	G4FieldManager * fieldMgr
+	= G4TransportationManager::GetTransportationManager()->GetFieldManager();
+	G4TransportationManager* tmanager = G4TransportationManager::GetTransportationManager();
+	tmanager->GetPropagatorInField()->SetLargestAcceptableStep(1*mm);
+	m_magField_cartesian = fieldValues/tesla;
 
-        // FIXME !!! --> feed this value from the macro
-        //		m_magField = new MorourgoMagField(fieldValue, 252.5*mm);
-        //		fieldMgr->SetDetectorField(m_magField);
-        //		fieldMgr->CreateChordFinder(m_magField);
-        m_magField = new G4UniformMagField ( G4ThreeVector(0.,0.,fieldValue) );
-        fieldMgr->SetDetectorField(m_magField);
-        fieldMgr->CreateChordFinder(m_magField);
+	if ( fieldValues[0] != 0. || fieldValues[1] != 0. || fieldValues[2] != 0. )
+	{
+
+		// FIXME !!! --> feed this value from the macro
+		//		m_magField = new MorourgoMagField(fieldValue, 252.5*mm);
+		//		fieldMgr->SetDetectorField(m_magField);
+		//		fieldMgr->CreateChordFinder(m_magField);
+		m_magField = new G4UniformMagField (fieldValues.getR(), fieldValues.getTheta(), fieldValues.getPhi());
+		fieldMgr->SetDetectorField(m_magField);
+		fieldMgr->CreateChordFinder(m_magField);
 
         fieldMgr->SetMinimumEpsilonStep( 1e-7 );
         fieldMgr->SetMaximumEpsilonStep( 1e-6 );

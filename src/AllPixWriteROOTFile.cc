@@ -7,7 +7,7 @@
 AllPixWriteROOTFile::AllPixWriteROOTFile(Int_t detID, TString path)
 {
   detectorID=detID;
-  G4cout << "nalipour AllPixWriteROOTFile" << G4endl;
+  //G4cout << "nalipour AllPixWriteROOTFile" << G4endl;
   TString fileName=path+"/RD53_"+(TString)Form("%d", detID)+".root";
   file = new TFile(fileName, "RECREATE");
   tree = new TTree("tree","tree data");
@@ -62,7 +62,7 @@ void AllPixWriteROOTFile::AllPixWriteROOTFillTree()
 
 void AllPixWriteROOTFile::SetVectors(ROOTDataFormat* d)
 {
-	G4cout << "nalipour: SetVectors " << G4endl;
+	//G4cout << "nalipour: SetVectors " << G4endl;
 	posX=d->get_posX();
 	posY=d->get_posY();
 	energyTotal=d->get_energyTotal();

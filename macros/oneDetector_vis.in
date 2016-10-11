@@ -70,6 +70,7 @@
 /vis/viewer/set/viewpointThetaPhi 20 50
 #/vis/viewer/set/background 0 0 0
 /vis/viewer/zoom 2.0
+/vis/scene/add/axes 0. 0. 0. 30. mm
 /vis/viewer/flush
 
 # Draw trajectories at end of event, showing trajectory points as
