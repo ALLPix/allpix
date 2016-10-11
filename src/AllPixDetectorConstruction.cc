@@ -159,10 +159,6 @@ G4VPhysicalVolume * AllPixDetectorConstruction::Construct()
     // Air
     G4NistManager * nistman = G4NistManager::Instance();
     m_Air = nistman->FindOrBuildMaterial("G4_AIR");
-<<<<<<< HEAD
-
-=======
->>>>>>> 9f2a0b5cfcc62a94fd0188556295485f859e778f
     //nistman->ListMaterials("all");
 
     // Air is the default.  Can be changed from the messenger using
@@ -653,9 +649,9 @@ void AllPixDetectorConstruction::BuildPixelDevices(map<int, AllPixGeoDsc *> geoM
                << G4endl;
 
         G4Box* wrapper_box = new G4Box(wrapperName.second,
-                                       wrapperHX,
-                                       wrapperHY,
-                                       wrapperHZ);
+                                       2.*wrapperHX,
+                                       2.*wrapperHY,
+                                       2.*wrapperHZ);
 
         //G4RotationMatrix yRot45deg;   // Rotates X and Z axes only
         //yRot45deg.rotateY(M_PI/4.*rad);
@@ -851,6 +847,7 @@ void AllPixDetectorConstruction::BuildPixelDevices(map<int, AllPixGeoDsc *> geoM
                     - 2.*geoMap[*detItr]->GetHalfCoverlayerZ()
                     - bump_height
                     - geoMap[*detItr]->GetHalfChipZ()
+                    + geoMap[*detItr]->GetChipZOffset()
                     );
 
             //posDevice.z() -
