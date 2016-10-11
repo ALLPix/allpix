@@ -67,27 +67,7 @@ AllPixRunAction::AllPixRunAction(AllPixDetectorConstruction * det, TString ds, T
 
   //nalipour: Initilise the ROOT files with the NULL pointer
   writeROOTFile=NULL; 
-  
-  //eudaq
-  m_writeEUTelescopeFlag = AllPixMessenger->GetEUTelescopeWriteFlag();
-  
-  if(m_writeEUTelescopeFlag){
-    
-    string eutelFile = AllPixMessenger->GetEUTelescopeFolderName();
-    string eutelRunNrFile = AllPixMessenger->GetEUTelescopeFolderName();
-    
-    
-    eutelRunNrFile.append("runnumber.dat");
-    
-    fstream runNrStr(eutelRunNrFile, ios::in | ios::out | ios::app);
-    runNrStr >> euRunNr;
-    runNrStr.clear();
-    runNrStr << euRunNr+1;
-    runNrStr.close();
-    
-  }
-  
-  
+
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -106,7 +86,6 @@ AllPixRunAction::~AllPixRunAction()
  */
 G4Run * AllPixRunAction::GenerateRun(){
 
-	
   m_writeTPixTelescopeFilesFlag = AllPixMessenger->GetTimepixTelescopeWriteFlag(); //pass it to veto RecordTelescopeDigits
   m_writeMCROOTFilesFlag = AllPixMessenger->GetWrite_MC_FilesFlag(); // nalipour: Flag to write the ROOT file
   
@@ -137,6 +116,37 @@ void AllPixRunAction::BeginOfRunAction(const G4Run* aRun)
 {
   G4cout << "### Run " << aRun->GetRunID() << " start." << G4endl;
   timer->Start();
+
+  if(aRun->GetRunID()==0){
+
+    // Initialize Eutel output
+    m_writeEUTelescopeFlag = AllPixMessenger->GetEUTelescopeWriteFlag();
+
+    if(m_writeEUTelescopeFlag){
+    
+      string eutelFile = AllPixMessenger->GetEUTelescopeFolderName();
+      string eutelRunNrFile = AllPixMessenger->GetEUTelescopeFolderName();
+
+      if(eutelFile.back() != '/'){
+	eutelFile.append("/");
+	eutelRunNrFile.append("/");
+      }
+    
+      eutelRunNrFile.append("runnumber.dat");
+
+      ifstream runNrStrI(eutelRunNrFile);
+      runNrStrI >> euRunNr;
+      runNrStrI.close();
+
+      euRunNr++;
+
+      G4cout << "This is EUTelescope Run Nr. " << euRunNr << G4endl;
+      
+      ofstream runNrStrO(eutelRunNrFile);
+      runNrStrO << euRunNr;
+      runNrStrO.close();
+    }
+  }
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -144,6 +154,7 @@ void AllPixRunAction::BeginOfRunAction(const G4Run* aRun)
 void AllPixRunAction::EndOfRunAction(const G4Run* aRun)
 {   
 
+    
   // at the end of the run
   //G4cout << "Filling frames ntuple" << G4endl;
   m_AllPixRun->FillFramesNtuple(aRun);
@@ -176,15 +187,16 @@ void AllPixRunAction::EndOfRunAction(const G4Run* aRun)
   timer->Stop();
   G4cout << "event Id = " << aRun->GetNumberOfEvent()
 	 << " " << *timer << G4endl;
-   
-   // create .raw files
-   
-   if(m_writeEUTelescopeFlag){
+
+
+  // create LCIO files
+  
+  if(m_writeEUTelescopeFlag){
     
     
     
      
-   }
+  }
 
 }
 
