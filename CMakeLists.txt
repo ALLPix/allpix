@@ -6,6 +6,8 @@ project(ALLPIX)
 # ROOT
 include(FindROOT.cmake)
 
+LIST( APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake )
+
 #----------------------------------------------------------------------------
 # rootcling - dictionaries
 
@@ -50,6 +52,24 @@ endif()
 #
 include(${Geant4_USE_FILE})
 
+
+#---------------------------------------------------------------------------
+# LCIO package
+#
+option(lcio "Build ready for lcio output" OFF)
+if(lcio)
+  FIND_PACKAGE(LCIO REQUIRED)
+
+  if(LCIO_FOUND)
+    ADD_DEFINITIONS(-DHAVE_LCIO)
+    include_directories(${LCIO_INCLUDE_DIR})
+    
+  else()
+    message(FATAL_ERROR "LCIO not found. Stop processing. Use -Dlcio=OFF or point the system variable LCIO to the corresponding path.")
+  endif()
+  
+endif()
+
 #----------------------------------------------------------------------------
 # Locate sources and headers for this project
 # NB: headers are included so they will show up in IDEs
@@ -57,6 +77,10 @@ include(${Geant4_USE_FILE})
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include 
                     ${Geant4_INCLUDE_DIR})
 file(GLOB sources ${PROJECT_SOURCE_DIR}/src/SelDict.cc ${PROJECT_SOURCE_DIR}/src/*.cc)
+
+if(NOT lcio)
+  list(REMOVE_ITEM sources ${PROJECT_SOURCE_DIR}/src/AllPixLCIOwriter.cc)
+endif()
 
 #MESSAGE( STATUS "Sources ${sources}" )
 #set( sources ${PROJECT_SOURCE_DIR}/src/SelDict.cc ${sources} )
@@ -70,7 +94,7 @@ file(GLOB headers ${PROJECT_SOURCE_DIR}/include/*.hh)
 # Add the executable, and link it to the Geant4 libraries
 #
 add_executable(allpix allpix.cc ${sources} ${headers} ${PROJECT_SOURCE_DIR}/src/SelDict.cc )
-target_link_libraries(allpix ${Geant4_LIBRARIES} ${ROOT_LIBRARIES})
+target_link_libraries(allpix ${Geant4_LIBRARIES} ${ROOT_LIBRARIES} ${LCIO_LIBRARY})
 
 include(CheckCXXCompilerFlag)
 CHECK_CXX_COMPILER_FLAG("-std=c++11" COMPILER_SUPPORTS_CXX11)
