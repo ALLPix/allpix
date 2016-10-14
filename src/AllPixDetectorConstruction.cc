@@ -159,7 +159,6 @@ G4VPhysicalVolume * AllPixDetectorConstruction::Construct()
     // Air
     G4NistManager * nistman = G4NistManager::Instance();
     m_Air = nistman->FindOrBuildMaterial("G4_AIR");
-
     //nistman->ListMaterials("all");
 
     // Air is the default.  Can be changed from the messenger using
@@ -481,7 +480,7 @@ void AllPixDetectorConstruction::BuildPixelDevices(map<int, AllPixGeoDsc *> geoM
     G4VisAttributes * wrapperVisAtt = new G4VisAttributes(G4Color(1,0,0,0.9));
     wrapperVisAtt->SetLineWidth(1);
     wrapperVisAtt->SetForceSolid(false);
-    wrapperVisAtt->SetVisibility(true);
+    wrapperVisAtt->SetVisibility(false);
 
     ///////////////////////////////////////////////////////////////////////
 
@@ -650,9 +649,9 @@ void AllPixDetectorConstruction::BuildPixelDevices(map<int, AllPixGeoDsc *> geoM
                << G4endl;
 
         G4Box* wrapper_box = new G4Box(wrapperName.second,
-                                       wrapperHX,
-                                       wrapperHY,
-                                       wrapperHZ);
+                                       2.*wrapperHX,
+                                       2.*wrapperHY,
+                                       2.*wrapperHZ);
 
         //G4RotationMatrix yRot45deg;   // Rotates X and Z axes only
         //yRot45deg.rotateY(M_PI/4.*rad);
@@ -681,8 +680,10 @@ void AllPixDetectorConstruction::BuildPixelDevices(map<int, AllPixGeoDsc *> geoM
             posWrapper.setY(posWrapper.y() + m_vectorWrapperEnhancement[*detItr].y()/2.);
             posWrapper.setZ(posWrapper.z() + m_vectorWrapperEnhancement[*detItr].z()/2.);
         } else {
-            posWrapper.setX(posWrapper.x() - sensorOffsetX );
-            posWrapper.setY(posWrapper.y() - sensorOffsetY );
+            //posWrapper.setX(posWrapper.x() - sensorOffsetX );
+            //posWrapper.setY(posWrapper.y() - sensorOffsetY );
+            posWrapper.setX(posWrapper.x() );
+            posWrapper.setY(posWrapper.y() );
             posWrapper.setZ(posWrapper.z() );
         }
 
@@ -759,7 +760,8 @@ void AllPixDetectorConstruction::BuildPixelDevices(map<int, AllPixGeoDsc *> geoM
 
         // positions
         G4ThreeVector posCoverlayer(0,0,0);
-        G4ThreeVector posDevice(sensorOffsetX,sensorOffsetY,0);
+        //G4ThreeVector posDevice(sensorOffsetX,sensorOffsetY,0);
+        G4ThreeVector posDevice(0,0,0);
         G4ThreeVector posBumps(0,0,0);
         G4ThreeVector posChip(0,0,0);
         G4ThreeVector posPCB(0,0,0);
@@ -770,7 +772,9 @@ void AllPixDetectorConstruction::BuildPixelDevices(map<int, AllPixGeoDsc *> geoM
             posCoverlayer.setX( posDevice.x() );
             posCoverlayer.setY( posDevice.y() );
             posCoverlayer.setZ(
-                        wrapperHZ
+						posDevice.z()
+                        //wrapperHZ
+                        - geoMap[*detItr]->GetHalfSensorZ()
                         - geoMap[*detItr]->GetHalfCoverlayerZ()
                     );
         }
@@ -780,21 +784,21 @@ void AllPixDetectorConstruction::BuildPixelDevices(map<int, AllPixGeoDsc *> geoM
 
             posDevice.setX(posDevice.x() - m_vectorWrapperEnhancement[*detItr].x()/2.);
             posDevice.setY(posDevice.y() - m_vectorWrapperEnhancement[*detItr].y()/2.);
-            posDevice.setZ(
-                        wrapperHZ
-                        - 2.*geoMap[*detItr]->GetHalfCoverlayerZ()
-                    - geoMap[*detItr]->GetHalfSensorZ()
-                    - m_vectorWrapperEnhancement[*detItr].z()/2.
-                    );
+            posDevice.setZ(posDevice.z() - m_vectorWrapperEnhancement[*detItr].z()/2.);
+                        //wrapperHZ
+                        //- 2.*geoMap[*detItr]->GetHalfCoverlayerZ()
+                    //- geoMap[*detItr]->GetHalfSensorZ()
+                    //- m_vectorWrapperEnhancement[*detItr].z()/2.
+                    //);
             //posDevice.z() - m_vectorWrapperEnhancement[*detItr].z()/2.);
         } else {
             posDevice.setX(posDevice.x() );
             posDevice.setY(posDevice.y() );
-            posDevice.setZ(
-                        wrapperHZ
-                        - 2.*geoMap[*detItr]->GetHalfCoverlayerZ()
-                    - geoMap[*detItr]->GetHalfSensorZ()
-                    );
+            posDevice.setZ(posDevice.z() );
+                        //wrapperHZ
+                        //- 2.*geoMap[*detItr]->GetHalfCoverlayerZ()
+                    //- geoMap[*detItr]->GetHalfSensorZ()
+                    //);
         }
 
         ///////////////////////////////////////////////////////////
@@ -822,11 +826,11 @@ void AllPixDetectorConstruction::BuildPixelDevices(map<int, AllPixGeoDsc *> geoM
 
             posBumps.setX( posDevice.x() );
             posBumps.setY( posDevice.y() );
-            posBumps.setZ(
-                        wrapperHZ
+            posBumps.setZ( posDevice.z()
+                        //wrapperHZ
+                        - geoMap[*detItr]->GetHalfSensorZ()
                         - 2.*geoMap[*detItr]->GetHalfCoverlayerZ()
-                    - 2.*geoMap[*detItr]->GetHalfSensorZ()
-                    - (bump_height/2.)
+						- (bump_height/2.)
                     );
 
             //posDevice.z() -
@@ -837,12 +841,13 @@ void AllPixDetectorConstruction::BuildPixelDevices(map<int, AllPixGeoDsc *> geoM
 
             posChip.setX( posDevice.x() + geoMap[*detItr]->GetChipXOffset() );
             posChip.setY( posDevice.y() + geoMap[*detItr]->GetChipYOffset() );
-            posChip.setZ(
-                        wrapperHZ
-                        - 2.*geoMap[*detItr]->GetHalfCoverlayerZ()
-                    - 2.*geoMap[*detItr]->GetHalfSensorZ()
+            posChip.setZ( posDevice.z()
+                        //wrapperHZ
+                    - geoMap[*detItr]->GetHalfSensorZ()
+                    - 2.*geoMap[*detItr]->GetHalfCoverlayerZ()
                     - bump_height
                     - geoMap[*detItr]->GetHalfChipZ()
+                    + geoMap[*detItr]->GetChipZOffset()
                     );
 
             //posDevice.z() -
@@ -857,12 +862,14 @@ void AllPixDetectorConstruction::BuildPixelDevices(map<int, AllPixGeoDsc *> geoM
             bump_height = 0;
         }
 
-        posPCB.setX( 0 ); //- 1.*geoMap[*detItr]->GetSensorXOffset() );
-        posPCB.setY( 0 ); //- 1.*geoMap[*detItr]->GetSensorYOffset() );
-        posPCB.setZ(
-                    wrapperHZ
-                    - 2.*geoMap[*detItr]->GetHalfCoverlayerZ()
-                - 2.*geoMap[*detItr]->GetHalfSensorZ()
+        //posPCB.setX( 0 ); //- 1.*geoMap[*detItr]->GetSensorXOffset() );
+        //posPCB.setY( 0 ); //- 1.*geoMap[*detItr]->GetSensorYOffset() );
+		posPCB.setX(posDevice.x()-1*geoMap[*detItr]->GetSensorXOffset());
+		posPCB.setY(posDevice.y()-1*geoMap[*detItr]->GetSensorYOffset());
+        posPCB.setZ(posDevice.z()
+                    //wrapperHZ
+                - geoMap[*detItr]->GetHalfSensorZ()
+                - 2.*geoMap[*detItr]->GetHalfCoverlayerZ()
                 - bump_height
                 - 2.*geoMap[*detItr]->GetHalfChipZ()
                 - geoMap[*detItr]->GetHalfPCBZ()
