@@ -121,6 +121,7 @@ private:
   G4bool m_writeMCROOTFilesFlag; //nalipour: Flag to write MC hits in a ROOT file
 
   string m_writeEUTelescopeFolder;
+  G4int m_EUTelescopeRunNumber;
   
   G4int euRunNr;
 
