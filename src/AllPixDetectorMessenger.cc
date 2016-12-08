@@ -40,6 +40,7 @@
 #include "G4UIcmdWithoutParameter.hh"
 #include "G4UIcmdWith3VectorAndUnit.hh"
 #include "G4UIcmdWithADoubleAndUnit.hh"
+#include "G4UIcmdWithADouble.hh"
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
@@ -89,6 +90,11 @@ AllPixDetectorMessenger::AllPixDetectorMessenger(
 	m_detRotCmd->SetUnitCategory("Angle");
 	m_detRotCmd->AvailableForStates(G4State_PreInit, G4State_Idle);
 
+	m_detEFieldFileCmd = new G4UIcmdWithAString("/allpix/det/setEFieldFile", this);
+	m_detEFieldFileCmd->SetGuidance("Name file for input of electric field map");
+	m_detEFieldFileCmd->SetParameterName("EFieldFile", true);
+	m_detEFieldFileCmd->AvailableForStates(G4State_PreInit, G4State_Idle);
+
 	///////////
 	m_UpdateCmd = new G4UIcmdWithoutParameter("/allpix/det/update",this);
 	m_UpdateCmd->SetGuidance("Update geometry.");
@@ -120,6 +126,16 @@ AllPixDetectorMessenger::AllPixDetectorMessenger(
 	m_HVCmd->SetParameterName("HV", false, false);
 	//m_HVCmd->SetUnitCategory("");
 	m_HVCmd->AvailableForStates(G4State_PreInit, G4State_Idle);
+	
+	m_TempCmd = new G4UIcmdWithADouble("/allpix/det/setTemperature",this);
+	m_TempCmd->SetGuidance("Detector Temperature.");
+	m_TempCmd->SetParameterName("temperature", true, false);
+	m_TempCmd->AvailableForStates(G4State_PreInit, G4State_Idle);
+	
+	m_FluxCmd = new G4UIcmdWithADouble("/allpix/det/setFlux",this);
+	m_FluxCmd->SetGuidance("Sensor Irradiation Flux.");
+	m_FluxCmd->SetParameterName("flux", true, false);
+	m_FluxCmd->AvailableForStates(G4State_PreInit, G4State_Idle);
 
 	m_ClockCmd = new G4UIcmdWithADoubleAndUnit("/allpix/det/setClock",this);
 	m_ClockCmd->SetGuidance("The clock.");
@@ -196,10 +212,11 @@ AllPixDetectorMessenger::AllPixDetectorMessenger(
 	m_worldMaterial->SetCandidates("Air Vacuum");
 	m_worldMaterial->AvailableForStates(G4State_PreInit, G4State_Idle);
 
-	m_magFieldCmd = new G4UIcmdWithADoubleAndUnit("/allpix/extras/setPeakField",this);
+	m_magFieldCmd = new G4UIcmdWith3VectorAndUnit("/allpix/extras/setPeakField",this);
 	m_magFieldCmd->SetGuidance("Define magnetic field peak value.");
 	m_magFieldCmd->SetGuidance("Magnetic field will be in Z direction.");
-	m_magFieldCmd->SetParameterName("Bz",false);
+	m_magFieldCmd->SetParameterName("Bx", "By", "Bz", false, true);
+	m_magFieldCmd->SetDefaultValue(G4ThreeVector(0.,0.,0.));
 	m_magFieldCmd->SetUnitCategory("Magnetic flux density");
 	m_magFieldCmd->AvailableForStates(G4State_PreInit,G4State_Idle);
 
@@ -257,6 +274,14 @@ void AllPixDetectorMessenger::SetNewValue(G4UIcommand* command, G4String newValu
 
 	}
 
+	if( command == m_detEFieldFileCmd )
+	{
+		m_AllPixDetector->SetEFieldFile(
+				newValue
+		);
+
+	}
+
 	if( command == m_detPosCmd )
 	{
 		m_AllPixDetector->SetDetectorPosition(
@@ -278,6 +303,19 @@ void AllPixDetectorMessenger::SetNewValue(G4UIcommand* command, G4String newValu
 				m_LowTHLCmd->GetNewDoubleValue(newValue)
 		);
 	}
+	if( command == m_TempCmd )
+	{
+		m_AllPixDetector->SetTemperature(
+				m_TempCmd->GetNewDoubleValue(newValue)
+		);
+	}
+	if( command == m_FluxCmd )
+	{
+		m_AllPixDetector->SetFlux(
+				m_FluxCmd->GetNewDoubleValue(newValue)
+		);
+	}
+	
 
 	if( command == m_testStructPosCmd )
 	{
@@ -340,13 +378,13 @@ void AllPixDetectorMessenger::SetNewValue(G4UIcommand* command, G4String newValu
 
 	if( command == m_magFieldCmd )
 	{
-		G4cout << "Setting up magnetic field " << m_magFieldCmd->GetNewDoubleValue(newValue) << G4endl;
+		// G4cout << "Setting up magnetic field " << m_magFieldCmd->GetNew3VectorValue(newValue) << G4endl;
 		m_AllPixDetector->SetPeakMagField(
-				m_magFieldCmd->GetNewDoubleValue(newValue)
+				m_magFieldCmd->GetNew3VectorValue(newValue)
 				);
 	}
 
-	if( command == m_outputPrefix ) 
+	if( command == m_outputPrefix )
 	  {
 	    G4cout << "Setting up output file prefix " << newValue << G4endl;
 	    m_AllPixDetector->SetOutputFilePrefix( newValue );
