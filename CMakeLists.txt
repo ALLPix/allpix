@@ -84,6 +84,30 @@ else()
 endif()
 
 #----------------------------------------------------------------------------
+# In case the EUTelescoep converter should be built, we need LCIO 
+#
+option(BUILD_EUTELCONV "Compile Python EUDAQ binding library?" OFF)
+IF(BUILD_EUTELCONV)
+
+	FIND_PACKAGE( ILCUTIL COMPONENTS ILCSOFT_CMAKE_MODULES REQUIRED ILCTEST)
+
+	# load default settings from ILCSOFT_CMAKE_MODULES
+	INCLUDE( ilcsoft_default_settings )
+
+	FIND_PACKAGE( LCIO REQUIRED ) 
+
+	INCLUDE_DIRECTORIES(SYSTEM ${LCIO_INCLUDE_DIRS} )
+    LINK_LIBRARIES( ${LCIO_LIBRARIES} )
+    message(STATUS ${LCIO_LIBRARIES} )
+	ADD_DEFINITIONS ( ${LCIO_DEFINITIONS} )
+
+	add_executable(EUTelConverter share/EUTelConverter/RootFileConverter.cc ${sources} ${headers} )
+	target_link_libraries(EUTelConverter ${Geant4_LIBRARIES} ${ROOT_LIBRARIES} )
+	install(TARGETS EUTelConverter DESTINATION bin)
+ENDIF()
+
+
+#----------------------------------------------------------------------------
 # Copy all scripts to the build directory, i.e. the directory in which we
 # build B5. This is so that we can run the executable directly because it
 # relies on these scripts being in the current working directory.
