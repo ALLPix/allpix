@@ -7,7 +7,7 @@ source /afs/cern.ch/sw/lcg/external/gcc/4.8/x86_64-slc6/setup.sh
 #python2.7.4
 export PATH="/afs/cern.ch/sw/lcg/external/Python/2.7.4/x86_64-slc6-gcc48-opt/bin:$PATH"
 export LD_LIBRARY_PATH="/afs/cern.ch/sw/lcg/external/Python/2.7.4/x86_64-slc6-gcc48-opt/lib:$LD_LIBRARY_PATH" 
-
+export LCIO="/path/to/LCIO/vxx-xx"
 
 #numpy/scipy/sympy
 

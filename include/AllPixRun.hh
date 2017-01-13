@@ -42,7 +42,7 @@ class AllPixRun : public G4Run {
 
 public:
 
-  AllPixRun(AllPixDetectorConstruction *, TString, TString, TString, G4bool, G4bool MCWriteFlag);
+  AllPixRun(AllPixDetectorConstruction *, TString, TString, TString, G4bool, G4bool MCWriteFlag, G4bool);
   virtual ~AllPixRun();
 
   virtual void RecordEvent(const G4Event*);
@@ -67,7 +67,11 @@ public:
   //void RecordHitsForROOTFiles(const G4Event* evt); //Record the MC hits to save in the ROOT file
   //void RecordHitsForROOTFiles_withChargeSharing(const G4Event* evt); // Hits with charge sharing values
   void RecordDigits_all(const G4Event* evt);
-
+  
+  void getData(map<int,vector<vector<vector<int>>>>& data){
+    data = m_data;
+  };
+  
 
 private:
 
@@ -108,6 +112,7 @@ private:
   time_t m_runTime;
 
   G4bool m_writeTPixTelescopeFilesFlag;
+  G4bool m_writeEUTelescopeFilesFlag;
   G4bool m_writeMCFilesFlag; //nalipour: MC hits
 
 };

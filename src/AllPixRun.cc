@@ -29,9 +29,10 @@
 /**
  * This constructor is called once per run
  */
-AllPixRun::AllPixRun(AllPixDetectorConstruction * det, TString ofp, TString dataset, TString tempDir, G4bool writeFlag, G4bool MCWriteFlag){
+AllPixRun::AllPixRun(AllPixDetectorConstruction * det, TString ofp, TString dataset, TString tempDir, G4bool writeFlag, G4bool MCWriteFlag, G4bool eutelWriteFlag){
 
   m_writeTPixTelescopeFilesFlag = writeFlag;
+  m_writeEUTelescopeFilesFlag = eutelWriteFlag;
   m_writeMCFilesFlag=MCWriteFlag; //nalipour: flag for MC
 
   m_detectorPtr = det;
@@ -476,9 +477,11 @@ void AllPixRun::FillTelescopeFiles(const G4Run* aRun, G4String folderName, G4boo
     }
 
   // clear map and close file for next run
-  m_data.clear();
+  // m_data.clear();
   tpixtelescope_f.close();
 }
+
+
 
 /**
  *  Called at the very end of the event
@@ -489,7 +492,7 @@ void AllPixRun::RecordEvent(const G4Event* evt) {
 
   RecordHits(evt);
   RecordDigits(evt);
-  if (m_writeTPixTelescopeFilesFlag)
+  if (m_writeTPixTelescopeFilesFlag || m_writeEUTelescopeFilesFlag)
     RecordTelescopeDigits(evt);
 
   if(m_writeMCFilesFlag) //nalipour: Record MC hits
