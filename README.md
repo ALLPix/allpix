@@ -43,6 +43,7 @@ First create the Allpix folder :
 	
 
 	mkdir Allpix 
+	cd allpix
 
 Then checkout the github version of allpix : 
     git clone https://github.com/ALLPix/allpix.git
