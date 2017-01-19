@@ -25,6 +25,7 @@ Make sure you loaded your Geant4 and ROOT setups (check $G4LIB and $ROOTSYS vars
 ```	
 
 The default is $HOME/Allpix/allpix-install/bin, according to the following instructions.
+
 Allpix is now compilable using Cmake. We suggest the following work folder structure. 	 
 ```	
 |--- Allpix /  				# Mother folder containing source, build and install folder
