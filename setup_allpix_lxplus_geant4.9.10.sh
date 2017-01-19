@@ -35,7 +35,7 @@ export OIVHOME=/afs/cern.ch/eng/clic/software/Pixel_TestBeam_Software/OpenInvent
 export OIVLIBS=/afs/cern.ch/eng/clic/software/Pixel_TestBeam_Software/OpenInventor/OIV_Install/lib/libSoXt.so
 
 
-export G4WORKDIR=/home/mbenoit/Allpix/allpix-install/bin
+export G4WORKDIR=$HOME/Allpix/allpix-install/bin
 export PATH=$PATH:$G4WORKDIR
 
 

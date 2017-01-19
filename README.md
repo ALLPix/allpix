@@ -19,11 +19,13 @@ satisfied
 
 ### Build:
 
-Make sure you loaded your Geant4 and ROOT setups (check $G4LIB and $ROOTSYS vars for instance). For user installing allpix on lxplus with SLC6, a GEANT4 installation has been prepared for you convenience. the bash script setup_allpix_lxplus_geant4.9.10.sh need to however edited. in the file, change the folder assigned to G4WORKDIR to a folder where you have write access, objects and executable produced during allpix compilation will be put in there. Ex : 
+Make sure you loaded your Geant4 and ROOT setups (check $G4LIB and $ROOTSYS vars for instance). For user installing allpix on lxplus with SLC6, a GEANT4 installation has been prepared for your convenience. The bash script setup_allpix_lxplus_geant4.9.10.sh may need however to be edited. In the file, change the folder assigned to G4WORKDIR to a folder where you have write access, objects and executable produced during allpix compilation will be put in there. Ex : 
 ```	
     export G4WORKDIR=~/myG4WorkDirectory	
 ```	
-	
+
+The default is $HOME/Allpix/allpix-install/bin, according to the following instructions.
+
 Allpix is now compilable using Cmake. We suggest the following work folder structure. 	 
 ```	
 |--- Allpix /  				# Mother folder containing source, build and install folder
@@ -41,6 +43,7 @@ First create the Allpix folder :
 	
 
 	mkdir Allpix 
+	cd allpix
 
 Then checkout the github version of allpix : 
     git clone https://github.com/ALLPix/allpix.git
