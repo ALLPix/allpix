@@ -1,2 +1,31 @@
-# ROOT
+# ignore build and install directories
+build/
+bin/
+lib/
+obj/
+
+# root and data files do not belong into the repository
+*.root
+*.pdf
+*.png
+*.log
+*.dat
+
+# ignore backup files of any sort of editor:
+~*
+*~
+.*
+\#*
+
+# ignore python byte code
+*.pyc
+
+# Ignore files produced by compilation, ie ROOT dictionaries
 src/SelDict.cc
+
+# Ignore Doxygen's SQlite3 databases: *.db
+
+
+
+
+
