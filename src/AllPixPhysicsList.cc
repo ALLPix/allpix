@@ -165,6 +165,7 @@ void AllPixPhysicsList::AddStepMax()
 	// Step limitation seen as a process
 	G4StepLimiter* stepLimiter = new G4StepLimiter();
 
+	/*    code working for geant4 10.1p2
 	theParticleIterator->reset();
 
 	while ((*theParticleIterator)()){
@@ -178,6 +179,19 @@ void AllPixPhysicsList::AddStepMax()
 			pmanager->AddDiscreteProcess(stepLimiter);
 			////pmanager ->AddDiscreteProcess(userCuts);
 		}
+	}
+	*/
+
+	/*  code for geant4 10.3 */
+	auto particleIterator=GetParticleIterator();
+	particleIterator->reset();
+	while ((*particleIterator)()){
+	  G4ParticleDefinition* particle = particleIterator->value();
+	  G4ProcessManager* pmanager = particle->GetProcessManager();
+	  if (particle->GetPDGCharge() != 0.0)
+	    {
+	      pmanager->AddDiscreteProcess(stepLimiter);
+	    }
 	}
 }
 
