@@ -119,4 +119,45 @@ Interactive run:
 
 Batch run : 
     allpix macros/telescope1.in batch
+    
+    
+    
+### Presentation and examples
+
+Tutorial on simulation of silicon pixel detectors with Allpix
+https://indico.desy.de/contributionDisplay.py?contribId=9&confId=16161
+
+Measurement of the Lorentz angle in CMS pixel detector modules, by Paul Schuetze
+https://indico.desy.de/contributionDisplay.py?contribId=11&confId=16161
+
+First use of the Allpix framework and preliminary results, by Andreas Heggelund
+https://indico.desy.de/getFile.py/access?contribId=56&sessionId=10&resId=0&materialId=slides&confId=16161
+
+ALiBaVa Strip Sensor Analysis, by Thomas Eichhorn
+https://indico.desy.de/getFile.py/access?contribId=21&sessionId=8&resId=0&materialId=slides&confId=16161
+
+Full simulation of the LUCID experiment in the Low Earth Orbit radiation environment by T. Whyntiea,b and M.A. Harrisona
+http://iopscience.iop.org/article/10.1088/1748-0221/10/03/C03043/meta
+
+Calibration, simulation and test-beam characterisation of Timepix hybrid-pixel readout assemblies with ultra-thin sensors 
+https://agenda.linearcollider.org/event/6000/contributions/27724/attachments/23014/35842/Samir_LCWS.pdf
+
+Characterization of 3D Silicon Assemblies for ATLAS Pixel Upgrade, Thesis by Marcello Borri
+https://www.escholar.manchester.ac.uk/api/datastream?publicationPid=uk-ac-man-scw:198996&datastreamId=FULL-TEXT.PDF
+
+CLIC Telescope Optimization with ALLPIX Simulation, by Wu Qi
+https://cds.cern.ch/record/2046145/files/CERN_WU_Qi.pdf
+
+Recent results with HV-CMOS and planar sensors for the CLIC vertex detector, by Niloufar Alipour Tehrani
+https://indico.cern.ch/event/391665/contributions/1827195/attachments/1230571/1803598/VCI2016_NiloufarAlipourTehrani.pdf
+
+The FE-I4 telescope for particle tracking in testbeam experiments, by M. Benoit et al.
+http://iopscience.iop.org/article/10.1088/1748-0221/11/07/P07003/meta
+
+
+
+
+
+
+
 
