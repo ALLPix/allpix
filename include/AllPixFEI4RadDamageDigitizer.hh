@@ -21,6 +21,8 @@
 #include "TString.h"
 #include "TH2D.h"
 #include "TH3F.h"
+#include "TTree.h"
+#include "TFile.h"
 #include "TH1F.h"
 
 using namespace std;
@@ -46,15 +48,19 @@ private:
   G4PrimaryVertex * m_primaryVertex; // information from EventAction
 
   TH3F *ramoPotentialMap;
-  TH1F *eFieldMap;
+  TH3F *eFieldMap;
+  TH1F *m_eFieldMap1D;
   TH1F *timeMap_e;
   TH1F *timeMap_h;
   TH2F *distancemap_e;
   TH2F *distancemap_h;
-  TH1F *charge_chunk_map_e;
-  TH1F *charge_chunk_map_h;
+  TH2F *lorentz_map_e;
+  TH2F *lorentz_map_h;
+  TH3F *charge_chunk_map_e;
+  TH3F *charge_chunk_map_h;
 
   G4double GetElectricField(G4double z);
+  G4double GetElectricField(G4double x, G4double y, G4double z);
   G4double GetMobility(G4double electricField, G4bool isHole);
   G4double GetDriftVelocity(G4double electricField, G4double mobility, G4bool isHole);
   G4double GetMeanFreePath(G4double driftVelocity, G4bool isHole);
@@ -62,13 +68,19 @@ private:
   G4double GetDriftTime(G4bool isHole);
   G4double GetTimeToElectrode(G4double z, G4bool isHole);
   G4double GetTanLorentz(G4double electricField, G4bool isHole);
-
+  G4double GetTanLorentz(G4double z1, G4double z2, G4bool isHole);
+  G4double Phi(G4double x, G4double z, G4double Lx, G4double Lz);
+  G4double N(G4double z, G4double L);
   G4double elec;
+  G4int count;
 
   // Variables for the charge sharing computation
   G4double mobility;
   G4double resistivity;
   G4bool   bulkType;
+
+  G4double depVoltage;
+  G4double deplationLenght;
 
   G4double detectorThickness;
   G4double biasVoltage;
