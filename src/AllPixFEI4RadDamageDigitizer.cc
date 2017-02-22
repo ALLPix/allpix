@@ -972,7 +972,7 @@ map<pair<G4int, G4int>, G4double >::iterator pCItrSUM = sumpixelsContent.begin()
 	    G4double deposited_energy = (*pCItr).second;
 	    int ToT = TMath::FloorNint(deposited_energy*tuning);
 	    //G4cout<<"  X " << (*pCItr).first.first<< " Y "<< (*pCItr).first.second<< " EN " << (*pCItr).second <<" Threshold "<<threshold<<" tot "<< ToT<< G4endl;
-	    if (ToT >=150) ToT = 150; //FEI4 is 4-bit.
+	    if (ToT >=15) ToT = 15; //FEI4 is 4-bit.
 	    AllPixFEI4RadDamageDigit * digit = new AllPixFEI4RadDamageDigit;
 	    digit->SetPixelIDX((*pCItr).first.first);
 	    digit->SetPixelIDY((*pCItr).first.second);

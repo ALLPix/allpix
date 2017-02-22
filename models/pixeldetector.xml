@@ -102,10 +102,10 @@
 <!-- FEI4 -->
 <pixeldet id="200,201">
 
-<digitizer>FEI3Standard</digitizer>
+<digitizer>FEI4RadDamage</digitizer>
 
 <npix_x>80</npix_x>
-<npix_y>360</npix_y>
+<npix_y>336</npix_y>
 <npix_z>0</npix_z>
 
 <pixsize_x units="um">125.</pixsize_x>
