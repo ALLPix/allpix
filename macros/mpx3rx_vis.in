@@ -3,30 +3,10 @@
 /allpix/det/setId         20100
 /allpix/det/setPosition   0.0 0.0  0.0  mm
 /allpix/det/setRotation   0.0 0.0  0.0 deg
-/allpix/det/setLowTHL 13. keV
 
-
-# Appliances
-#   Extra volumes placed with respect to the center of the wrapper.
-#   The wrapper is the envolvent volume of the medipix.  This volumes
-#   rotate with the Medipix !
-# The command:
-#   /allpix/extras/setWrapperEnhancement --> extends the wrapper !
-# [HINT!] If you want your appliance touching the Si wafer, the 
-#         center of the volume should be z_coordinate = 
-#         	half_appliance + (PCB + Si - Enhance)/2.
-#         z coordinate = 0 --> (on top of the PCB)
-#         z coordinate = -1* (PCB + appliance) --> behind the PCB
-
-#/control/alias appPosZ -3.750
-#/control/alias enhanceZ 5.0
 
 /allpix/extras/setTestStructurePosition 0. 0.  50. mm
 /allpix/extras/setTestStructureType      200
-#/allpix/extras/setAppliancePosition     0  0   0  mm
-#/allpix/extras/setWrapperEnhancement    0. 0. {enhanceZ} mm
-
-#/allpix/phys/Physics TestXR_Compton_and_Photoelectric
 
 ################################################
 # Max step lenght.  Applies only to the sensor

@@ -9,23 +9,6 @@
 /allpix/det/setId        100
 /allpix/det/setPosition -4.3 28.2 401.95 mm
 /allpix/det/setRotation  0.0 0.0 180.0 deg
-/allpix/det/setLowTHL 13. keV
-
-#/allpix/extras/setAppliancePosition  -4.3 28.2 {appPosZ}  mm
-#/allpix/extras/setWrapperEnhancement  0.0  0.0 {enhanceZ} mm
-
-# Appliances
-#   Extra volumes placed with respect to the center of the wrapper.
-#   The wrapper is the envolvent volume of the medipix.  This volumes
-#   rotate with the Medipix !
-# The command:
-#   /allpix/extras/setWrapperEnhancement --> extends the wrapper !
-# [HINT!] If you want your appliance touching the Si wafer, the 
-#         center of the volume should be (z coordinate) = 
-#    half_appliance + (PCB + Si - Enhance)/2.
-## /allpix/extras/setAppliancePosition  -4.3 28.2 -4.750 mm
-## /allpix/extras/setWrapperEnhancement 0. 0. 5000. um
-
 ##### end of detector 0 #####
 
 # Detector 1
@@ -159,4 +142,8 @@
 /allpix/phys/verbose 0
 
 
-
+####################################################################
+# Shoot
+/allpix/beam/frames 1000
+/allpix/beam/type const 1
+/allpix/beam/on
