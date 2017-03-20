@@ -40,8 +40,10 @@ Allpix is now compilable using Cmake. We suggest the following work folder struc
 	 |		|----- bin		# allpix executable folder
 ```
 First create the mother Allpix folder : 	
+``` 
 	mkdir AllpixMotherFolder 
 	cd AllpixMotherFolder
+``` 
 
 Then checkout the github version of allpix : 
     git clone https://github.com/ALLPix/allpix.git
