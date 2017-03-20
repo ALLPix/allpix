@@ -150,9 +150,16 @@ void G4EmCompPhotoEPhysics::ConstructProcess()
   G4double highEnergyLimit = 100*MeV;
 
   // Add standard EM Processes
+  /* Geant4 10.1p2
   aParticleIterator->reset();
   while( (*aParticleIterator)() ){
     G4ParticleDefinition* particle = aParticleIterator->value();
+  */
+  /* Geant4 10.3 */
+  auto particleIterator=GetParticleIterator();
+  particleIterator->reset();
+  while( (*particleIterator)() ){
+    G4ParticleDefinition* particle = particleIterator->value();
     G4String particleName = particle->GetParticleName();
 
     ///////////

@@ -16,6 +16,7 @@
 #include <unistd.h>
 #include <map>
 #include <math.h>
+#include <vector>
 #include "G4ThreeVector.hh"
 
 #include "CLHEP/Units/SystemOfUnits.h"

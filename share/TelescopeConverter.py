@@ -76,7 +76,7 @@ def parseFrameFile( inputFile ):
                 DUTData[sensorID].append( x )
                 DUTData[sensorID].append( y )
                 DUTData[sensorID].append( e )
-                DUTData[sensorID].append( 0 )
+                #DUTData[sensorID].append( 0 )
 
                 telescopeTestDict[sensorID] += 1
 

@@ -19,11 +19,13 @@ satisfied
 
 ### Build:
 
-Make sure you loaded your Geant4 and ROOT setups (check $G4LIB and $ROOTSYS vars for instance). For user installing allpix on lxplus with SLC6, a GEANT4 installation has been prepared for you convenience. the bash script setup_allpix_lxplus_geant4.9.10.sh need to however edited. in the file, change the folder assigned to G4WORKDIR to a folder where you have write access, objects and executable produced during allpix compilation will be put in there. Ex : 
-```	
+Make sure you loaded your Geant4 and ROOT setups (check $G4LIB and $ROOTSYS vars for instance). For user installing allpix on lxplus with SLC6, a GEANT4 installation has been prepared for your convenience. The bash script setup_allpix_lxplus_geant4.10.3.1.sh may need however to be edited. In the file, change the folder assigned to G4WORKDIR to a folder where you have write access, objects and executable produced during allpix compilation will be put in there. Ex : 
+```	  
     export G4WORKDIR=~/myG4WorkDirectory	
 ```	
-	
+
+The default is $HOME/Allpix/allpix-install/bin, according to the following instructions.
+
 Allpix is now compilable using Cmake. We suggest the following work folder structure. 	 
 ```	
 |--- Allpix /  				# Mother folder containing source, build and install folder
@@ -37,14 +39,20 @@ Allpix is now compilable using Cmake. We suggest the following work folder struc
 	 |----- allpix-install # Installation folder for cmake 
 	 |		|----- bin		# allpix executable folder
 ```
-First create the Allpix folder : 
-	
-
-	mkdir Allpix 
+First create the mother Allpix folder : 	
+``` 
+	mkdir AllpixMotherFolder 
+	cd AllpixMotherFolder
+``` 
 
 Then checkout the github version of allpix : 
     git clone https://github.com/ALLPix/allpix.git
 
+If running on lxplus, source the bash setup script (make sure you are using bash, if not, type ```exec bash```) to get access the the precompiled geant4, root and other dependencies : 
+
+``` 
+source allpix/setup_allpix_geant4.10.3.1.sh
+```
 Now create the build and install folder : 
 
 	mkdir allpix-build allpix-install
@@ -52,11 +60,7 @@ Now create the build and install folder :
 
 Initialize cmake for compilation of allpix : 
 
-	cmake ../allpix -DCMAKE_CXX_COMPILER=/afs/cern.ch/sw/lcg/external/gcc/4.8/x86_64-slc6/bin/g++ -DCMAKE_C_COMPILER=/afs/cern.ch/sw/lcg/external/gcc/4.8/x86_64-slc6/bin/gcc -DCMAKE_INSTALL_PREFIX=../allpix-install
-
-	
-the flags -DCMAKE_CXX_COMPILER and -DCMAKE_C_COMPILER should point to a std-cxx-11 compatible compiler ie gcc4.8 
-	
+	cmake ../allpix -DCMAKE_INSTALL_PREFIX=../allpix-install	
 	
 Once the Cmake environnement is set, to compile, simply execute : 
 
@@ -64,7 +68,7 @@ Once the Cmake environnement is set, to compile, simply execute :
 
 X is a number of processor 
 	
-make sure allpix-install/bin is added to the PATH environnement variable using : 
+make sure allpix-install/bin is added to the PATH environnement variable using this command, you may want to add this command to your setup script : 
 
 	export PATH=$PATH:PATHTOALLPIXINSTALLBINFOLDER
 	
@@ -116,4 +120,45 @@ Interactive run:
 
 Batch run : 
     allpix macros/telescope1.in batch
+    
+    
+    
+### Presentation and examples
+
+Tutorial on simulation of silicon pixel detectors with Allpix
+https://indico.desy.de/contributionDisplay.py?contribId=9&confId=16161
+
+Measurement of the Lorentz angle in CMS pixel detector modules, by Paul Schuetze
+https://indico.desy.de/contributionDisplay.py?contribId=11&confId=16161
+
+First use of the Allpix framework and preliminary results, by Andreas Heggelund
+https://indico.desy.de/getFile.py/access?contribId=56&sessionId=10&resId=0&materialId=slides&confId=16161
+
+ALiBaVa Strip Sensor Analysis, by Thomas Eichhorn
+https://indico.desy.de/getFile.py/access?contribId=21&sessionId=8&resId=0&materialId=slides&confId=16161
+
+Full simulation of the LUCID experiment in the Low Earth Orbit radiation environment by T. Whyntiea,b and M.A. Harrisona
+http://iopscience.iop.org/article/10.1088/1748-0221/10/03/C03043/meta
+
+Calibration, simulation and test-beam characterisation of Timepix hybrid-pixel readout assemblies with ultra-thin sensors 
+https://agenda.linearcollider.org/event/6000/contributions/27724/attachments/23014/35842/Samir_LCWS.pdf
+
+Characterization of 3D Silicon Assemblies for ATLAS Pixel Upgrade, Thesis by Marcello Borri
+https://www.escholar.manchester.ac.uk/api/datastream?publicationPid=uk-ac-man-scw:198996&datastreamId=FULL-TEXT.PDF
+
+CLIC Telescope Optimization with ALLPIX Simulation, by Wu Qi
+https://cds.cern.ch/record/2046145/files/CERN_WU_Qi.pdf
+
+Recent results with HV-CMOS and planar sensors for the CLIC vertex detector, by Niloufar Alipour Tehrani
+https://indico.cern.ch/event/391665/contributions/1827195/attachments/1230571/1803598/VCI2016_NiloufarAlipourTehrani.pdf
+
+The FE-I4 telescope for particle tracking in testbeam experiments, by M. Benoit et al.
+http://iopscience.iop.org/article/10.1088/1748-0221/11/07/P07003/meta
+
+
+
+
+
+
+
 

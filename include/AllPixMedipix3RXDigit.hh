@@ -50,7 +50,7 @@ private:
 	int nthresholds;
 	G4double pixelEnergyDep; // MC // Corrected MC charge (detector effects included, at Digi step)
 	G4ThreeVector primaryVertex;
-	G4double kinEParent;
+	G4double kinEParent = 0 ;
 
 public:
 
@@ -64,7 +64,7 @@ public:
 	};
 	inline void SetPixelEnergyDep(G4double ed)  {pixelEnergyDep = ed;}; // MC // Corrected MC charge (detector effects included, at Digi step)
 	inline void SetPrimaryVertex(G4ThreeVector pv)  {primaryVertex = pv;}; // MC vertex //
-	inline void SetKinEParent(G4double kinE) {kinEParent = kinE;};
+	inline void SetKinEParent(G4double kinE) {this->kinEParent = kinE;};
 	inline void IncreasePixelCounts(){};
 	/*
 	inline void IncreasePixelCounts(int thl)  {

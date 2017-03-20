@@ -5,61 +5,51 @@
 /allpix/det/setId        500 
 /allpix/det/setPosition  0.000000  0.000000  344.000000 mm 
 /allpix/det/setRotation  0.500000  0.500000  0.000000 radian 
-/allpix/det/setLowTHL    13. keV 
 /allpix/extras/setAppliancePosition 0.0 0.0 0.0 mm 
 
 /allpix/det/setId        501 
 /allpix/det/setPosition  0.000000  0.000000  365.000000 mm 
 /allpix/det/setRotation  0.500000  0.500000 0.000000 radian 
-/allpix/det/setLowTHL    13. keV 
 /allpix/extras/setAppliancePosition 0.0 0.0 0.0 mm 
 
 /allpix/det/setId        502 
 /allpix/det/setPosition  0.000000  0.000000  386.000000 mm 
 /allpix/det/setRotation  0.500000  0.500000 0.000000 radian 
-/allpix/det/setLowTHL    13. keV 
 /allpix/extras/setAppliancePosition 0.0 0.0 0.0 mm 
 
 /allpix/det/setId        503 
 /allpix/det/setPosition  0.000000  0.000000  409.000000 mm 
 /allpix/det/setRotation  0.500000  0.500000 0.000000 radian 
-/allpix/det/setLowTHL    13. keV 
 /allpix/extras/setAppliancePosition 0.0 0.0 0.0 mm 
 
 /allpix/det/setId        505 
 /allpix/det/setPosition  0.000000  0.000000  641.000000 mm 
 /allpix/det/setRotation  0.500000  0.500000 0.000000 radian 
-/allpix/det/setLowTHL    13. keV 
 /allpix/extras/setAppliancePosition 0.0 0.0 0.0 mm 
 
 /allpix/det/setId        506 
 /allpix/det/setPosition  0.000000  0.000000  665.000000 mm 
 /allpix/det/setRotation  0.500000  0.500000 0.000000 radian 
-/allpix/det/setLowTHL    13. keV 
 /allpix/extras/setAppliancePosition 0.0 0.0 0.0 mm 
 
 /allpix/det/setId        507 
 /allpix/det/setPosition  0.000000  0.000000  686.000000 mm 
 /allpix/det/setRotation  0.500000  0.500000 0.000000 radian 
-/allpix/det/setLowTHL    13. keV 
 /allpix/extras/setAppliancePosition 0.0 0.0 0.0 mm 
 
 /allpix/det/setId        508 
 /allpix/det/setPosition  0.000000  0.000000  707.000000 mm 
 /allpix/det/setRotation  0.500000  0.500000 0.000000 radian 
-/allpix/det/setLowTHL    13. keV 
 /allpix/extras/setAppliancePosition 0.0 0.0 0.0 mm 
 
 /allpix/det/setId        509 
 /allpix/det/setPosition  0.000000  0.000000  736.000000 mm 
 /allpix/det/setRotation  0.500000  0.500000 0.000000 radian 
-/allpix/det/setLowTHL    13. keV 
 /allpix/extras/setAppliancePosition 0.0 0.0 0.0 mm 
 
 /allpix/det/setId        504 
 /allpix/det/setPosition  0.000000  0.000000  514.000000 mm 
 /allpix/det/setRotation  0.500000  0.500000 0.000000 radian 
-/allpix/det/setLowTHL    13. keV 
 
 # DUT Al box
 #/allpix/extras/setTestStructureType 2
