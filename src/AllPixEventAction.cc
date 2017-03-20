@@ -25,7 +25,7 @@ AllPixEventAction::AllPixEventAction(AllPixRunAction* run){
 AllPixEventAction::~AllPixEventAction()
 {
 	
-	for(int i = 0 ; i< m_digiPtrs.size();i++) {
+	for(uint i = 0 ; i< m_digiPtrs.size();i++) {
 		delete m_digiPtrs[i] ;
     		
 };

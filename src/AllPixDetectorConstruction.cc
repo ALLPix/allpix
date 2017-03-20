@@ -669,8 +669,8 @@ void AllPixDetectorConstruction::BuildPixelDevices(map<int, AllPixGeoDsc *> geoM
         m_wrapper_log[(*detItr)]->SetVisAttributes(wrapperVisAtt);
 
 
-        G4double sensorOffsetX = geoMap[*detItr]->GetSensorXOffset();
-        G4double sensorOffsetY = geoMap[*detItr]->GetSensorYOffset();
+        //G4double sensorOffsetX = geoMap[*detItr]->GetSensorXOffset();
+        //G4double sensorOffsetY = geoMap[*detItr]->GetSensorYOffset();
 
         G4ThreeVector posWrapper = m_posVector[(*detItr)];
 
