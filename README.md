@@ -19,8 +19,8 @@ satisfied
 
 ### Build:
 
-Make sure you loaded your Geant4 and ROOT setups (check $G4LIB and $ROOTSYS vars for instance). For user installing allpix on lxplus with SLC6, a GEANT4 installation has been prepared for your convenience. The bash script setup_allpix_lxplus_geant4.9.10.sh may need however to be edited. In the file, change the folder assigned to G4WORKDIR to a folder where you have write access, objects and executable produced during allpix compilation will be put in there. Ex : 
-```	
+Make sure you loaded your Geant4 and ROOT setups (check $G4LIB and $ROOTSYS vars for instance). For user installing allpix on lxplus with SLC6, a GEANT4 installation has been prepared for your convenience. The bash script setup_allpix_lxplus_geant4.10.3.1.sh may need however to be edited. In the file, change the folder assigned to G4WORKDIR to a folder where you have write access, objects and executable produced during allpix compilation will be put in there. Ex : 
+```	  
     export G4WORKDIR=~/myG4WorkDirectory	
 ```	
 
@@ -39,15 +39,20 @@ Allpix is now compilable using Cmake. We suggest the following work folder struc
 	 |----- allpix-install # Installation folder for cmake 
 	 |		|----- bin		# allpix executable folder
 ```
-First create the Allpix folder : 
-	
-
-	mkdir Allpix 
-	cd allpix
+First create the mother Allpix folder : 	
+``` 
+	mkdir AllpixMotherFolder 
+	cd AllpixMotherFolder
+``` 
 
 Then checkout the github version of allpix : 
     git clone https://github.com/ALLPix/allpix.git
 
+If running on lxplus, source the bash setup script (make sure you are using bash, if not, type ```exec bash```) to get access the the precompiled geant4, root and other dependencies : 
+
+``` 
+source allpix/setup_allpix_geant4.10.3.1.sh
+```
 Now create the build and install folder : 
 
 	mkdir allpix-build allpix-install
@@ -55,11 +60,7 @@ Now create the build and install folder :
 
 Initialize cmake for compilation of allpix : 
 
-	cmake ../allpix -DCMAKE_CXX_COMPILER=/afs/cern.ch/sw/lcg/external/gcc/4.8/x86_64-slc6/bin/g++ -DCMAKE_C_COMPILER=/afs/cern.ch/sw/lcg/external/gcc/4.8/x86_64-slc6/bin/gcc -DCMAKE_INSTALL_PREFIX=../allpix-install
-
-	
-the flags -DCMAKE_CXX_COMPILER and -DCMAKE_C_COMPILER should point to a std-cxx-11 compatible compiler ie gcc4.8 
-	
+	cmake ../allpix -DCMAKE_INSTALL_PREFIX=../allpix-install	
 	
 Once the Cmake environnement is set, to compile, simply execute : 
 
@@ -67,7 +68,7 @@ Once the Cmake environnement is set, to compile, simply execute :
 
 X is a number of processor 
 	
-make sure allpix-install/bin is added to the PATH environnement variable using : 
+make sure allpix-install/bin is added to the PATH environnement variable using this command, you may want to add this command to your setup script : 
 
 	export PATH=$PATH:PATHTOALLPIXINSTALLBINFOLDER
 	
