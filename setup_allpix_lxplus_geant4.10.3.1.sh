@@ -2,7 +2,6 @@
 export PATH=/afs/cern.ch/sw/lcg/contrib/CMake/3.3.2/Linux-x86_64/bin:${PATH}
 #gcc4.8
 source /afs/cern.ch/sw/lcg/external/gcc/4.8/x86_64-slc6/setup.sh
-export LD_LIBRARY_PATH=/afs/cern.ch/sw/lcg/external/gcc/4.8/x86_64-slc6/lib64:$LD_LIBRARY_PAT
 
 
 
@@ -42,3 +41,5 @@ export PATH=$PATH:$G4WORKDIR
 
 
 source /afs/cern.ch/eng/clic/TBData/software/ROOT6_gcc48_python2.7/geant4/4-10.3.1/share/Geant4-10.3.1/geant4make/geant4make.sh
+export LD_LIBRARY_PATH=/afs/cern.ch/sw/lcg/external/gcc/4.8/x86_64-slc6/lib64:$LD_LIBRARY_PAT
+
