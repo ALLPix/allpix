@@ -64,7 +64,7 @@ Initialize cmake for compilation of allpix :
 
 if You wish to compile with the LCIO file writer option, use the following on LXPLUS :
 ```
-	cmake ../allpix -DCMAKE_INSTALL_PREFIX=$G4WORKDIR -Dlcio	
+	cmake ../allpix -DCMAKE_INSTALL_PREFIX=$G4WORKDIR -Dlcio=ON	
 ```
 
 Please not that for a custom installation, the environnement variable LCIO should be set and poiting to your installation of LCIO. 
