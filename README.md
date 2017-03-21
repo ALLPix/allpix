@@ -28,7 +28,7 @@ The default is $HOME/Allpix/allpix-install, according to the following instructi
 
 Allpix is now compilable using Cmake. We suggest the following work folder structure. 	 
 ```	
-|--- Allpix /  				# Mother folder containing source, build and install folder
+|--- AllpixMotherFolder /  				# Mother folder containing source, build and install folder
 	 |----- allpix 			# Source code folder to be checked out from Github 
 	 |      |----- src 
 	 |      |----- include
