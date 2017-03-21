@@ -66,8 +66,8 @@ AllPixDetectorMessenger::AllPixDetectorMessenger(
 	m_beamDir = new G4UIdirectory("/allpix/beam/");
 	m_beamDir->SetGuidance("beam");
 	
-	m_eutelescopeDir = new G4UIdirectory("/allpix/eutelescope/");
-	m_eutelescopeDir->SetGuidance("eutelescope");	
+//	m_eutelescopeDir = new G4UIdirectory("/allpix/eutelescope/");
+//	m_eutelescopeDir->SetGuidance("eutelescope");	
 
 #ifdef _EUTELESCOPE
 	m_detDir = new G4UIdirectory("/allpix/eudet/");

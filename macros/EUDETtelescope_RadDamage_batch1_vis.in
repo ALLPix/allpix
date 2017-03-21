@@ -147,7 +147,7 @@
 
 ####################################################################
 # Write SLCIO EUTELESCOPE files
-/allpix/eutelescope/setFolderPath ./EUTelescopeFiles/run2
+/allpix/eutelescope/setFolderPath ./EUTelescopeFiles/run4
 /allpix/eutelescope/write 1
 /allpix/eutelescope/WriteEventID 0
 
