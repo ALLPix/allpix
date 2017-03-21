@@ -8,10 +8,12 @@ source /afs/cern.ch/sw/lcg/external/gcc/4.8/x86_64-slc6/setup.sh
 #python2.7.4
 export PATH="/afs/cern.ch/sw/lcg/external/Python/2.7.4/x86_64-slc6-gcc48-opt/bin:$PATH"
 export LD_LIBRARY_PATH="/afs/cern.ch/sw/lcg/external/Python/2.7.4/x86_64-slc6-gcc48-opt/lib:$LD_LIBRARY_PATH" 
-export LCIO="/path/to/LCIO/vxx-xx"
+
+#LCIO
+export LCIO="/afs/cern.ch/eng/clic/TBData/software/ROOT6_gcc48_python2.7/geant4/LCIO/LCIO-install"
+export ILCUTIL_DIR="/afs/cern.ch/eng/clic/TBData/software/ROOT6_gcc48_python2.7/geant4/LCIO/iLCUtil-install"
 
 #numpy/scipy/sympy
-
 export PYTHONPATH=$PYTHONPATH:/afs/cern.ch/eng/clic/TBData/software/ROOT6_gcc48_python2.7/pytools/numpy/lib/python2.7/site-packages
 export PYTHONPATH=$PYTHONPATH:/afs/cern.ch/eng/clic/TBData/software/ROOT6_gcc48_python2.7/pytools/scipy/lib/python2.7/site-packages
 export PYTHONPATH=$PYTHONPATH:/afs/cern.ch/eng/clic/TBData/software/ROOT6_gcc48_python2.7/pytools/sympy/lib/python2.7/site-packages

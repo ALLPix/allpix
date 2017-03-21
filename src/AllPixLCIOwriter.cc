@@ -46,6 +46,12 @@ void AllPixLCIOwriter::WriteRunHeader(int runnr){
   
 }
 
+void AllPixLCIOwriter::SetWriteEventID(G4bool flag) { 
+
+   this->m_writeEventID = flag;
+
+}
+
 void AllPixLCIOwriter::WriteEvent(int runnr, int eventID, map<int,vector<vector<vector<int>>>> data){
 
   LCEventImpl * event = new LCEventImpl();

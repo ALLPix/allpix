@@ -47,6 +47,8 @@ public:
   void Initialize(G4String folder, int runnr);
 
   void WriteEvent(int runnr, int eventID, map<int,vector<vector<vector<int>>>> data);
+  
+  void SetWriteEventID(G4bool flag);
 
   void Close();
 
@@ -55,6 +57,8 @@ private:
   void WriteRunHeader(int runnr);
 
   LCWriter* m_lcWriter;
+  
+  G4bool m_writeEventID=false;
 
 
 };

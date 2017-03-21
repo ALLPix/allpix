@@ -65,6 +65,8 @@ public:
   
   G4bool   GetEUTelescopeWriteFlag()   {return this->m_EUTelescopeWriteFlag;}
   G4String GetEUTelescopeFolderName()  {return this->m_EUTelescopeFolderName;}
+  G4bool   GetEUTelescopeEventIDFlag()   {return this->m_EUTelescopeEventIDFlag;}
+ 
 
   //Write MC hits in ROOT files (nalipour)
   G4bool GetWrite_MC_FilesFlag() {return this->m_Write_MC_FilesFlag;} 
@@ -98,8 +100,10 @@ private:
   
   G4UIcmdWithABool   * m_EUTelescopeWriteCmd;
   G4UIcmdWithAString * m_EUTelescopeFolderNameCmd;
+  G4UIcmdWithABool   * m_EUTelescopeEventIDCmd;			
   G4bool   m_EUTelescopeWriteFlag;
   G4String m_EUTelescopeFolderName;
+  G4bool m_EUTelescopeEventIDFlag;
   
   //nalipour: MC hits
   G4UIcmdWithABool   * m_Write_MC_FilesCmd;

@@ -65,7 +65,7 @@
 
 ############################
 # Detector 0
-/allpix/det/setId        401
+/allpix/det/setId        201
 #/allpix/det/setId        550
 /allpix/det/setPosition  0.0 0.0 271.85 mm
 /allpix/det/setRotation  15.0 15.0 0.0 deg	# 15 degree rotation in phi; do I need the usual 90 deg in Z?	
@@ -137,7 +137,21 @@
 /allpix/timepixtelescope/setFolderPath ./EUTelescopeFiles/RadDamage_b1_p250_e25000_trap_ramo/
 /allpix/timepixtelescope/setEventIDcolumn 0
 /allpix/timepixtelescope/setSumTOT 1
-/allpix/timepixtelescope/write 1
+/allpix/timepixtelescope/write 0
+
+####################################################################
+# Write ROOT File
+/allpix/WriteROOTFiles/write 0
+/allpix/WriteROOTFiles/setFolderPath FEI4Alone/run1
+
+
+####################################################################
+# Write SLCIO EUTELESCOPE files
+/allpix/eutelescope/setFolderPath ./EUTelescopeFiles/run2
+/allpix/eutelescope/write 1
+/allpix/eutelescope/WriteEventID 0
+
+
 
 ####################################################################
 # Source GPS
@@ -152,7 +166,7 @@
 
 ####################################################################
 # Shoot
-/allpix/beam/frames 25000
+/allpix/beam/frames 2500
 /allpix/beam/type const 1
 /allpix/beam/on
 

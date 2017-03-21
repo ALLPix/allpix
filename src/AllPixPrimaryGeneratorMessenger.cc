@@ -154,6 +154,14 @@ AllPixPrimaryGeneratorMessenger::AllPixPrimaryGeneratorMessenger(
   m_EUTelescopeWriteCmd->SetGuidance("Switch on/off writing EUTelescope files. Default OFF.");
   m_EUTelescopeWriteCmd->SetDefaultValue(false);
   m_EUTelescopeWriteCmd->AvailableForStates(G4State_PreInit, G4State_Idle);
+  
+  m_EUTelescopeEventIDCmd = new G4UIcmdWithABool("/allpix/eutelescope/WriteEventID",this);
+  m_EUTelescopeEventIDCmd->SetGuidance("Switch on/off writing event ID as 4 field in EUTelescope files. Default OFF.");
+  m_EUTelescopeEventIDCmd->SetDefaultValue(true);
+  m_EUTelescopeEventIDCmd->AvailableForStates(G4State_PreInit, G4State_Idle);
+  
+   
+  
 
   m_EUTelescopeFolderNameCmd = new G4UIcmdWithAString("/allpix/eutelescope/setFolderPath",this);;
   m_EUTelescopeFolderNameCmd->SetGuidance("Set EUTelescope files folder path.");
@@ -192,8 +200,7 @@ AllPixPrimaryGeneratorMessenger::~AllPixPrimaryGeneratorMessenger()
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-void AllPixPrimaryGeneratorMessenger::SetNewValue(
-						  G4UIcommand* command, G4String newValue)
+void AllPixPrimaryGeneratorMessenger::SetNewValue(G4UIcommand* command, G4String newValue)
 { 
   if( command == m_MCPrefix )
     {
@@ -299,6 +306,11 @@ void AllPixPrimaryGeneratorMessenger::SetNewValue(
     {
       m_EUTelescopeWriteFlag = m_EUTelescopeWriteCmd->GetNewBoolValue(newValue);		
     }
+    
+  if ( command == m_EUTelescopeEventIDCmd )
+    {
+     m_EUTelescopeEventIDFlag  =m_EUTelescopeEventIDCmd->GetNewBoolValue(newValue);		
+    }          
 		
   if ( command == m_EUTelescopeFolderNameCmd )
     {
@@ -313,7 +325,6 @@ void AllPixPrimaryGeneratorMessenger::SetNewValue(
 	}
     }
 		
-
   //nalipour: MC hits
   if (command == m_Write_MC_FilesCmd)
     {
