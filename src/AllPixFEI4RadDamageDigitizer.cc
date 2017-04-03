@@ -83,9 +83,9 @@ AllPixFEI4RadDamageDigitizer::AllPixFEI4RadDamageDigitizer(G4String modName, G4S
 	double L = gD->GetSensorZ()*mm*1000;
 	//For all maps, 0 is at the collecting electrode and L is the far side.
 	int L_int = L;
-
-    depVoltage=30.*(L/200)*(L/200)*fluence/1e+14;
-    depVoltage=30.;
+	
+	depVoltage=30.*(L/200)*(L/200)*fluence/1e+14;
+	depVoltage=30.;
 	//Geometry constants
 	detectorThickness = gD->GetSensorZ();
 	pitchX = gD->GetPixelX(); 	// total length of pixel in x
