@@ -1,0 +1,178 @@
+\documentclass[12pt]{article}
+
+%\documentclass[review,number,sort&compress]{article}
+\usepackage{lineno}
+\linenumbers
+
+\usepackage[margin=1in]{geometry}
+\usepackage{amssymb,amsmath,latexsym}                        
+\usepackage{graphicx}
+\usepackage{cite}
+\usepackage{xcolor}
+\usepackage{float}
+\newtheorem{theorem}{Theorem}
+\usepackage{amsthm}
+\usepackage{multicol}
+\usepackage{comment}
+
+\usepackage{adjustbox}
+\usepackage{bbm}
+\usepackage{mathtools}
+\DeclarePairedDelimiter\ceil{\lceil}{\rceil}
+\DeclarePairedDelimiter\floor{\lfloor}{\rfloor}
+
+\date{\today} 
+
+\begin{document}
+
+\title{Default Ramo Potential for \\ the Radiation Damage Digitizer}
+\author{Mathieu Benoit, Marco Bomben, Rebecca Carney,  \\Gilberto Giugliarelli, Tommaso Lari, Lingxin Meng, \\ Benjamin Nachman\footnote{please send questions/comments to bnachman@cern.ch}, Lorenzo Rossini, Veronica Wallangen}
+\maketitle
+
+\begin{abstract}
+A short description of the maths behind the default Ramo potentials in the Allpix radiation damage digitizer.
+\end{abstract}
+
+\section{Digitizer Defaults}
+
+If the user does not provide an $E$-field or Ramo potential map, then these quantities are generated based on the pixel geometry and conditions information.  There are currently three default options (specified by the \textsc{defaultRamo} flag), as described below.  Option -1 is the simplest, Options -1 and 0 are very fast and Option $>0$ is the most accurate but takes a small amount of time to calculate, though likely small compared to the full generation time.  Options $\geq 0$ are based on computing the Ramo potential for a simple geometry: parallel plate capacitor where one of the plates is held at ground and the other has the potential function:
+
+\begin{align}
+\label{eq:setup}
+\phi(x,y,0)=\left\{\begin{matrix}1 & |x|<x_e/2, |y|<y_e/2\cr 0 &\text{else}\end{matrix}\right.,
+\end{align}
+
+\noindent where $x_e$ and $y_e$ are the dimensions of the electrode.
+
+\clearpage
+
+\subsection{Option -1: Approximate $z$-dependence}
+
+The $z$-dependence of the Ramo potential is well-approximated by the following functional form:
+
+\begin{align}
+\phi_{-1}(z)=[e^{-az/L}+e^{-z/L}-e^{-a}-e^{-1}]/(2-e^{-a}-e^{-1}),
+\end{align}
+
+\noindent where $L$ is the sensor depth and $a=3L/p$, for $p$ the pitch in the short direction.  This default ignores $xy$ dependence and also produces a solution that does not formally solve Poisson's equation.  However, it does have the necessary properties that it goes to $1$ at $z=0$ (the pixel implant) and goes to zero at $z=L$ (backplane).   The Ramo potential value is set to zero outside of the pixel.
+
+\subsection{Option 0: Approximate $xy$-dependence}
+
+The Ramo potential in two dimensions for the simplified setup specified in Eq.~\ref{eq:setup} (e.g. an infinitely long pitch one dimension) can be solved exactly analytically.  The solution to Poisson's equation is given in Ref.~\cite{PixelDetectors}:
+
+\begin{align}
+\label{ramo2D}
+\phi(x,z|x_e)=\frac{1}{\pi}\arctan\left(\frac{\sin(\pi z/L)\sinh(\pi x_e/2L)}{\cosh(\pi x/L)-\cos(\pi z/L)\cosh(\pi x_e/2L)}\right).
+\end{align}
+
+\noindent The reference for Eq.~\ref{ramo2D} given in Ref.~\cite{PixelDetectors} is a rather obscure French textbook: Ref.~\cite{Electrostatique}.  In fact, that French textbook doesn't directly solve this problem, but it does have a nice chapter on how to solve this class of problems\footnote{Despite its apparent simplicity, it cannot be solved with methods described in e.g. Jackson~\cite{jackson}.}.  Therefore, the following is a quick proof of Eq.~\ref{ramo2D} using the techniques described in Chapter 4 of Ref.~\cite{Electrostatique}. 
+
+Constructing Eq.~\ref{ramo2D} proceeds using complex analysis by transforming our original problem into an easier one via a conformal map.  The conformal map is illustrated in Fig.~\ref{fig:conformalmap}.  Let $z=x+iy$ and $\zeta=\xi+i\eta$.  The conformal mapping between the two coordinates is given by (Eq. 136 in Ref.~\cite{Electrostatique}):
+
+\begin{align}
+\label{eq:conformalmap}
+z=\frac{L}{\pi}\log(\zeta)\hspace{5mm}\text{and}\hspace{5mm}\zeta = \exp(\pi z/L),
+\end{align}
+
+\noindent where the logarithm here is the complex logarithm:
+
+\begin{align}
+\log(z)=\log|z|+i\text{Arg}(z),
+\end{align}
+
+\noindent where the argument of a complex number is the angle defined by $\text{Arg}(z)=\arctan(y,x)$.  This two-argument arctangent is actually the same as Eq.~\ref{ramo2D} (defined in a signed way):
+
+\begin{align}
+\arctan(y,x)=\left\{\begin{matrix}\arctan(y/x) & x > 0\cr \arctan(y/x)+\pi & x <0,y\geq 0 \cr \arctan(y/x)-\pi & x<0,y<0 \cr \pi/2 & x=0,y>0 \cr -\pi/2 & x=0,y<0 \cr \text{undefined} & x=y=0\end{matrix}\right.
+\end{align}
+
+\begin{figure}[h!]
+\centering
+\includegraphics[width=0.99\textwidth]{figures/ConformalMap}
+\caption{Diagram illustrating the conformal mapping.}
+\label{fig:conformalmap}
+\end{figure}
+
+\noindent Breaking down Eq.~\ref{eq:conformalmap} into components (Eq. 137 in Ref.~\cite{Electrostatique}):
+
+\begin{align}
+\label{mapbrokenbycomponents}
+x(\zeta)&=\frac{L}{\pi}\log\sqrt{\xi^2+\eta^2}\\
+y(\zeta)&=\frac{L}{\pi}\arctan(\eta,\xi)\\
+\xi(z)&=\exp(\pi x/L)\cos(\pi y/L)\\
+\eta(z)&=\exp(\pi x/L)\sin(\pi y/L).
+\end{align}
+
+\noindent From Eq.~\ref{mapbrokenbycomponents}, we can see that $\eta(y=0)=0$ so the $x$-axis is mapped onto the (positive) $\xi$-axis.  Likewise, the line at $z=iL$ is also mapped onto the (negative) $\xi$-axis, as shown in Fig.~\ref{fig:conformalmap}.  Now, we solve Poisson's equation in the setting on the right in Fig.~\ref{fig:conformalmap}.  The solution is
+
+\begin{align}
+\phi(\zeta)=\mathcal{R}\left\{-\frac{i}{\pi}\log\left(\frac{\zeta-\zeta_+}{\zeta-\zeta_-}\right)\right\},
+\end{align}
+
+\noindent where $\zeta_\pm=\zeta(\pm x_e)=\exp(\pm\pi x_e/2L)$.  Where did this come from?  The complex logarithm is holomorphic and so solves Poisson's equation (by the Cauchy-Riemann equations).  Furthermore, on the real-axis, the imaginary part of the complex logarithm is either $\pi$ or $0$, so we can take combinations to model the potential changing from $0$ to $1$ and then back to $0$.  In other words, $\log(ix)=\log(i\text{sign}(x))=\pi$ when $x<0$ and $0$ when $x>0$ so
+
+\begin{align}
+-\mathcal{R}\left\{\frac{i}{\pi}\log\left(\frac{\xi-\zeta_+}{\xi-\zeta_-}\right)\right\}=\left\{\begin{matrix}1 & \xi_-<\xi<\xi_+ \cr 0 &\text{else}\end{matrix}\right.
+\end{align}
+
+\noindent Now, we transform back to $z$ coordinates.  
+
+\begin{align}
+\phi(z)=\mathcal{R}\left\{-\frac{i}{\pi}\log\left(\frac{\exp(\pi z/L)-\exp(\pi x_e/2L)}{\exp(\pi z/L)-\exp(-\pi x_e/2L)}\right)\right\}.
+\end{align}
+
+All that is left is to write the above equation in terms of only real quantities.  The imaginary part of the logarithm is the arctangent of the imaginary part of the argument of the logarithm divided by the real part of the argument.  We can write the logarithm argument as
+
+\begin{align}
+\frac{\left[e^{\pi z/L}-e^{\pi x_e/2L}\right]\left[e^{\pi \bar{z}/L}-e^{-\pi x_e/2L}\right]}{\left[e^{\pi z/L}-e^{-\pi x_e/2L}\right]\left[e^{\pi \bar{z}/L}-e^{-\pi x_e/2L}\right]}.
+\end{align}
+
+\noindent Since the denominator of the above equation is real, it will cancel out when we take the arctangent of the ratio of the imaginary and real parts.  Therefore, the only relevant bit is the numerator:
+
+\begin{align}\nonumber
+\label{reduction}
+e^{\pi (z+\bar{z})/L}&-e^{\pi (z-x_e/2)/L}-e^{\pi (\bar{z}+x_e/2)/L}+1=e^{2x\pi /L}-e^{\pi (x+iy-x_e/2)/L}-e^{\pi (x-iy+x_e/2)/L}+1\\\nonumber
+&\propto e^{x\pi /L}+e^{-x\pi /L}-e^{\pi (iy-x_e/2)/L}-e^{\pi (-iy+x_e/2)/L}\\\nonumber
+&= 2\cosh(x\pi/L)-\left([\cos(\pi y/L)+i\sin(\pi y/L)]e^{-\pi x_e/2L}+[\cos(\pi y/L)-i\sin(\pi y/L)]e^{\pi x_e/2L}\right)\\\nonumber
+&= 2\cosh(x\pi/L)-\left[2\cos(\pi y/L)\cosh(\pi x_e/2L)+2i\sin(\pi y/L)\sinh(\pi x_e/2L)\right]\\
+&\propto \left[\cosh(x\pi/L)-\cos(\pi y/L)\cosh(\pi x_e/2L)\right]- i\left[\sin(\pi y/L)\sinh(\pi x_e/2L)\right].
+\end{align}
+
+\noindent Taking the arctangent of the ratio of the imaginary to real parts of Eq.~\ref{reduction} result in Eq.~\ref{ramo2D}.  
+
+\vspace{3mm}
+
+In general, these conformal mapping methods only work when the potential is constant in one of the three dimensions as $\mathbb{C}\cong\mathbb{R}^2$ (and not $\mathbb{R}^3$).  One could make an approximation to the full potential by using products of the 2D solutions, but this will in general not exactly solve Poisson's equation.  The product solution that is used for Option 0 is given by
+
+\begin{align}
+\phi_{0}(x,y,z) = \frac{\phi(x,z|x_e)\phi(y,z|y_e)\phi_{-1}(z)}{\phi(0,z|x_e)\phi(0,z|y_e)},
+\end{align} 
+
+\noindent where the factor $\phi_{-1}(z)$ and the denominator are required to compensate for the over-suppression in $z$ that occurs by multiplying the two solutions.  
+
+\clearpage
+\newpage
+
+\subsection{Option $>0$: Full solution to Poisson's equation with simplified geometry}
+
+Even though conformal methods cannot be used to solve Poisson's equation for Eq.~\ref{eq:setup}, there are possibilities for solving it approximately.  Without a periodic boundary condition in the $x$ and $y$ direction, the usual separation of variables does not work.  However, one can impose artificial boundary conditions $\phi(\pm x_eN,y,z)=\phi(x,\pm y_eN,z)=0$, where $N$ is sufficiently bigger than one that the potential is expected to be very small.  With this additional boundary condition, the usual separation of variables applies.  The solution is a product of (hyerbolic) sines and cosines. Define
+
+\begin{align}
+Z_{n,m}(z)&=\frac{\sinh\left(\sqrt{\alpha_n^2+\beta_m^2}\left(1-z\right)\right)}{\sinh\left(\sqrt{\alpha_n^2+\beta_m^2}\right)}\\
+X_{n}(x)&=A_n\cos(\beta_n x), A_n=\frac{\sin\left(\frac{n\pi}{N}\right)}{\pi n},\alpha_n=\frac{2\pi n}{Nx_e}\\
+Y_{m}(y)&=B_n\cos(\beta_m y), B_n=\frac{\sin\left(\frac{m\pi}{N}\right)}{\pi m},\beta_m=\frac{2\pi m}{Ny_e}\\
+\phi_{n,m}(x,y,z)&=Z_{n,m}(z)X_n(x)Y_m(y),
+\end{align}
+
+\noindent where the denominator of $Z$ is chosen so that $Z(0)=1$ and the coefficients $A_n$ and $B_n$ are chosen so that the Fourier series at $z=0$ is a box with height $1$.  All dimensionful values are normalized so that $L=1$.  Each of the terms $\phi_{n,m}(x,y,z)$ solve Poisson's equation and their infinite sum also satisfies the boundary condition at $z=0$:
+
+\begin{align}
+\phi(x,y,z)=\sum_{n=-\infty}^\infty\sum_{m=-\infty}^\infty \phi_{n,m}(x,y,z).
+\end{align}
+
+\noindent Note that $A_0=B_0=1/N$ and $Z_{0,0}(z)=1-z$.  In practice, only a small number of terms are needed to capture most of the features of the potential.  Evaluating the sum can take a small amount of time, but needs only be computed once for a given geometry. Ten terms each in $n$ and $m$ gives a reasonable approximation to the full solution; one can specify the number of terms by the value of \textsc{defaultRamo}.
+
+\bibliographystyle{ieeetr}
+\bibliography{RadDamageDefaults.bib}{}
+
+\end{document}  

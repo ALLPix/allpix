@@ -1,12 +1,4 @@
-/*
- *  Authors:
- *    Callie Bertsche <c.bertsche@cern.ch>
- *    Benjamin Nachman <bnachman@cern.ch>
- *
- *  allpix Authors:
- *   John Idarraga <idarraga@cern.ch>
- *   Mathieu Benoit <benoit@lal.in2p3.fr>
- */
+//For information, see the top of the corresponding .cc file.
 
 #ifndef AllPixFEI4RadDamageDigitizer_h
 #define AllPixFEI4RadDamageDigitizer_h 1
@@ -24,6 +16,7 @@
 #include "TTree.h"
 #include "TFile.h"
 #include "TH1F.h"
+#include "TMath.h"
 
 using namespace std;
 
@@ -48,6 +41,8 @@ private:
   G4PrimaryVertex * m_primaryVertex; // information from EventAction
 
   TH3F *ramoPotentialMap;
+  TH1F *ramoPotentialMap1D;
+  TH2F *ramoPotentialMap2D;
   TH3F *eFieldMap;
   TH1F *m_eFieldMap1D;
   TH1F *timeMap_e;
@@ -58,6 +53,33 @@ private:
   TH2F *lorentz_map_h;
   TH3F *charge_chunk_map_e;
   TH3F *charge_chunk_map_h;
+
+  //Functions needed for the default Ramo potential:
+  double betax(int n, int Nrep, double a){ return 2*TMath::Pi()*n/(Nrep*a); }
+  double betay(int n, int Nrep, double b){  return 2*TMath::Pi()*n/(Nrep*b); }
+  double An(int n, int Nrep, double a){  
+    if (n==0) return 1./Nrep;
+    else return sin(n*TMath::Pi()*a/(Nrep*a))/(TMath::Pi()*n); }
+  double Bn(int n, int Nrep, double b){
+    if (n==0) return 1./Nrep;
+    else return sin(n*TMath::Pi()*b/(Nrep*b))/(TMath::Pi()*n); }
+  double X(double x, int n, int Nrep, double a){  return An(n,Nrep,a)*cos(betax(n,Nrep,a)*x); }
+  double Y(double y, int n, int Nrep, double b){  return Bn(n,Nrep,b)*cos(betay(n,Nrep,b)*y); }
+  double Z(double z, int n, int m, int Nrep, double a, double b){
+    double mynorm = sqrt(pow(betax(n,Nrep,a),2)+pow(betay(m,Nrep,b),2));
+    if (n==0 && m==0) return 1-z;
+    else return sinh(mynorm*(1-z))/sinh(mynorm);
+  }
+  double Phi3D(double x, double y, double z, int n, int m, int Nrep, double a, double b){
+    //be warned that there is numerical instability if n and m are too large!  Suggest n ~ m ~ 10.
+    double myout = 0.;
+    for (int ii=-n; ii<=n; ii++){
+      for (int jj=-m; jj<=m; jj++){
+	myout+=Z(z,ii,jj,Nrep,a,b)*X(x,ii,Nrep,a)*Y(y,jj,Nrep,b);
+      }
+    }
+    return myout;
+  }
 
   G4double GetElectricField(G4double z);
   G4double GetElectricField(G4double x, G4double y, G4double z);
@@ -104,8 +126,14 @@ private:
   G4bool doTrapping;
   G4bool doRamo;
   G4bool doDiff;
+  G4bool doSimplifiedModel;
   G4bool doSlimEdge;
   G4bool isHole;
+
+  //Defaults
+  G4int defaultEfield;
+  G4int defaultRamo;
+  G4bool debug_maps;
   
   // Geometry-related constants
   G4double pitchX;

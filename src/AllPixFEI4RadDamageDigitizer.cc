@@ -1,11 +1,23 @@
 /*
  *  Authors:
- *    Callie Bertsche <c.bertsche@cern.ch>
  *    Benjamin Nachman <bnachman@cern.ch>
+ *    Lingxin Meng <lingxin.meng@cern.ch>
+ *    Lorenzo Rossini <lorenzo.rossini@cern.ch>
+ *    Rebecca Carney <rebecca.carney@cern.ch>
+ *    Mathieu Benoit <Mathieu.Benoit@cern.ch>  
+ *    Callie Bertsche <c.bertsche@cern.ch>
  *
- *  allpix Authors:
+ *  Allpix Authors:
  *   John Idarraga <idarraga@cern.ch>
- *   Mathieu Benoit <benoit@lal.in2p3.fr>
+ *   Mathieu Benoit <Mathieu.Benoit@cern.ch>
+ *
+ *  Brief Description:
+ *   This is a digitization model for radiation damage effects.  
+ *   See "Setup all the inputs" below for available options.
+ *   The user can supply TCAD maps for the electric field; however,
+ *   if the maps are not given, reasonable defaults are used (though
+ *   use with caution).
+ *
  */
 
 #include "AllPixFEI4RadDamageDigitizer.hh"
@@ -47,13 +59,19 @@ AllPixFEI4RadDamageDigitizer::AllPixFEI4RadDamageDigitizer(G4String modName, G4S
 	doTrapping = true;
         doRamo = true;
 	doDiff = false;
+	doSimplifiedModel = false;
+
+	//Physics defaults
+	defaultRamo = 10; // -1 = approximate z-dependence only; 0 = exact XZ x YZ with compensating Z-dependence; > 0 = solution to Poisson's equation with defaultRamo terms in the series.  See doc/RadDamageDefaults.pdf for details.
+	defaultEfield = -1; // 0 = uniform; 1 = linear.
+	debug_maps = true; //if true, prints plots of all the input maps.
 
 	//Constants
-	elec = 3.64*eV;//average energy required to produce a e/h pair in Si.  This has been known for a long time - see for instance http://journals.aps.org/prb/pdf/10.1103/PhysRevB.1.2945.  It depends a little on temperature, but we are ignoring that effect here.
+	elec = 3.64*eV;//average energy required to produce a e/h pair in Si.  This has been known for a long time - first measurement was Phys. Rev. 91, 1079 (1953).
 	betaElectrons = 3.0E-16*cm2/ns;  //The charge-trapping probability is t = -tau*ln(u), for u ~ Uniform(0,1) and tau^{-1}=beta*fluence.  The value of beta might be slightly higher for holes than electrons, but it is hard to say (we ignore this effect here).  See e.g. https://cds.cern.ch/record/685542/files/indet-2003-014.pdf. 
 	
 	//Conditions
-	fluence = 0*1/cm2; // neq/cm^2
+	fluence = 0*1/cm2; // 1 MeV neq/cm^2
 	biasVoltage = 600; // V.  This is not used if external TCAD maps are supplied.
 	temperature = 263.2;// K  
 	bField = 0.;// Tesla = V*s/m^2 
@@ -67,25 +85,25 @@ AllPixFEI4RadDamageDigitizer::AllPixFEI4RadDamageDigitizer(G4String modName, G4S
 	if(depVoltage>biasVoltage) deplationLenght=deplationLenght*pow(biasVoltage/depVoltage,0.5);
 	std::cout << "Load the input maps " << std::endl;
 	
-	//Efield, time, ramo maps
+	//Input from TCAD
 	//TFile* efile=new TFile("/afs/cern.ch/user/b/bnachman/work/public/RadDamage/allpix/TimeMaps/planar_fixed/Converted_TCAD/EField-map-fei4-200um-fl1e15-600V.root");
 	//TFile* efile=new TFile("/afs/cern.ch/user/b/bnachman/work/public/RadDamage/allpix/TimeMaps/planar_fixed/Converted_TCAD/EField-map-fei4-200um-fl5e15-1000V.root");
-	TFile* efile=new TFile("/afs/cern.ch/user/b/bnachman/work/public/RadDamage/allpix/TimeMaps/planar_fixed/Converted_TCAD/EField-map-fei4-200um-fl0-80V.root"); 
+	TFile* efile=new TFile("");// /afs/cern.ch/user/b/bnachman/work/public/RadDamage/allpix/TimeMaps/planar_fixed/Converted_TCAD/EField-map-fei4-200um-fl0-80V.root"); 
 	TFile* tfile=new TFile("");
 	TFile* dfile = new TFile("");
-	TFile* rfile=new TFile("/afs/cern.ch/user/b/bnachman/work/public/RadDamage/allpix/share/absRamo3D-map-200um-output.root");
+	TFile* rfile=new TFile(""); ///afs/cern.ch/user/b/bnachman/work/public/RadDamage/allpix/share/absRamo3D-map-200um-output.root");
 	//////////////////////////////////////////////////////////////////
 	//////////////////////////////////////////////////////////////////
 
-	count=0;
+	//Sensor properties
 	//Fetching info from pixeldetector.xml 
 	AllPixGeoDsc * gD = GetDetectorGeoDscPtr();
-	double L = gD->GetSensorZ()*mm*1000;
-	//For all maps, 0 is at the collecting electrode and L is the far side.
-	int L_int = L;
-	
-	depVoltage=30.*(L/200)*(L/200)*fluence/1e+14;
-	depVoltage=30.;
+	double L = gD->GetSensorZ()*mm*1000; //in microns; for all maps, 0 is at the collecting electrode and L is the far side.
+	int L_int = L; //for the histograms later that have one bin per micron.
+	depVoltage = 30.; //V; this is highly fluece-dependent !  Should update when you change the fluence.
+	deplationLenght = L/1000.; //in mm.
+	if(depVoltage>biasVoltage) deplationLenght=deplationLenght*pow(biasVoltage/depVoltage,0.5); //This is the usual formula depletion depth = \sqrt{2*\epsilon_0\epsilon_{Si}*V/(eN_D)}.  See e.g. (2.26) in Pixel Detectors by L. Rossi et al.
+
 	//Geometry constants
 	detectorThickness = gD->GetSensorZ();
 	pitchX = gD->GetPixelX(); 	// total length of pixel in x
@@ -93,133 +111,100 @@ AllPixFEI4RadDamageDigitizer::AllPixFEI4RadDamageDigitizer(G4String modName, G4S
 	nPixX= gD->GetNPixelsX(); 	// total number of pixels in x
 	nPixY= gD->GetNPixelsY();	// total number of pixels in y
 
-	//For all maps, 0 is at the collecting electrode and L is the far side.
-        G4cout << " pitchX "<<pitchX*1000 <<" pitchY "<<pitchY*1000<<" L "<<L<<" [mm]"<<" number of pixel X "<<nPixX<<" number of pixel Y "<<nPixY<<G4endl;
 	//For debugging the inputs
 	TCanvas *c1 = new TCanvas("","",600,600);
 	gStyle->SetOptStat(0);
 
-	// Get ramo potential mapping 
+	// Get the Ramo potential map.  See "Shockley-Ramo Theorem": Journal of Applied Physics 9 (1938) 635 and Proceedings of the IRE 27 (1939) 584.
 	ramoPotentialMap=0;
 	ramoPotentialMap=(TH3F*)rfile->Get("hramomap1");
 	if (ramoPotentialMap == 0){
 	  G4cout << "Did not find a Ramo potential map.  Will use an approximate form." << G4endl;
-	  //Requirements: goes to 0 at L and 1 at 0. Should also have the property that it decreases rapidtly away from 0 and then slowly as it approaches L. 
-	  int binxramo=2*pitchX*1000;    //setting the limits of the ramo map. 
-	  int binyramo=2*pitchY*1000;	 // ramo map is evaluated in 1 pixel+/- 1/2 pitch (both x and y)
-	  double xminramo=0.;  // *1000= convert mm in um
-	  double xmaxramo=2*pitchX*1000;   // along z the ramo field is evaluated in depth+/-2 um, for account for borders
-	  double yminramo=0;
+	  //There are three default Ramo potentials.  The third one should be the most accurate.  See doc/RadDamageDefaults.pdf for details.
+	  
+	  int binxramo=2*pitchX*1000/10; //Ramo potential is evaluated for distances that are up to 2 * pitch away from the center of the primary pixel.  One bin per 10 microns.
+	  int binyramo=2*pitchY*1000/10;
+	  double xminramo=0.;
+	  double xmaxramo=2*pitchX*1000;
+	  double yminramo=0.;
 	  double ymaxramo=2*pitchY*1000;
 
-	  ramoPotentialMap = new TH3F("hramomap1","hramomap1",binxramo,xminramo,xmaxramo,binyramo,yminramo,ymaxramo,L_int,0.,L);
-	  TH2F *ramoPotentialMap2D = new TH2F("hramomap1","hramomap1",binxramo,xminramo,xmaxramo,L_int+4,-2.,L+2);
+	  ramoPotentialMap = new TH3F("hramomap1","hramomap1",binxramo,xminramo,xmaxramo,binyramo,yminramo,ymaxramo,L_int/10,0.,L);
 	  G4double pi=TMath::Pi();
-G4cout << " binx "<<binxramo <<" xminramo "<<xminramo<<" xmaxramo "<<xmaxramo<<" binyramo "<<binyramo <<" yminramo "<<yminramo<<" ymaxramo "<<ymaxramo <<G4endl;
 	  for (int k=1; k<=ramoPotentialMap->GetNbinsZ(); k++){
-	    G4double z = ramoPotentialMap->GetZaxis()->GetBinCenter(k)-ramoPotentialMap->GetZaxis()->GetBinWidth(k)/2;
-	    double norm = exp(-10.)+exp(-1.);
-	    double val = exp(-z/(0.1*L))+exp(-z/L);
-	    val -= norm;
-	    val /= (2.-norm); //should be 1 at 0 and 0 at L.
-	    for (int i=1; i<=ramoPotentialMap->GetNbinsX(); i++){ //could add in some x and y dependence later.
-	      G4double x = ramoPotentialMap->GetXaxis()->GetBinCenter(i)-ramoPotentialMap->GetXaxis()->GetBinWidth(i)/2  ;
-	      for (int j=1; j<=ramoPotentialMap->GetNbinsY(); j++){	
-	      		 val=0;	         
- 			 G4double y = ramoPotentialMap->GetYaxis()->GetBinCenter(j)-ramoPotentialMap->GetYaxis()->GetBinWidth(j)/2 ;
- 			 G4double Phix =Phi(x,z, pitchX*1000,L) ;
- 			 G4double Phiy = Phi(y,z,pitchY*1000,L);
- 			 G4double Nz= N(z,L);
- 			 val = (double) Phix*Phiy*Nz;
-		 	 if(z==0){   // effects on the border. should be 1 at the pixel side insed the pitch and zero otherwise
-		 	   if( (x<pitchX*500 && x>-pitchX*500) && ( y<pitchY*500 &&  y>-pitchY*500 ) ){
-		 	     val=1.;
-		 	   }else{
-		 	    val=0.;
-		 	   }
-		 	 }
-		 	 if(z<0) val=0.;                 //outside the depth shouldn't be aything
-		 	 if(z>=L) val=0.;		 //	 
-		 	 if(val<1E-15 && val>0.) val=0.; // too much small value are set to zero (avoid strange effects)
-		 	 if(val<0.) val=0.;		 // ramo potential shoulnd't be negative. unless the is some 0/0 effects in the Phi function
-		 	 				 // in which case it means that parameters have been set wrongly
-		 	 
-		 	 ramoPotentialMap->SetBinContent(i,j,k,val);	
-		 	 if(j==binyramo/2) ramoPotentialMap2D->SetBinContent(i,k,val);	 // plot the map in the y=0 plane
-		 	 
+	    G4double z = ramoPotentialMap->GetZaxis()->GetBinCenter(k)-ramoPotentialMap->GetZaxis()->GetBinWidth(k)/2.; //use the lower bin edge.
+	    for (int i=1; i<=ramoPotentialMap->GetNbinsX(); i++){
+	      for (int j=1; j<=ramoPotentialMap->GetNbinsY(); j++){
+		G4double x = ramoPotentialMap->GetXaxis()->GetBinCenter(i)-ramoPotentialMap->GetXaxis()->GetBinWidth(i)/2.;
+		G4double y = ramoPotentialMap->GetYaxis()->GetBinCenter(j)-ramoPotentialMap->GetYaxis()->GetBinWidth(j)/2.;
+
+		if (defaultRamo == -1){
+		  if (x > pitchX*1000 / 2. || y > pitchY*1000 / 2.) ramoPotentialMap->SetBinContent(i,j,k,0.01); //outside of the primary pixel.
+		  else{
+		    double a = 3*L/(1000*pitchY); //Y is the short direction for FEI4.
+		    double norm = exp(-a)+exp(-1.);
+		    double val = exp(-a*z/L)+exp(-z/L);
+		    val -= norm;
+		    val /= (2.-norm); //should be 1 at 0 and 0 at L.
+		    ramoPotentialMap->SetBinContent(i,j,k,val);
+		    std::cout << "do I ever make it khere ??? " << z << " " << val << " " << a << std::endl;
+		  }
+		}//end Ramo default optoin -1.
+
+		if (defaultRamo == 0){
+		  double norm = exp(-10.)+exp(-1.);
+		  double val = exp(-z/(0.1*L))+exp(-z/L);
+		  val -= norm;
+		  val /= (2.-norm); //should be 1 at 0 and 0 at L.
+		  ramoPotentialMap->SetBinContent(i,j,k,Phi(x,z,pitchX*1000,L) * Phi(y,z,pitchY*1000,L) * val / (Phi(0,z,pitchX*1000,L) * Phi(0,z,pitchY*1000,L)));
+		}//end Ramo default option 0.
+		
+		if (defaultRamo > 0){
+		  ramoPotentialMap->SetBinContent(i,j,k,Phi3D(x/L,y/L,z/L,defaultRamo,defaultRamo,4,pitchX*1000/L,pitchY*1000/L)); //N = 4 is arbitrary; just need something bigger than ~1ish.
+		}//end Ramo default option > 0.
+	      }//end loop over y.
+	    }//end loop over x.
+	  }//end loop over z.
+	}//end default Ramo potential.	
+
+	if (debug_maps){
+	  ramoPotentialMap2D = new TH2F("hramomap2D","hramomap2D",ramoPotentialMap->GetNbinsX(),ramoPotentialMap->GetXaxis()->GetBinCenter(1)-0.5*ramoPotentialMap->GetXaxis()->GetBinWidth(1),ramoPotentialMap->GetXaxis()->GetBinCenter(ramoPotentialMap->GetNbinsX())+0.5*ramoPotentialMap->GetXaxis()->GetBinWidth(ramoPotentialMap->GetNbinsX()),ramoPotentialMap->GetNbinsY(),ramoPotentialMap->GetYaxis()->GetBinCenter(1)-0.5*ramoPotentialMap->GetYaxis()->GetBinWidth(1),ramoPotentialMap->GetYaxis()->GetBinCenter(ramoPotentialMap->GetNbinsY())+0.5*ramoPotentialMap->GetYaxis()->GetBinWidth(ramoPotentialMap->GetNbinsY()));
+	  ramoPotentialMap1D = new TH1F("hramomap1D","hramomap1D",ramoPotentialMap->GetNbinsZ(),ramoPotentialMap->GetZaxis()->GetBinCenter(1)-0.5*ramoPotentialMap->GetZaxis()->GetBinWidth(1),ramoPotentialMap->GetZaxis()->GetBinCenter(ramoPotentialMap->GetNbinsZ())+0.5*ramoPotentialMap->GetZaxis()->GetBinWidth(ramoPotentialMap->GetNbinsZ()));
+	  for (int k=1; k<=ramoPotentialMap->GetNbinsZ(); k++){
+	    for (int i=1; i<=ramoPotentialMap->GetNbinsX(); i++){
+	      for (int j=1; j<=ramoPotentialMap->GetNbinsY(); j++){
+		ramoPotentialMap2D->SetBinContent(i,j,ramoPotentialMap->GetBinContent(i,j,k));
+		if (i==1 && j==1) ramoPotentialMap1D->SetBinContent(k,ramoPotentialMap->GetBinContent(i,j,k));
 	      }
 	    }
+	    gPad->SetRightMargin(0.15);
+	    ramoPotentialMap2D->GetXaxis()->SetNdivisions(505);
+	    ramoPotentialMap2D->GetYaxis()->SetNdivisions(505);
+	    ramoPotentialMap2D->GetXaxis()->SetTitle("#eta position [#mum]");
+	    ramoPotentialMap2D->GetYaxis()->SetTitle("#phi position [#mum]");
+	    ramoPotentialMap2D->GetZaxis()->SetTitleOffset(1.6);
+	    ramoPotentialMap2D->SetTitle("Ramo Potential at z = "+TString::Format("%0.2f",ramoPotentialMap->GetZaxis()->GetBinCenter(k)-0.5*ramoPotentialMap->GetZaxis()->GetBinWidth(k)));
+	    ramoPotentialMap2D->GetZaxis()->SetTitle("Ramo Potential");
+	    ramoPotentialMap2D->GetZaxis()->SetRangeUser(0,1);
+	    ramoPotentialMap2D->Draw("colz");
+	    c1->Print("DefaultRamo2D_"+TString::Format("%i",k)+".pdf");
 	  }
-	ramoPotentialMap2D->Draw("colz");
-	c1->Print("ramomap.png","png");
-        }
-	
-	// Get electric field mapping
-        //TH2F *ramoPotentialMap2D = new TH2F("hramomap1","hramomap1",ramoPotentialMap->GetNbinsX(),-ramoPotentialMap->GetNbinsX()/2,ramoPotentialMap->GetNbinsX()/2,ramoPotentialMap->GetNbinsZ(),0.,ramoPotentialMap->GetNbinsZ());
-        TH2F *ramoPotentialMap2D = new TH2F("hramomap1","hramomap1",ramoPotentialMap->GetNbinsX(),0.,25,ramoPotentialMap->GetNbinsZ(),0.,200);
-        for (int k=1; k<=ramoPotentialMap->GetNbinsZ(); k++){	
-          
-	    for (int i=1; i<=ramoPotentialMap->GetNbinsX(); i++){ //could add in some x and y dependence later.
-	      
-	      double x= ramoPotentialMap->GetXaxis()->GetBinCenter(i);
-	      double z= ramoPotentialMap->GetZaxis()->GetBinCenter(k);      
-	      //double x=i;
-	       int binramo= ramoPotentialMap->FindBin(x,1.,z);
-	       //G4cout<<" x "<<i << " z "<<k<<" ramo "<< ramoPotentialMap->GetBinContent(binramo)<<G4endl;
-	       
-	       ramoPotentialMap2D->Fill(x,z,ramoPotentialMap->GetBinContent(binramo));
-              
-            }
-        }
-        G4cout<<" bin x "<<ramoPotentialMap->GetNbinsX()<<" bin y "<<ramoPotentialMap->GetNbinsY()<<  "  bin z "<<ramoPotentialMap->GetNbinsZ()<<G4endl;
-        //G4cout<<" bin x "<<ramoPotentialMap->GetXaxis()->GetBinCenter(ramoPotentialMap->GetNbinsX()) +ramoPotentialMap->GetXaxis()->GetBinWidth(ramoPotentialMap->GetNbinsX())/2 <<" bin y "<<ramoPotentialMap->GetYaxis()->GetBinCenter(ramoPotentialMap->GetNbinsY())+ramoPotentialMap->GetYaxis()->GetBinWidth(ramoPotentialMap->GetNbinsY())/2<<  "  bin z "<<ramoPotentialMap->GetZaxis()->GetBinCenter(ramoPotentialMap->GetNbinsZ())ramoPotentialMap->GetZaxis()->GetBinWidth(ramoPotentialMap->GetNbinsZ())/2<<G4endl;
-        
-        int binramotest=ramoPotentialMap->FindBin(0.0241753*1000,1000*0.138265,0.);
-        G4cout<<" ramo "<< ramoPotentialMap->GetBinContent(binramotest)  << G4endl;
-        ramoPotentialMap2D->Draw("colz");
-	c1->Print("ramomap.png","png");
-        //TTree *tree=(TTree*)efile->Get("tree");
-        Double_t           x;
-        Double_t	   y;
-        Double_t	   z;
-        Double_t	   Ef;
-        /*						//if using a .root file for the Efield, un comment
-        // List of branches
-   	TBranch        *b_x;   //!
-   	TBranch        *b_y;   //!
-   	TBranch        *b_z;   //!
-   	TBranch        *b_E;   //!
-   	tree->SetBranchAddress("x", &x, &b_x);
-   	tree->SetBranchAddress("y", &y, &b_y);
-   	tree->SetBranchAddress("z", &z, &b_z);
-   	tree->SetBranchAddress("E", &Ef, &b_E);
-   	Long64_t nentries1 = tree->GetEntries();
-   	*/
-   	eFieldMap=0;
-        
-        //ifstream myfile ("EfieldMap/fl2e14/V80/Ez.dat");//EfieldMap/fl1e14/V80/Ez.dat
-        ifstream myfile ("");
- 	if (myfile.is_open())
-  	{
-  	 eFieldMap = new TH3F("heFieldMap3","heFieldMap3",25,0.,25,125,0.,125,L_int+1,-0.5,L+0.5); // here it depends on how the field has been produced
-   	 for(int i=0; i<24*124*199; i++)
-   	  {
-     	   myfile>>x;
-     	   myfile>>y;
-     	   myfile>>z;
-     	   myfile>>Ef;
-     	   eFieldMap->Fill(x,y,z,Ef);
-      	   //if(x==1 && y== 1) G4cout<<" z "<< z<<" Ef "<<Ef<<G4endl;
-    	 }
-    	myfile.close();
-  	}else{
-  	G4cout << "Did not find an E field map.  Will use an approximate form with no rad damage.  This will make the drift times inaccurate, but all other parts of the simulation should be valid.  This may or may not be important for your application." << G4endl;
-  	}
-  	  
-  	 //eFieldMap=0;
-	//eFieldMap=(TH1F*)efile->Get("hefieldz");
-	//if (eFieldMap == 0){ //Note that z=0 corresponds to the collecting electrode.
-	
+	  gPad->SetRightMargin(0.05);
+	  ramoPotentialMap1D->SetTitle("Ramo Potential at x=y=0");
+	  ramoPotentialMap1D->GetYaxis()->SetRangeUser(0,1);
+	  ramoPotentialMap1D->GetXaxis()->SetTitle("Pixel Depth in z [#mum]");
+	  ramoPotentialMap1D->GetYaxis()->SetTitleOffset(1.4);
+	  ramoPotentialMap1D->GetYaxis()->SetTitle("Ramo Potential");
+	  ramoPotentialMap1D->GetXaxis()->SetNdivisions(505);
+	  ramoPotentialMap1D->Draw();
+	  c1->Print("DefaultRamo1D.pdf");
+	}
+
+  	m_eFieldMap1D=0;
+	m_eFieldMap1D=(TH1F*)efile->Get("hefieldz");
+	if (m_eFieldMap1D == 0){ //Note that z=0 corresponds to the collecting electrode.
+	  G4cout << "Did not find an E-field map.  Will use an approximate form." << G4endl;
+	  //WHAT ABOUT 3D E-field maps ???  This is what Lorenzo is using at the moment.
 	  m_eFieldMap1D = new TH1F("m_hefieldz","m_hefieldz",L_int,0,L_int); // 1D map of the Efield in case we want to use 1D field
 	  G4double electricField=0;
 	  G4double pass=deplationLenght/m_eFieldMap1D->GetNbinsX();
@@ -230,46 +215,21 @@ G4cout << " binx "<<binxramo <<" xminramo "<<xminramo<<" xmaxramo "<<xmaxramo<<"
    	    
    	    if(position>deplationLenght) electricField=0.;
 	    m_eFieldMap1D->SetBinContent(i,electricField*10); //in V/cm
-	    //eFieldMap->SetBinContent(i,(1e4)*biasVoltage/(L/1000.)); //in V/cm
+	    if (defaultEfield==0) m_eFieldMap1D->SetBinContent(i,(1e4)*biasVoltage/(L/1000.)); //in V/cm
 	  }
-	//} 
-  	  
-  	/*  
-   	TH1F *efield1D  = new TH1F("hEfield1D","hEfield1D",201,-0.5,200.5);
-   	int bin_EfieldZ=eFieldMap->GetNbinsZ();
-   	for(int i=0; i<=bin_EfieldZ; i++){
-   	 
-   	 //int binfind = eFieldMap->FindBin(1.,1.,i);//GetElectricField
-   	 //efield1D->SetBinContent(i+1,eFieldMap->GetBinContent(binfind));
+	} 
 
-   	 double z= efield1D->GetBinCenter(i+1)/1000.;
+	if (debug_maps){
+	  gPad->SetLeftMargin(0.15);
+	  m_eFieldMap1D->GetXaxis()->SetTitle("Depth (z) [#mum]");
+	  m_eFieldMap1D->GetYaxis()->SetTitle("E field [V/cm]");
+	  m_eFieldMap1D->GetYaxis()->SetTitleOffset(1.6);
+	  m_eFieldMap1D->GetYaxis()->SetTitleSize(0.03);
+	  m_eFieldMap1D->GetXaxis()->SetTitleSize(0.03);
+	  m_eFieldMap1D->Draw();
+	  c1->Print("Efield.pdf");
+	}
 
-   	 efield1D->SetBinContent(i+1, (GetElectricField(0.001,0.001,z)*1E7) );
-   	 
-   	 if(z<0) efield1D->SetBinContent(i+1,4000);
-   	 if(z>0.200) efield1D->SetBinContent(i+1,4000);
-   	}
-   	
-	*/	
-	
-	
-	gPad->SetLeftMargin(0.15);
-	/*m_eFieldMap1D->GetXaxis()->SetTitle("Depth (z) [#mum]");
-	m_eFieldMap1D->GetYaxis()->SetTitle("E field [V/cm]");
-	m_eFieldMap1D->GetYaxis()->SetTitleOffset(1.6);
-	m_eFieldMap1D->GetYaxis()->SetTitleSize(0.03);
-	m_eFieldMap1D->GetXaxis()->SetTitleSize(0.03);
-	m_eFieldMap1D->Draw();
-	*/
-	/*
-	efield1D->GetXaxis()->SetTitle("Depth (z) [#mum]");
-	efield1D->GetYaxis()->SetTitle("E field [V/cm]");
-	efield1D->GetYaxis()->SetTitleOffset(1.6);
-	efield1D->GetYaxis()->SetTitleSize(0.03);
-	efield1D->GetXaxis()->SetTitleSize(0.03);
-	efield1D->Draw();
-	c1->Print("Efield.pdf");
-	*/
 	// Get the distance at the point of trap and time to electrode mapping (derived from electric field)  
         distancemap_e=0;
         distancemap_h=0;
@@ -297,9 +257,9 @@ G4cout << " binx "<<binxramo <<" xminramo "<<xminramo<<" xmaxramo "<<xmaxramo<<"
 	    for (int k2=k; k2 >= 1; k2--){
 	      double z2 = distancemap_e->GetXaxis()->GetBinCenter(k2);
 	      double dz = distancemap_e->GetXaxis()->GetBinWidth(k2);
-	      //double E = m_eFieldMap1D->GetBinContent(m_eFieldMap1D->GetXaxis()->FindBin(z2*1000))/1e7; //in MV/mm
+	      double E = m_eFieldMap1D->GetBinContent(m_eFieldMap1D->GetXaxis()->FindBin(z2*1000))/1e7; //in MV/mm
 	      //double E = eFieldMap->GetBinContent(eFieldMap->FindBin(1.,1.,z2*1000))/1e7; //in MV/mm
-	      double E = GetElectricField(0.002,0.002,z2); //in MV/mm
+	      //double E = GetElectricField(0.002,0.002,z2); //in MV/mm
 	      //double E = GetElectricField(z2); //in MV/mm
 	      if (E > 0){
 		double mu = GetMobility(E, 0); //mm^2/MV*ns
@@ -311,9 +271,9 @@ G4cout << " binx "<<binxramo <<" xminramo "<<xminramo<<" xmaxramo "<<xmaxramo<<"
 	    for (int k2=k; k2 <= distancemap_e->GetNbinsX(); k2++){ //holes go the opposite direction as electrons.
 	      double z2 = distancemap_e->GetXaxis()->GetBinCenter(k2);
 	      double dz = distancemap_e->GetXaxis()->GetBinWidth(k2);
-	      //double E = m_eFieldMap1D->GetBinContent(m_eFieldMap1D->GetXaxis()->FindBin(z2*1000))/1e7;;
+	      double E = m_eFieldMap1D->GetBinContent(m_eFieldMap1D->GetXaxis()->FindBin(z2*1000))/1e7;;
 	      //double E = eFieldMap->GetBinContent(eFieldMap->FindBin(1.,1.,z2*1000-1.))/1e
-	      double E = GetElectricField(0.002,0.002,z2); //in MV/mm
+	      //double E = GetElectricField(0.002,0.002,z2); //in MV/mm
 	      //double E = GetElectricField(z2); //in MV/mm
 	      if (E > 0){
 		double mu_h = GetMobility(E, 1);
@@ -324,46 +284,48 @@ G4cout << " binx "<<binxramo <<" xminramo "<<xminramo<<" xmaxramo "<<xmaxramo<<"
 	    }
 	  }
 	}
-	gPad->SetRightMargin(0.15);
-	distancemap_e->GetXaxis()->SetNdivisions(505);
-	distancemap_e->GetYaxis()->SetNdivisions(505);
-	distancemap_e->GetXaxis()->SetTitle("Initial Position in Z [mm]");
-	distancemap_e->GetYaxis()->SetTitle("Time Traveled [ns]");
-	distancemap_e->GetZaxis()->SetTitleOffset(1.6);
-	distancemap_e->SetTitle("Electron Distance Map");
-	distancemap_e->GetZaxis()->SetTitle("Location in Z [mm]");
-	distancemap_e->Draw("colz");
-	c1->Print("distancemap_e.pdf");
-	
-	distancemap_h->GetXaxis()->SetNdivisions(505);
-        distancemap_h->GetYaxis()->SetNdivisions(505);
-        distancemap_h->GetXaxis()->SetTitle("Initial Position in Z [mm]");
-        distancemap_h->GetYaxis()->SetTitle("Time Traveled [ns]");
-        distancemap_h->GetZaxis()->SetTitleOffset(1.6);
-        distancemap_h->SetTitle("Hole Distance Map");
-        distancemap_h->GetZaxis()->SetTitle("Location in Z [mm]");
-        distancemap_h->Draw("colz");
-        c1->Print("distancemap_h.pdf");
 
-	timeMap_h->SetTitle("");
-	timeMap_h->GetYaxis()->SetRangeUser(0,timeMap_h->GetMaximum() > timeMap_e->GetMaximum() ? timeMap_h->GetMaximum() : timeMap_e->GetMaximum());
-	timeMap_h->GetXaxis()->SetTitle("Starting Pixel Depth in Z [mm]");
-	timeMap_h->GetYaxis()->SetTitleOffset(1.4);
-	timeMap_h->GetYaxis()->SetTitle("Projected Time to Reach Electrode [ns]");
-	timeMap_h->GetXaxis()->SetNdivisions(505);
-	timeMap_h->Draw();
-	timeMap_e->SetLineStyle(7);
-	timeMap_e->Draw("same");
-
-	TLegend * leg = new TLegend(0.4,0.65,0.85,0.9);
-	leg->SetFillColor(0);
-	leg->SetBorderSize(0);
-	leg->SetFillStyle(0);
-	leg->AddEntry(timeMap_e,"Electrons","l");
-	leg->AddEntry(timeMap_h,"Holes","l");
-	leg->Draw();
-	c1->Print("timemaps.pdf");
-	
+	if (debug_maps){
+	  gPad->SetRightMargin(0.15);
+	  distancemap_e->GetXaxis()->SetNdivisions(505);
+	  distancemap_e->GetYaxis()->SetNdivisions(505);
+	  distancemap_e->GetXaxis()->SetTitle("Initial Position in Z [mm]");
+	  distancemap_e->GetYaxis()->SetTitle("Time Traveled [ns]");
+	  distancemap_e->GetZaxis()->SetTitleOffset(1.6);
+	  distancemap_e->SetTitle("Electron Distance Map");
+	  distancemap_e->GetZaxis()->SetTitle("Location in Z [mm]");
+	  distancemap_e->Draw("colz");
+	  c1->Print("distancemap_e.pdf");
+	  
+	  distancemap_h->GetXaxis()->SetNdivisions(505);
+	  distancemap_h->GetYaxis()->SetNdivisions(505);
+	  distancemap_h->GetXaxis()->SetTitle("Initial Position in Z [mm]");
+	  distancemap_h->GetYaxis()->SetTitle("Time Traveled [ns]");
+	  distancemap_h->GetZaxis()->SetTitleOffset(1.6);
+	  distancemap_h->SetTitle("Hole Distance Map");
+	  distancemap_h->GetZaxis()->SetTitle("Location in Z [mm]");
+	  distancemap_h->Draw("colz");
+	  c1->Print("distancemap_h.pdf");
+	  
+	  timeMap_h->SetTitle("");
+	  timeMap_h->GetYaxis()->SetRangeUser(0,timeMap_h->GetMaximum() > timeMap_e->GetMaximum() ? timeMap_h->GetMaximum() : timeMap_e->GetMaximum());
+	  timeMap_h->GetXaxis()->SetTitle("Starting Pixel Depth in Z [mm]");
+	  timeMap_h->GetYaxis()->SetTitleOffset(1.4);
+	  timeMap_h->GetYaxis()->SetTitle("Projected Time to Reach Electrode [ns]");
+	  timeMap_h->GetXaxis()->SetNdivisions(505);
+	  timeMap_h->Draw();
+	  timeMap_e->SetLineStyle(7);
+	  timeMap_e->Draw("same");
+	  
+	  TLegend * leg = new TLegend(0.4,0.65,0.85,0.9);
+	  leg->SetFillColor(0);
+	  leg->SetBorderSize(0);
+	  leg->SetFillStyle(0);
+	  leg->AddEntry(timeMap_e,"Electrons","l");
+	  leg->AddEntry(timeMap_h,"Holes","l");
+	  leg->Draw();
+	  c1->Print("timemaps.pdf");
+	}
 
 	//Compute the trapping time.
 	if(fluence!=0.0)
@@ -481,7 +443,8 @@ G4cout << " binx "<<binxramo <<" xminramo "<<xminramo<<" xmaxramo "<<xmaxramo<<"
 	    for (int k2=k; k2 >= 1; k2--){
 	      double z2 = lorentz_map_e->GetXaxis()->GetBinCenter(k2);
 	      double dz = lorentz_map_e->GetXaxis()->GetBinWidth(k2);	            
-	      double E = GetElectricField(0.002,0.002,z2); //in MV/mm
+	      //double E = GetElectricField(0.002,0.002,z2); //in MV/mm
+	      double E = m_eFieldMap1D->GetBinContent(m_eFieldMap1D->GetXaxis()->FindBin(z2*1000))/1e7;;
 	      if (E > 0){
 	         lenght_e+=dz;
 		// integral tan thetaL * dz / integral dz
@@ -495,7 +458,8 @@ G4cout << " binx "<<binxramo <<" xminramo "<<xminramo<<" xmaxramo "<<xmaxramo<<"
 	    for (int k2=k; k2 <= lorentz_map_e->GetNbinsX(); k2++){ //holes go the opposite direction as electrons.
 	      double z2 = lorentz_map_e->GetXaxis()->GetBinCenter(k2);
 	      double dz = lorentz_map_e->GetXaxis()->GetBinWidth(k2);
-	      double E = GetElectricField(0.002,0.002,z2); //in MV/mm
+	      //double E = GetElectricField(0.002,0.002,z2); //in MV/mm
+	      double E = m_eFieldMap1D->GetBinContent(m_eFieldMap1D->GetXaxis()->FindBin(z2*1000))/1e7;;
 	      //double E = GetElectricField(z2); //in MV/mm
 	      if (E > 0){
 		double tanthetaL = GetTanLorentz(E, 1);
@@ -508,29 +472,30 @@ G4cout << " binx "<<binxramo <<" xminramo "<<xminramo<<" xmaxramo "<<xmaxramo<<"
 	  }
 	}      
 	
-	
-	gPad->SetRightMargin(0.15);
-	lorentz_map_e->GetXaxis()->SetNdivisions(505);
-	lorentz_map_e->GetYaxis()->SetNdivisions(505);
-	lorentz_map_e->GetXaxis()->SetTitle("Initial Position in Z [mm]");
-	lorentz_map_e->GetYaxis()->SetTitle("Distance Traveled in Z [mm]");
-	lorentz_map_e->GetZaxis()->SetTitleOffset(1.6);
-	lorentz_map_e->SetTitle("Electron Lorentz Map");
-	lorentz_map_e->GetZaxis()->SetTitle("Tangent Lorentz Angle");
-	lorentz_map_e->Draw("colz");
-	c1->Print("lorentz_map_e.pdf");
-	
-	lorentz_map_h->GetXaxis()->SetNdivisions(505);
-        lorentz_map_h->GetYaxis()->SetNdivisions(505);
-        lorentz_map_h->GetXaxis()->SetTitle("Initial Position in Z [mm]");
-        lorentz_map_h->GetYaxis()->SetTitle("Distance Traveled in Z [mm]");
-        lorentz_map_h->GetZaxis()->SetTitleOffset(1.6);
-        lorentz_map_h->SetTitle("Hole Lorentz Map");
-        lorentz_map_h->GetZaxis()->SetTitle("Tangent Lorentz Angle");
-        lorentz_map_h->Draw("colz");
-        c1->Print("lorentz_map_h.pdf");
-        
-	std::cout << "here " << std::endl; 
+	if (debug_maps){
+	  gPad->SetRightMargin(0.15);
+	  lorentz_map_e->GetXaxis()->SetNdivisions(505);
+	  lorentz_map_e->GetYaxis()->SetNdivisions(505);
+	  lorentz_map_e->GetXaxis()->SetTitle("Initial Position in Z [mm]");
+	  lorentz_map_e->GetYaxis()->SetTitle("Distance Traveled in Z [mm]");
+	  lorentz_map_e->GetZaxis()->SetTitleOffset(1.6);
+	  lorentz_map_e->GetYaxis()->SetTitleOffset(1.3);
+	  lorentz_map_e->SetTitle("Electron Lorentz Map");
+	  lorentz_map_e->GetZaxis()->SetTitle("Tangent Lorentz Angle");
+	  lorentz_map_e->Draw("colz");
+	  c1->Print("lorentz_map_e.pdf");
+	  
+	  lorentz_map_h->GetXaxis()->SetNdivisions(505);
+	  lorentz_map_h->GetYaxis()->SetNdivisions(505);
+	  lorentz_map_h->GetXaxis()->SetTitle("Initial Position in Z [mm]");
+	  lorentz_map_h->GetYaxis()->SetTitle("Distance Traveled in Z [mm]");
+	  lorentz_map_h->GetYaxis()->SetTitleOffset(1.3);
+	  lorentz_map_h->GetZaxis()->SetTitleOffset(1.6);
+	  lorentz_map_h->SetTitle("Hole Lorentz Map");
+	  lorentz_map_h->GetZaxis()->SetTitle("Tangent Lorentz Angle");
+	  lorentz_map_h->Draw("colz");
+	  c1->Print("lorentz_map_h.pdf");
+	}
 
 }// End of AllPixFEI4RadDamageDigitizer::AllPixFEI4RadDamageDigitizer definition
 
@@ -540,7 +505,7 @@ AllPixFEI4RadDamageDigitizer::~AllPixFEI4RadDamageDigitizer(){
 
 G4double AllPixFEI4RadDamageDigitizer::Phi(G4double x, G4double z, G4double Lx, G4double L){
   
- 
+  if (z==0) z=0.00001;//a pathology in the definition.
   G4double pi = 4.*TMath::ATan(1.);
   G4double val = (TMath::Sin(pi*z/L)*TMath::SinH(0.5*pi*Lx/L)/(TMath::CosH(pi*x/L)-TMath::Cos(pi*z/L)*TMath::CosH(0.5*pi*Lx/L)));
   if (val > 0) return TMath::ATan(val)/pi;
