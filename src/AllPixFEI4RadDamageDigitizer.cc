@@ -56,15 +56,18 @@ AllPixFEI4RadDamageDigitizer::AllPixFEI4RadDamageDigitizer(G4String modName, G4S
 	/////Setup all the inputs/////////////////////////////////////////
 	////////////////////////////////////////////////////////////////// 
 	//Physics switches
-	doTrapping = true;
-        doRamo = true;
 	doDiff = false;
 	doSimplifiedModel = false;
+	doChunkCorrection = false; //account for the fact that we are not propagating fundamental charge carriers.
 
 	//Physics defaults
 	defaultRamo = 0; // -1 = approximate z-dependence only; 0 = exact XZ x YZ with compensating Z-dependence; > 0 = solution to Poisson's equation with defaultRamo terms in the series.  See doc/RadDamageDefaults.pdf for details.
 	defaultEfield = 1; // 0 = uniform; 1 = linear.
+	defaultDiffusion = -1; //mm; if positive, will use a diffusion length of dif=defaultDiffusion*sqrt(zposD/0.3); N.B. the ATLAS digitization default is defaultDiffusion = 0.007.
+	
+	//Debugging information
 	debug_maps = true; //if true, prints plots of all the input maps.
+	dodebug = false; //prints debugging statements inside the digitizer
 
 	//Constants
 	elec = 3.64*eV;//average energy required to produce a e/h pair in Si.  This has been known for a long time - first measurement was Phys. Rev. 91, 1079 (1953).
@@ -606,79 +609,83 @@ G4double AllPixFEI4RadDamageDigitizer::GetElectricField(G4double x, G4double y, 
 
 G4double AllPixFEI4RadDamageDigitizer::GetMobility(G4double electricField, G4bool isHole){ 
   //Expects the electric field in MV/mm and returns the mobility in mm^2/(MV*ns).  Temperature is a global variable and is in K.
-	
-	// Initialize variables so they have the right scope
-	G4double vsat = 0;
-	G4double ecrit = 0;
-	G4double beta = 0;	
-
-	//These parameterizations come from C. Jacoboni et al., Solid‐State Electronics 20 (1977) 77‐89. (see also https://cds.cern.ch/record/684187/files/indet-2001-004.pdf).
-	if(!isHole){
-		vsat = 15.3*pow(temperature,-0.87);	// mm/ns
-		ecrit = 1.01E-7*pow(temperature,1.55);	// MV/mm
-		beta = 2.57E-2*pow(temperature,0.66);
-	}
-	if(isHole){
-		vsat = 1.62*pow(temperature,-0.52);	// mm/ns
-		ecrit = 1.24E-7*pow(temperature,1.68);	// MV/mm
-		beta = 0.46*pow(temperature,0.17);
-	}
-
-	G4double mobility = (vsat/ecrit)/pow(1+pow((electricField/ecrit),beta),(1/beta));	
-	return mobility;  					// mm^2/(MV*ns)
+  
+  // Initialize variables so they have the right scope
+  G4double vsat = 0;
+  G4double ecrit = 0;
+  G4double beta = 0;	
+  
+  //These parameterizations come from C. Jacoboni et al., Solid‐State Electronics 20 (1977) 77‐89. (see also https://cds.cern.ch/record/684187/files/indet-2001-004.pdf).
+  if(!isHole){
+    vsat = 15.3*pow(temperature,-0.87);	// mm/ns
+    ecrit = 1.01E-7*pow(temperature,1.55); // MV/mm
+    beta = 2.57E-2*pow(temperature,0.66);
+  }
+  if(isHole){
+    vsat = 1.62*pow(temperature,-0.52);	// mm/ns
+    ecrit = 1.24E-7*pow(temperature,1.68); // MV/mm
+    beta = 0.46*pow(temperature,0.17);
+  }
+  
+  G4double mobility = (vsat/ecrit)/pow(1+pow((electricField/ecrit),beta),(1/beta));	
+  return mobility; // mm^2/(MV*ns)
 }
 
 G4double AllPixFEI4RadDamageDigitizer::GetDriftTime(G4bool isHole){
-	G4double u = CLHEP::RandFlat::shoot(0.,1.); 
-	G4double driftTime = 0;
-	if(!isHole) driftTime = (-1.)*trappingTimeElectrons*TMath::Log(u); // ns
-	if(isHole) driftTime = (-1.)*trappingTimeHoles*TMath::Log(u); // ns
-	return driftTime;
+  //returns the drift time in ns.
+  
+  G4double u = CLHEP::RandFlat::shoot(0.,1.); 
+  G4double driftTime = 0;
+  if(!isHole) driftTime = (-1.)*trappingTimeElectrons*TMath::Log(u); // ns
+  if(isHole) driftTime = (-1.)*trappingTimeHoles*TMath::Log(u); // ns
+  return driftTime;
 }
 
 G4double AllPixFEI4RadDamageDigitizer::GetTimeToElectrode(G4double z, G4bool isHole){
-	// Uses z position in mm to return time to electrode, in ns
-	// The mapping takes care of holes going in opposite direction
-
-	G4double timeToElectrode = 0;
-	if(!isHole) 
-	  {
-	    int n_binz = timeMap_e->GetXaxis()->FindBin(z);
-	    timeToElectrode = timeMap_e->GetBinContent(n_binz);	
-	  }
-	if(isHole)
-	  {
-	    int n_binz = timeMap_h->GetXaxis()->FindBin(z);							
-	    timeToElectrode = timeMap_h->GetBinContent(n_binz);			
-	  }
-	return timeToElectrode;	
+  // Uses z position in mm to return time to electrode, in ns
+  // The mapping takes care of holes going in opposite direction
+  
+  G4double timeToElectrode = 0;
+  if(!isHole) 
+    {
+      int n_binz = timeMap_e->GetXaxis()->FindBin(z);
+      timeToElectrode = timeMap_e->GetBinContent(n_binz);	
+    }
+  if(isHole)
+    {
+      int n_binz = timeMap_h->GetXaxis()->FindBin(z);							
+      timeToElectrode = timeMap_h->GetBinContent(n_binz);			
+    }
+  return timeToElectrode;	
 }
 
 G4double AllPixFEI4RadDamageDigitizer::GetTanLorentz(G4double electricField, G4bool isHole){
+  //Expects the electricField in MV/mm.
+
   G4double hallEffect = 1.13 + 0.0008*(temperature - 273.0); //Hall Scattering Factor - taken from https://cds.cern.ch/record/684187/files/indet-2001-004.pdf
   if (isHole) hallEffect = 0.72 - 0.0005*(temperature - 273.0);
-  G4double mobility = AllPixFEI4RadDamageDigitizer::GetMobility(electricField, isHole);
-  //if(!isHole) mobility =1100;
-  //if(isHole) mobility =500;
-  G4double tanLorentz = hallEffect*mobility*bField*(1.0E-3);  //unit conversion
+  G4double mobility = AllPixFEI4RadDamageDigitizer::GetMobility(electricField, isHole); //mobility is in mm^2/(MV*ns)
+  G4double tanLorentz = hallEffect*mobility*bField*(1.0E-3);  //unit conversion; b-Field is in T = V*s/m^2 
   return tanLorentz;
 }
 
 G4double AllPixFEI4RadDamageDigitizer::GetTanLorentz(G4double z1, G4double z2, G4bool isHole){
-
+  //Expects the starting depth z1 and the ending depth z2 in mm.
+  //The GetTanLorentz function above that takes only the E field gives the instantaneous Lorentz angle.  This returns the integrated angle.
+ 
   G4double tanLorentz = -999;
   int nbin=0;
   if(!isHole){
-        if(z2>detectorThickness)z2=detectorThickness;
-        if(z2<0)z2=0;
-	nbin = lorentz_map_e->FindBin(z1,z2);
-	tanLorentz = lorentz_map_e->GetBinContent(nbin);
-  }else{
-        if(z2>=detectorThickness) z2=detectorThickness-0.001;
-        if(z2<0)z2=0.001; 
-       
-	nbin = lorentz_map_h->FindBin(z1,z2);
-	tanLorentz = lorentz_map_h->GetBinContent(nbin) ;
+    if(z2>detectorThickness)z2=detectorThickness;
+    if(z2<0)z2=0;
+    nbin = lorentz_map_e->FindBin(z1,z2);
+    tanLorentz = lorentz_map_e->GetBinContent(nbin);
+  }
+  else{
+    if(z2>=detectorThickness) z2=detectorThickness-0.001;
+    if(z2<0)z2=0.001;        
+    nbin = lorentz_map_h->FindBin(z1,z2);
+    tanLorentz = lorentz_map_h->GetBinContent(nbin) ;
   }
   
   return tanLorentz;
@@ -687,304 +694,197 @@ G4double AllPixFEI4RadDamageDigitizer::GetTanLorentz(G4double z1, G4double z2, G
 
 // ***** Process for each event *****
 void AllPixFEI4RadDamageDigitizer::Digitize(){
-	
-	// create the digits collection
-	m_digitsCollection = new AllPixFEI4RadDamageDigitsCollection("AllPixFEI4RadDamageDigitizer", collectionName[0] );
+  //This is the main function!
+  
+  // create the digits collection
+  m_digitsCollection = new AllPixFEI4RadDamageDigitsCollection("AllPixFEI4RadDamageDigitizer", collectionName[0] );
+  
+  // get the digiManager
+  G4DigiManager * digiMan = G4DigiManager::GetDMpointer();
 
-	// get the digiManager
-	G4DigiManager * digiMan = G4DigiManager::GetDMpointer();
+  // BoxSD_0_HitsCollection
+  G4int hcID = digiMan->GetHitsCollectionID(m_hitsColName[0]);
+  
+  AllPixTrackerHitsCollection * hitsCollection = 0;
+  hitsCollection = (AllPixTrackerHitsCollection*)(digiMan->GetHitsCollection(hcID));
+  
+  // temporary data structure
+  map<pair<G4int, G4int>, G4double > pixelsContent;		// stored energy per (countx,county) pixel	
+  pair<G4int, G4int> tempPixel;					// (countx,county) which pixel
+  map<pair<G4int, G4int>, G4double > sumpixelsContent;		// stored energy per (countx,county) pixel	
+  
+  G4int nEntries = hitsCollection->entries();
+  for(G4int itr  = 0 ; itr < nEntries ; itr++) {
 
-	// BoxSD_0_HitsCollection
-	G4int hcID = digiMan->GetHitsCollectionID(m_hitsColName[0]);
+    G4double xpos = (*hitsCollection)[itr]->GetPosWithRespectToPixel().x(); // mm; N.B. this is the eta direction.
+    G4double ypos = (*hitsCollection)[itr]->GetPosWithRespectToPixel().y(); // mm; N.B. this is the phi direction.
 
-	AllPixTrackerHitsCollection * hitsCollection = 0;
-	hitsCollection = (AllPixTrackerHitsCollection*)(digiMan->GetHitsCollection(hcID));
+    // Given as distance from center of pixel, + toward electrode (where electrons are read out)
+    G4double zpos = detectorThickness/2. - (*hitsCollection)[itr]->GetPosWithRespectToPixel().z();	// mm; Gives distance to readout side for electron
 
-	// temporary data structure
-	map<pair<G4int, G4int>, G4double > pixelsContent;		// stored energy per (countx,county) pixel	
-	pair<G4int, G4int> tempPixel;					// (countx,county) which pixel
-	pair<G4int, G4int> sumPixel;					// (countx,county) which pixel
-	map<pair<G4int, G4int>, G4double > sumpixelsContent;		// stored energy per (countx,county) pixel	
-	pair<G4int, G4int> AppotempPixel;
-	
-	
-
-	bool dodebug = false;
-	// Loop over the whole Hits Collection - this spreads out the effect of the hit over its path through the pixel 
-	G4int nEntries = hitsCollection->entries();
-	G4double sumEnToT=0;
-	for(G4int itr  = 0 ; itr < nEntries ; itr++)  sumEnToT+= (*hitsCollection)[itr]->GetEdep(); 
-	for(G4int itr  = 0 ; itr < nEntries ; itr++) {
-
-		G4double xpos = (*hitsCollection)[itr]->GetPosWithRespectToPixel().x(); // mm !!!BE WARNED: THIS IS THE ETA DIRECTION.  LORENTZ ANGLE CURRENTLY WRONG!!!
-		G4double ypos = (*hitsCollection)[itr]->GetPosWithRespectToPixel().y(); // mm !!!BE WARNED: THIS IS THE ETA DIRECTION.  LORENTZ ANGLE CURRENTLY WRONG!!!
-
-		// Given as distance from center of pixel, + toward electrode (where electrons are read out)
-		G4double zpos = detectorThickness/2. - (*hitsCollection)[itr]->GetPosWithRespectToPixel().z();	// mm; Gives distance to readout side for electron
-
-		G4double eHitTotal = (*hitsCollection)[itr]->GetEdep(); // Energy deposition for the hit, internal unit
-		tempPixel.first  = (*hitsCollection)[itr]->GetPixelNbX();
-		tempPixel.second = (*hitsCollection)[itr]->GetPixelNbY();
-
-
+    G4double eHitTotal = (*hitsCollection)[itr]->GetEdep(); // Energy deposition for the hit, internal unit
+    tempPixel.first  = (*hitsCollection)[itr]->GetPixelNbX();
+    tempPixel.second = (*hitsCollection)[itr]->GetPixelNbY();
 		
-		if(itr>0){ // this is done in order to prevent a bug where if the charge was exactly on the border of the pixel it would change the 
-			   // pixel position, eg: xpos1=23 um pixelX 121 -> xpos2=25 um pixelX 122, where it should have been xpos2=25 um pixelX 121
-		 if(((pitchX/2)-fabs(xpos)) <0.000001 && fabs((*hitsCollection)[itr]->GetPixelNbX() - (*hitsCollection)[itr-1]->GetPixelNbX())>1) {
-		  tempPixel.first  = tempPixel.first -1;
-		  G4cout<<" ok, change "<<endl;
-		 }
-		}
-		// In case the charge moves into a neighboring pixel
-		pair<G4int, G4int> extraPixel;
-		extraPixel = tempPixel;
+    if(itr>0){ // this is done in order to prevent a bug where if the charge was exactly on the border of the pixel it would change the 
+      // pixel position, eg: xpos1=23 um pixelX 121 -> xpos2=25 um pixelX 122, where it should have been xpos2=25 um pixelX 121
+      if(((pitchX/2)-fabs(xpos)) <0.000001 && fabs((*hitsCollection)[itr]->GetPixelNbX() - (*hitsCollection)[itr-1]->GetPixelNbX())>1) {
+	tempPixel.first  = tempPixel.first -1;
+      }
+    }
+    // In case the charge moves into a neighboring pixel
+    pair<G4int, G4int> extraPixel;
+    extraPixel = tempPixel;
 
-		// Split the charge into subcharges (# = precision) that are diffused separately to the electrode
-		for(G4int nQ  = 0 ; nQ < precision ; nQ++) {
-				
-		  //G4double eHit = G4double(eHitTotal)/(2*precision);  // eV; divide in half because we are treating holes separately	
-		  G4double eHit = G4double(eHitTotal)/(precision);      // eV; but charges are always "e", regardless of them beeing 
-		  							//electrons or holes, isn't it?		  
-		 						 	// point should be: if using ramo ->no 2. If NOT using ramo ->yes 2
-		  G4double eHitbefore = eHit;			
+    // Split the charge into subcharges (# = precision) that are diffused separately to the electrode
+    for(G4int nQ  = 0 ; nQ < precision ; nQ++) {
+      
+      //Each e-h chunk pair has eHitTotal / precision energy.  When the Ramo potential is used, the total induced energy is
+      //e*[phi(final h) - phi(initial)] - e*[phi(final e) - phi(initial)].  Therefore, the entire chunk needs to have the
+      //proper energy (i.e. should not divide by 2).  
+      G4double eHit = G4double(eHitTotal)/(precision); //eV
+      G4double eHitbefore = eHit;			
+      
+      //Need to determine how many elementary charges this charge chunk represents.
+      double chunk_size = eHit/elec; 
+      double kappa = 1./sqrt(chunk_size);
 		  
-		  //Need to determine how many elementary charges this charge chunk represents.
-		  double chunk_size = eHit/(0.5*elec);			// this here should not depend on the discussion above, since
-		  //double chunk_size = eHit/elec;			// it is just a numerical factor
-		  double kappa = 1./sqrt(chunk_size);
-		  
-		  // Loop over everything following twice, once for holes and once for electrons
-		  for(G4int eholes=0 ; eholes<2 ; eholes++) { // Loop over everything twice, once for electrons and once for holes
+      // Loop over everything following twice, once for holes and once for electrons
+      for(G4int eholes=0 ; eholes<2 ; eholes++) {
 		    
-		    //Need to modify to only use holes for ramo.
-		    isHole = false; // Set a condition to keep track of electron/hole-specific functions
-		    if (eholes == 1) isHole = true;
-		    //if(detectorThickness-zpos<0.001) zpos = detectorThickness -0.001;
-		    
-		    //G4double electricField = GetElectricField(zpos);	    		//1D Efield
-		    G4double electricField = GetElectricField(xpos,ypos,zpos);		//3D EField
-		    //if(fabs(electricField)<0.000001*1.0E-6) continue;
-
-		    // Reset extraPixel coordinates each time through loop
-		    extraPixel = tempPixel;
-
-		    G4double timeToElectrode = GetTimeToElectrode(zpos, isHole); //ns
-		    //if(nQ==0)G4cout << "    ardvark   " << timeToElectrode <<" electricField "<<electricField<< G4endl;
-		    G4double driftTime = GetDriftTime(isHole);
-		    G4double drift_time_constant = trappingTimeElectrons;
-		    if (isHole) drift_time_constant = trappingTimeHoles;
-		    double time_ratio = timeToElectrode/drift_time_constant;
-		    double charge_correction_exp = exp(-time_ratio);
-		    //double average_charge = charge_chunk_map_e->GetBinContent(charge_chunk_map_e->FindBin(zpos*1000));
-		    //if (isHole) average_charge = charge_chunk_map_h->GetBinContent(charge_chunk_map_h->FindBin((detectorThickness-zpos)*1000));
-		    double average_charge = charge_chunk_map_e->GetBinContent(charge_chunk_map_e->FindBin(fabs(xpos)*1000,fabs(ypos)*1000,zpos*1000));
-		    if (isHole) average_charge = charge_chunk_map_h->GetBinContent(charge_chunk_map_h->FindBin(fabs(xpos)*1000,fabs(ypos)*1000,zpos*1000));
-		    
-		    
-		   // G4double tanLorentz = GetTanLorentz(electricField, isHole);
-		    //tanLorentz=0.22;
-		    G4double zposD = zpos; //this is the distance between the initial position and the final position.
-		    if (isHole) zposD = detectorThickness - zpos;
-		    if ((driftTime < timeToElectrode) && doTrapping){
-		      int nbin=0;
-		      if(!isHole){
-			nbin = distancemap_e->FindBin(zpos,driftTime);
-			zposD = zpos-distancemap_e->GetBinContent(nbin);
-		      }
-		      else{
-			nbin = distancemap_h->FindBin(zpos,driftTime);
-			zposD = distancemap_h->GetBinContent(nbin) - zpos;
-		      }
-		    }
-		    G4double tanLorentz =-1.;
-		    if(!isHole) tanLorentz =GetTanLorentz(zpos,zpos-zposD, isHole);
-		    else tanLorentz =GetTanLorentz(zpos,zpos+zposD, isHole);
-		    /*
-		      D = mu * kB * T / q
-		      D = (mu / mm^2/MV*ns) * (T/273 K) * 0.024 microns^2 / ns
-		    */
-		    G4double Dt = GetMobility(electricField, isHole)*(0.024)*timeToElectrode*temperature/273.;
-		    G4double rdif=sqrt(Dt)/1000; //in mm
-		    //double rdif=0.007*sqrt(zpos/0.3); 		//ATHENA diffusion
-		    if (!doDiff) rdif = 0.; 
-		    G4double termRand=CLHEP::RandGauss::shoot(0,1);
-		    G4double xposD=xpos+zposD*tanLorentz+termRand*rdif; //Both e and h move in the same direciton under B-field (q-reversed but also the velocity direction)
-		    G4double yposD=ypos+rdif*CLHEP::RandGauss::shoot(0,1);
-		    
-		    
-		    int loc_x = tempPixel.first;
-                    int loc_y = tempPixel.second;
-		    sumPixel=tempPixel;
-		   //if ((driftTime < timeToElectrode) && doTrapping) //charge was trapped
-		   if ( doTrapping)    //if I want to use always the Ramo potential, even when charges are not trapped
-		    {
-		      //G4double TrapeHit=2*eHit; 
-		      //G4double TrapeHit=eHit; 
-  		      if (doRamo){
-			//Record the induced charge from the difference in the ramo potential between the trapped location and all electordes.			
-			// ramo potential at electrode based on (x,y,z) position in micrometers
-			// -- loop in the x-coordinate
-			for (int i=-2; i<=2; i++){
-			  G4double x_neighbor = i*pitchX;
-			  extraPixel.first = loc_x + i;
-			  // -- loop in the y-coordinate
-			  for (int j=-2; j<=2; j++){
-			    //pixelsContent[extraPixel]=0;
-			    G4double y_neighbor = j*pitchY;
-			    extraPixel.second = loc_y + j;
-			    int nbin = 0;
-			    //G4double ramo_i=0;
-			    double ramo_i=0;
-			    
-			     int nbinmaxX=ramoPotentialMap->GetNbinsX();
-			     int nbinmaxY=ramoPotentialMap->GetNbinsY();
-			     double binwidthX=ramoPotentialMap->GetXaxis()->GetBinWidth(2);
-			     double binwidthY=ramoPotentialMap->GetYaxis()->GetBinWidth(2);
-			     
-			    if(  fabs(xpos-x_neighbor)*1000<(nbinmaxX*binwidthX) && fabs(ypos-y_neighbor)*1000<(nbinmaxY*binwidthY) ) { // check if the position we are evaluating the rampo potential is inside the map, if not->ramo=0
-			     if(!isHole) nbin = ramoPotentialMap->FindBin(fabs((xpos-x_neighbor)*1000),fabs((ypos-y_neighbor)*1000),zpos*1000); //take the absolute value because we only have 1/8 of the ramo 
-			     else nbin = ramoPotentialMap->FindBin(fabs((xpos-x_neighbor)*1000),fabs((ypos-y_neighbor)*1000),zpos*1000);
-			     ramo_i = ramoPotentialMap->GetBinContent(nbin);
-			     
-			    }
-
-			    int nbin2 = 0;
-			    //Our distance and time maps are in 1D.  Near the collecting electrode, the electrons would bend toward x=y=0.  We mimic this by just setting the final position to x=y=0.
-			    //G4double ramo=0;
-			    double ramo=0;
-			    if(  fabs(xposD-x_neighbor)*1000<(nbinmaxX*binwidthX) && fabs(yposD-y_neighbor)*1000<(nbinmaxY*binwidthY) ){// check if the position we are evaluating the rampo potential is inside the map, if not->ramo_i=0
-			     
-			     //if(!isHole) nbin2 = ramoPotentialMap->FindBin(fabs((xposD-x_neighbor)*1000),fabs((yposD-y_neighbor)*1000),max(0.0001,(zpos-zposD))*1000);
-			     if(!isHole) nbin2 = ramoPotentialMap->FindBin(fabs((xposD-x_neighbor)*1000),fabs((yposD-y_neighbor)*1000),(zpos-zposD)*1000);
-			     else nbin2 = ramoPotentialMap->FindBin(fabs((xposD-x_neighbor)*1000),fabs((yposD-y_neighbor)*1000),(zpos+zposD)*1000);
-			    
-			     ramo = ramoPotentialMap->GetBinContent(nbin2);		     
-			    }
-			     if( (zpos-zposD==0.)  &&  (fabs(xposD-x_neighbor)>pitchX/2 || fabs(yposD-y_neighbor)>pitchY/2) ) ramo=0;
-			     if( (zpos-zposD==0.)  &&  fabs(xposD-x_neighbor)<=pitchX/2 && fabs(yposD-y_neighbor)<=pitchY/2 ) ramo=1;
-			    // Record deposit
-			    //if(nQ==0 && isHole)G4cout << isHole <<" z+zD "<< zpos+zposD << " xD " << xposD-x_neighbor << " yD " << yposD-y_neighbor << " ramo_i " << ramo_i << " ramo " << ramo << " pitchX "<<pitchX<<" pitchY "<<pitchY<<G4endl; 
-			    //if(nQ==0 && !isHole)G4cout << isHole <<" z-zD "<< zpos-zposD << " xD " << xposD-x_neighbor<< " pitchX/2 "<<pitchX/2<< " yD " << yposD-y_neighbor << " pitchY/2 "<<pitchY/2<< " ramo_i " << ramo_i << " ramo " << ramo << G4endl;   
-			   //  if(nQ==0 && !isHole)G4cout<<"----------------"<<endl;
-			    //G4double eHitRamo = (1-2*isHole)*eHit*(ramo - ramo_i);  //eV
-			    double eHitRamo =(1-2*isHole)*eHit*(ramo - ramo_i);  //eV
-			    //double eHitRamo =(1-2*isHole)*TrapeHit*(ramo - ramo_i);  //eV
-			    double pixelprecont=pixelsContent[extraPixel];
-			    pixelsContent[extraPixel] += eHitRamo;  // if you don't want to use charge chunk just uncomment here and comment afterwards
-			    if(fabs(xposD-x_neighbor)<pitchX/2 && fabs(yposD-y_neighbor)<pitchY/2 ) sumpixelsContent[extraPixel] += eHitRamo;
-			    //X' -> \mu + kappa * (X-\mu)
-			    
-			    double appo_outside=1.;			     // charge chunking part still under revision :(
-		   	    //if(ramo==0. || ramo_i==0. ) appo_outside=0.;  // there shouldn't be any charge induced if we are in a neighborhood pixel
-		   	    				    		    // This term "should" account for that
-		   	    				    		  
-			    //if(fabs(xpos-x_neighbor)>pitchX/2 && fabs(ypos-y_neighbor)>pitchY/2) 	appo_outside=0.;	   	    				    
-			    /*	  
-			    if (isHole) pixelsContent[extraPixel] += appo_outside*(TrapeHit*average_charge + kappa*(eHitRamo - TrapeHit*average_charge)); //eV.
-			    else pixelsContent[extraPixel] += appo_outside*(TrapeHit*(average_charge+charge_correction_exp) + kappa*(eHitRamo - TrapeHit*(average_charge+charge_correction_exp)));
-			    */	  
-			    //if (isHole) pixelsContent[extraPixel] += appo_outside*(eHit*average_charge + kappa*(eHitRamo - eHit*average_charge)); //eV.
-			    //else pixelsContent[extraPixel] += appo_outside*(eHit*(average_charge+charge_correction_exp) + kappa*(eHitRamo - eHit*(average_charge+charge_correction_exp)));
-			  } //loop over y
-			} //loop over x
-		      } //doRamo
-		      
-		      // Record deposit - take into account charge chunks that represent more than one fundamental charge!
-		      //X' -> \mu + kappa * (X-\mu) 
-		      //if (!doRamo) pixelsContent[extraPixel] += eHit*(charge_correction_exp+kappa*(0.-charge_correction_exp)); //eV
-		     
-		    } //is trapped
-		    else { //charge was not trapped or charge trapping is turned off.
-		        // Account for drifting into another pixel 
-		        //G4cout<<"why here????"<<G4endl;
-		        
-		     while (fabs(xposD) > pitchX/2){
-		       G4double sign = xposD/(fabs(xposD));                        // returns +1 or -1 depending on + or - x value 
-		       extraPixel.first = extraPixel.first + 1*sign;               // increments or decrements pixel count in x
-		       xposD = xposD - (pitchX*sign);                              // moves xpos coordinate 1 pixel over in x
-		     }
-		     while (fabs(yposD) > pitchY/2){
-		       G4double sign = yposD/(fabs(yposD));                        // returns +1 or -1 depending on + or - y value
-		       extraPixel.second = extraPixel.second + 1*sign;             // increments or decrements pixel count in y
-		       yposD = yposD - (pitchY*sign);                              // moves xpos coordinate 1 pixel over in y 
-		     }
-		     
-		       // Record deposit
-		       //X' -> \mu + kappa * (X-\mu)
-		        //pixelsContent[extraPixel] += eHit; // eV
-		       
-		       if(!isHole){		        
-		        if (!doTrapping && !doRamo) pixelsContent[extraPixel] += eHit; // eV
-		        else if (!doRamo) pixelsContent[extraPixel] += eHit*(charge_correction_exp+kappa*(1.-charge_correction_exp)); //eV
-		        else pixelsContent[extraPixel] += eHit*(average_charge+charge_correction_exp) + kappa*(eHit - eHit*(average_charge+charge_correction_exp));
-		      }else{
-		        if (!doTrapping && !doRamo) pixelsContent[extraPixel] += eHit; // eV
-		        else if (!doRamo) pixelsContent[extraPixel] += eHit*(charge_correction_exp+kappa*(1.-charge_correction_exp)); //eV
-		        else pixelsContent[extraPixel] += eHit*(average_charge) + kappa*(eHit - eHit*(average_charge));
-		       }
-		       
-		       
-		       	      		    
-		    }		  
-		    
-		      
-		  }  // end loop over charges/holes
-		} // end loop over nQ charges
-map<pair<G4int, G4int>, G4double >::iterator pCItrSUM = sumpixelsContent.begin();
-		    G4double sumdeposited_energy=0;
-		    for( ; pCItrSUM != sumpixelsContent.end() ; pCItrSUM++)  sumdeposited_energy+= (*pCItrSUM).second;
-	            //G4cout<<"  z " <<zpos<< " sumdeposited_energy "<<sumdeposited_energy <<" endepTOT "<<sumEnToT<<" frac "<< sumdeposited_energy/sumEnToT<<G4endl;
-	            //G4cout<<"  zpos " <<zpos<< "  "<< sumdeposited_energy/eHitTotal<<G4endl;
-		    
-	map<pair<G4int, G4int>, G4double >::iterator pCItrDEL = sumpixelsContent.begin();
-	for( ; pCItrDEL != sumpixelsContent.end() ; pCItrDEL++) sumpixelsContent[ (*pCItrDEL).first]=0;
-		    
-	}// end loop over nEntries
-		    
-	// Now that pixelContent is filled, create one digit per pixel
-	map<pair<G4int, G4int>, G4double >::iterator pCItr = pixelsContent.begin();
+	isHole = false; // Set a condition to keep track of electron/hole-specific functions
+	if (eholes == 1) isHole = true;
 	
-	for( ; pCItr != pixelsContent.end() ; pCItr++)
-	  {
+	G4double electricField = GetElectricField(xpos,ypos,zpos); //in MV/mm; N.B. defaults to 1D if 3D is not provided.  
 
-	    G4double deposited_energy = (*pCItr).second;
-	    int ToT = TMath::FloorNint(deposited_energy*tuning);
-	    //G4cout<<"  X " << (*pCItr).first.first<< " Y "<< (*pCItr).first.second<< " EN " << (*pCItr).second <<" Threshold "<<threshold<<" tot "<< ToT<< G4endl;
-	    if (ToT >=15) ToT = 15; //FEI4 is 4-bit.
-	    AllPixFEI4RadDamageDigit * digit = new AllPixFEI4RadDamageDigit;
-	    digit->SetPixelIDX((*pCItr).first.first);
-	    digit->SetPixelIDY((*pCItr).first.second);
-	    digit->SetPixelCounts(ToT);
-	    digit->SetPixelEnergyDep(deposited_energy);
-	    if (deposited_energy < threshold){
-	      digit->SetPixelCounts(0);
-	      digit->SetPixelEnergyDep(0);
-	    }
-	    if (deposited_energy >= threshold && ToT > 0){
-	      m_digitsCollection->insert(digit);
-	      if (dodebug){
-		std::cout << "inserted a digit! " << std::endl;
-	      }
-	    }
+	// Reset extraPixel coordinates each time through loop
+	extraPixel = tempPixel;
+
+	G4double timeToElectrode = GetTimeToElectrode(zpos, isHole); //ns
+	G4double driftTime = GetDriftTime(isHole); //ns
+	G4double drift_time_constant = trappingTimeElectrons; //ns
+	if (isHole) drift_time_constant = trappingTimeHoles;
+	double average_charge = charge_chunk_map_e->GetBinContent(charge_chunk_map_e->FindBin(fabs(xpos)*1000,fabs(ypos)*1000,zpos*1000));
+	if (isHole) average_charge = charge_chunk_map_h->GetBinContent(charge_chunk_map_h->FindBin(fabs(xpos)*1000,fabs(ypos)*1000,zpos*1000));
+	
+	G4double zposD = zpos; //this is the distance between the initial position and the final position.
+	if (isHole) zposD = detectorThickness - zpos;
+	if ((driftTime < timeToElectrode) && doTrapping){
+	  int nbin=0;
+	  if(!isHole){
+	    nbin = distancemap_e->FindBin(zpos,driftTime);
+	    zposD = zpos-distancemap_e->GetBinContent(nbin);
 	  }
-	
-	G4int dc_entries = m_digitsCollection->entries();
-	if(dc_entries > 0)
-	  {
-	    count++;
-	    G4cout << "--------> Digits Collection : " << collectionName[0]
-		   << "(" << m_hitsColName[0] << ")"
-		   << " contains " << dc_entries
-		   << " digits" 
-		   << " count "<<count<<  G4endl;
+	  else{
+	    nbin = distancemap_h->FindBin(zpos,driftTime);
+	    zposD = distancemap_h->GetBinContent(nbin) - zpos;
 	  }
-	
-	StoreDigiCollection(m_digitsCollection);
-	
-	if (dodebug){
-	  std::cout << "\n\n\n\n\n\n\n\n\n\n squirrel \n\n\n\n\n\n\n" << std::endl;
 	}
+	G4double tanLorentz =-1.;
+	if(!isHole) tanLorentz = GetTanLorentz(zpos,zpos-zposD, isHole);
+	else tanLorentz = GetTanLorentz(zpos,zpos+zposD, isHole);
 	
+	/*
+	  Diffusion via the Einstein relation
+	  D = mu * kB * T / q
+	  D = (mu / mm^2/MV*ns) * (T/273 K) * 0.024 microns^2 / ns
+	*/
+
+	G4double Dt = GetMobility(electricField, isHole)*(0.024)*timeToElectrode*temperature/273.;
+	G4double rdif=sqrt(Dt)/1000; //in mm
+	if (defaultDiffusion > 0) rdif=defaultDiffusion*sqrt(zposD/0.3); 
+	if (!doDiff) rdif = 0.;
+	G4double termRand=CLHEP::RandGauss::shoot(0,1);
+	G4double xposD=xpos+zposD*tanLorentz+termRand*rdif; //Both e and h move in the same direciton under B-field (q-reversed but also the velocity direction)
+	G4double yposD=ypos+rdif*CLHEP::RandGauss::shoot(0,1);
+			    
+	int loc_x = tempPixel.first;
+	int loc_y = tempPixel.second;
+	//Record the induced charge from the difference in the ramo potential between the trapped location and all electordes.			
+	// ramo potential at electrode based on (x,y,z) position in micrometers
+	// -- loop in the x-coordinate
+	for (int i=-2; i<=2; i++){
+	  G4double x_neighbor = i*pitchX;
+	  extraPixel.first = loc_x + i;
+	  // -- loop in the y-coordinate
+	  for (int j=-2; j<=2; j++){
+	    G4double y_neighbor = j*pitchY;
+	    extraPixel.second = loc_y + j;
+	    
+	    int nbin = ramoPotentialMap->FindBin(fabs((xpos-x_neighbor)*1000),fabs((ypos-y_neighbor)*1000),zpos*1000); //take the absolute value because we only have 1/4 of the ramo
+	    double ramo_i=0;
+	    if (!ramoPotentialMap->IsBinOverflow(nbin) && !ramoPotentialMap->IsBinOverflow(nbin)){ //check if the position is inside the map, else ramo=0
+	      ramo_i = ramoPotentialMap->GetBinContent(nbin);
+	    }
+	    int nbin2 = ramoPotentialMap->FindBin(fabs((xposD-x_neighbor)*1000),fabs((yposD-y_neighbor)*1000),(zpos+zposD)*1000); //for this check, zpos doesn't matter.
+	    double ramo=0;
+	    if (!ramoPotentialMap->IsBinOverflow(nbin2) && !ramoPotentialMap->IsBinOverflow(nbin2)){ //check if the position is inside the map, else ramo=0 
+	      if(!isHole) nbin2 = ramoPotentialMap->FindBin(fabs((xposD-x_neighbor)*1000),fabs((yposD-y_neighbor)*1000),(zpos-zposD)*1000);
+	      ramo = ramoPotentialMap->GetBinContent(nbin2);		     
+	    }
+	    if( (zpos-zposD==0.)  &&  (fabs(xposD-x_neighbor)>pitchX/2 || fabs(yposD-y_neighbor)>pitchY/2) ) ramo=0;
+	    if( (zpos-zposD==0.)  &&  fabs(xposD-x_neighbor)<=pitchX/2 && fabs(yposD-y_neighbor)<=pitchY/2 ) ramo=1;
+	    
+	    // Record deposit
+	    double eHitRamo =(1-2*isHole)*eHit*(ramo - ramo_i);  //eV
+	    
+	    if (doChunkCorrection){
+	      //X' -> \mu + kappa * (X-\mu)  
+	      eHitRamo = eHit*(average_charge + kappa*((1-2*isHole)*(ramo - ramo_i)-average_charge));
+	    }
+	    
+	    double pixelprecont=pixelsContent[extraPixel];
+	    pixelsContent[extraPixel] += eHitRamo; 
+	  } //loop over y
+	} //loop over x
+      }  // end loop over charges/holes
+    } // end loop over nQ charges
+  }// end loop over nEntries
+  
+  // Now that pixelContent is filled, create one digit per pixel
+  map<pair<G4int, G4int>, G4double >::iterator pCItr = pixelsContent.begin();
+  
+  for( ; pCItr != pixelsContent.end() ; pCItr++)
+    {
+      
+      G4double deposited_energy = (*pCItr).second;
+      int ToT = TMath::FloorNint(deposited_energy*tuning);
+      //G4cout<<"  X " << (*pCItr).first.first<< " Y "<< (*pCItr).first.second<< " EN " << (*pCItr).second <<" Threshold "<<threshold<<" tot "<< ToT<< G4endl;
+      if (ToT >=15) ToT = 15; //FEI4 is 4-bit.
+      AllPixFEI4RadDamageDigit * digit = new AllPixFEI4RadDamageDigit;
+      digit->SetPixelIDX((*pCItr).first.first);
+      digit->SetPixelIDY((*pCItr).first.second);
+      digit->SetPixelCounts(ToT);
+      digit->SetPixelEnergyDep(deposited_energy);
+      if (deposited_energy < threshold){
+	digit->SetPixelCounts(0);
+	digit->SetPixelEnergyDep(0);
+      }
+      if (deposited_energy >= threshold && ToT > 0){
+	m_digitsCollection->insert(digit);
+	if (dodebug){
+	  std::cout << "inserted a digit! " << std::endl;
+	}
+      }
+    }
+  
+  G4int dc_entries = m_digitsCollection->entries();
+  if(dc_entries > 0)
+    {
+      count++;
+      G4cout << "--------> Digits Collection : " << collectionName[0]
+	     << "(" << m_hitsColName[0] << ")"
+	     << " contains " << dc_entries
+	     << " digits" 
+	     << " count "<<count<<  G4endl;
+    }
+  
+  StoreDigiCollection(m_digitsCollection);
+  
+  if (dodebug){
+    std::cout << "\n\n\n\n\n\n\n\n\n\n squirrel \n\n\n\n\n\n\n" << std::endl;
+  }
+  
 } // end Digitize function
 
 

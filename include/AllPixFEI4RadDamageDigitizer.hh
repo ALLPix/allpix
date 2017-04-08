@@ -126,13 +126,16 @@ private:
   G4bool doRamo;
   G4bool doDiff;
   G4bool doSimplifiedModel;
+  G4bool doChunkCorrection;
   G4bool doSlimEdge;
   G4bool isHole;
 
   //Defaults
   G4int defaultEfield;
   G4int defaultRamo;
+  G4double defaultDiffusion;
   G4bool debug_maps;
+  G4bool dodebug;
   G4bool Efield3D;
   
   // Geometry-related constants
