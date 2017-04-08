@@ -558,25 +558,26 @@ void AllPixFEI4RadDamageDigitizer::SetDetectorDigitInputs(G4double thl){
 G4double AllPixFEI4RadDamageDigitizer::GetElectricField(G4double z){
 	// The z position is in mm, but plot uses um to return electric field in V/cm. Convert to return electric field in MV/mm
 	// Is currently using z as distance from position to readout side
-	// return the value of the 1D dimensional Efield -> Linear approximation
         G4int nbinEmap=m_eFieldMap1D->GetNbinsX();
-        
-	
 	int n_binz = m_eFieldMap1D->GetXaxis()->FindBin(z*1000);
-								
-	G4double electricField;
-
-	if(n_binz>nbinEmap){ 
-	 
-	 G4int bindist=n_binz-nbinEmap;
-	 G4double binwidth=m_eFieldMap1D->GetBinWidth(nbinEmap);
-	 if(m_eFieldMap1D->GetBinContent(nbinEmap)==0) nbinEmap=nbinEmap-1;
-	 electricField=m_eFieldMap1D->GetBinContent(nbinEmap) - bindist*(m_eFieldMap1D->GetBinContent(nbinEmap)-m_eFieldMap1D->GetBinContent(nbinEmap-1))/m_eFieldMap1D->GetBinContent(nbinEmap);
-	} else 	electricField = m_eFieldMap1D->GetBinContent(n_binz);	
-		
-	//electricField=biasVoltage*10/deplationLenght;
-	//G4cout<<" binz "<<n_binz<<" nbin tot "<<nbinEmap<<" field "<< electricField<<endl;
-	return electricField*1.0E-7;
+	G4double zval_bin = m_eFieldMap1D->GetXaxis()->GetBinCenter(n_binz)/1000.;
+	G4double electricField=0.;
+	if (n_binz < 1) electricField = 0.;
+	else if (n_binz > nbinEmap) electricField = 0.;
+	else if (n_binz == 1) electricField = m_eFieldMap1D->GetBinContent(1);
+        else if (n_binz == nbinEmap) electricField = m_eFieldMap1D->GetBinContent(nbinEmap);
+	else if (z==zval_bin) electricField = m_eFieldMap1D->GetBinContent(n_binz);
+	else{//attempt to interpolate.
+	  double z_other = 0.;
+	  if (z > zval_bin) z_other=m_eFieldMap1D->GetXaxis()->GetBinCenter(n_binz+1)/1000.;
+	  else z_other=m_eFieldMap1D->GetXaxis()->GetBinCenter(n_binz-1)/1000.;
+	  double Delta = fabs(z-zval_bin);
+	  double Epsilon = fabs(z-z_other);
+	  double EDelta = m_eFieldMap1D->GetBinContent(n_binz);
+	  double EEpsilon = m_eFieldMap1D->GetBinContent(m_eFieldMap1D->GetXaxis()->FindBin(z_other*1000));
+	  electricField = (pow(Delta,-1)*EDelta+pow(Epsilon,-1)*EEpsilon)/(pow(Delta,-1)+pow(Epsilon,-1));
+	}
+	return electricField*1.0E-7; //V/cm -> MV/mm.
 }
 
 G4double AllPixFEI4RadDamageDigitizer::GetElectricField(G4double x, G4double y, G4double z){
@@ -585,34 +586,22 @@ G4double AllPixFEI4RadDamageDigitizer::GetElectricField(G4double x, G4double y, 
 	// return the value of the 3D E field
 	// TCAD maps are just 1/4 of the pixel cell
 	// uses fabs() in order to overcome this
+        // defaults to the 1D field of the 3D one is not available.
 	G4double electricField=0;
 	if(eFieldMap==0){
-		 
-	 electricField=(GetElectricField(z))*1E07;  // if there is no Efield map loaded,get the "default" 1D Efield
-	}else{
+	  electricField=(GetElectricField(z))*1E07;  // if there is no Efield map loaded, get the "default" 1D Efield
+	}
+	else{
 	 
 	 while(fabs(x)>pitchX/2) x=fabs(x)-pitchX/2;  // if it is outside the limits of the cell, get the E field of the other pixel
 	 while(fabs(y)>pitchY/2) y=fabs(y)-pitchY/2;
 	
-	 if(fabs(x)>pitchX/2-0.001 && fabs(x)<=pitchX/2) x=fabs(x)-0.001;  // maps doesn't allow for near border value, ie:
-	 if(fabs(y)>pitchY/2-0.001 && fabs(y)<=pitchY/2) y=fabs(y)-0.001;  // maps goes from 1 um to 24 um (for the X sides of the IBL, and similary
-         if(fabs(z)>0.199) z=fabs(z)-0.001;				  // for the other sides) so, if it is needed to evaluate the field there
-        								  // it just get the field in the nearest position available
-         if(fabs(x)<0.001) x=0.0012;
-	 if(fabs(y)<0.001) y=0.0012;
-         if(fabs(z)<0.001) z=0.0012;
-        
          int n_bin = eFieldMap->FindBin(fabs(x)*1000,fabs(y)*1000,z*1000); //x y and z should be in micrometers
-        
-        
-         electricField = eFieldMap->GetBinContent(n_bin);
-         if(z<0) electricField=0;
+         int n_bin_z = eFieldMap->GetZaxis()->FindBin(z*1000);
+	 electricField = eFieldMap->GetBinContent(n_bin);
+         if(n_bin_z < 1 || n_bin_z > eFieldMap->GetNbinsZ()) electricField=0;
         }
-        
-        
-        return electricField*1.0E-7;
-        //return 4000*1.0E-7;
-
+	return electricField*1.0E-7; //V/cm -> MV/mm. 
 }
 
 G4double AllPixFEI4RadDamageDigitizer::GetMobility(G4double electricField, G4bool isHole){ 
