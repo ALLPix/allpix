@@ -605,6 +605,7 @@ G4double AllPixFEI4RadDamageDigitizer::GetElectricField(G4double x, G4double y, 
 }
 
 G4double AllPixFEI4RadDamageDigitizer::GetMobility(G4double electricField, G4bool isHole){ 
+  //Expects the electric field in MV/mm and returns the mobility in mm^2/(MV*ns).  Temperature is a global variable and is in K.
 	
 	// Initialize variables so they have the right scope
 	G4double vsat = 0;
@@ -628,9 +629,8 @@ G4double AllPixFEI4RadDamageDigitizer::GetMobility(G4double electricField, G4boo
 }
 
 G4double AllPixFEI4RadDamageDigitizer::GetDriftTime(G4bool isHole){
-	G4double u = CLHEP::RandFlat::shoot(0.,1.); // 
+	G4double u = CLHEP::RandFlat::shoot(0.,1.); 
 	G4double driftTime = 0;
-
 	if(!isHole) driftTime = (-1.)*trappingTimeElectrons*TMath::Log(u); // ns
 	if(isHole) driftTime = (-1.)*trappingTimeHoles*TMath::Log(u); // ns
 	return driftTime;
