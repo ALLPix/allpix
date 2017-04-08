@@ -92,7 +92,6 @@ private:
   G4double GetTanLorentz(G4double electricField, G4bool isHole);
   G4double GetTanLorentz(G4double z1, G4double z2, G4bool isHole);
   G4double Phi(G4double x, G4double z, G4double Lx, G4double Lz);
-  G4double N(G4double z, G4double L);
   G4double elec;
   G4int count;
 
@@ -134,6 +133,7 @@ private:
   G4int defaultEfield;
   G4int defaultRamo;
   G4bool debug_maps;
+  G4bool Efield3D;
   
   // Geometry-related constants
   G4double pitchX;
