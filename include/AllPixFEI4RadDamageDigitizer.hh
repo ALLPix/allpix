@@ -54,6 +54,20 @@ private:
   TH3F *charge_chunk_map_e;
   TH3F *charge_chunk_map_h;
 
+  //More debugging histograms.
+  //Need to validate the fraction of induced charge and also the charge chunking correction.
+  TH2F *debug_inducedcharge_z_versus_time_00_num;
+  TH2F *debug_inducedcharge_z_versus_time_00_den;
+  TH2F *debug_inducedcharge_z_versus_time_00;
+
+  TH2F *debug_inducedcharge_z_versus_time_01_num;
+  TH2F *debug_inducedcharge_z_versus_time_01_den;
+  TH2F *debug_inducedcharge_z_versus_time_01;
+  
+  TH2F *debug_inducedcharge_z_versus_time_10_num;
+  TH2F *debug_inducedcharge_z_versus_time_10_den;
+  TH2F *debug_inducedcharge_z_versus_time_10;
+  
   //Functions needed for the default Ramo potential:
   double betax(int n, int Nrep, double a){ return 2*TMath::Pi()*n/(Nrep*a); }
   double betay(int n, int Nrep, double b){  return 2*TMath::Pi()*n/(Nrep*b); }
