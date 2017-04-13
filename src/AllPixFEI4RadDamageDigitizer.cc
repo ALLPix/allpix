@@ -536,16 +536,30 @@ AllPixFEI4RadDamageDigitizer::AllPixFEI4RadDamageDigitizer(G4String modName, G4S
 	  debug_inducedcharge_z_versus_time_00_den = new TH2F("","",20,0,L,20,0,10);
 	  debug_inducedcharge_z_versus_time_00 = new TH2F("","",20,0,L,20,0,10);
 
+	  debug_inducedcharge_z_versus_time_00_num_holes = new TH2F("","",20,0,L,20,0,10);
+          debug_inducedcharge_z_versus_time_00_den_holes = new TH2F("","",20,0,L,20,0,10);
+          debug_inducedcharge_z_versus_time_00_holes = new TH2F("","",20,0,L,20,0,10);
+
 	  debug_inducedcharge_z_versus_time_01_num = new TH2F("","",20,0,L,20,0,10);
 	  debug_inducedcharge_z_versus_time_01_den = new TH2F("","",20,0,L,20,0,10);
           debug_inducedcharge_z_versus_time_01 = new TH2F("","",20,0,L,20,0,10);
+
+	  debug_inducedcharge_z_versus_time_01_num_holes = new TH2F("","",20,0,L,20,0,10);
+          debug_inducedcharge_z_versus_time_01_den_holes = new TH2F("","",20,0,L,20,0,10);
+          debug_inducedcharge_z_versus_time_01_holes = new TH2F("","",20,0,L,20,0,10);
 
 	  debug_inducedcharge_z_versus_time_10_num = new TH2F("","",20,0,L,20,0,10);
 	  debug_inducedcharge_z_versus_time_10_den = new TH2F("","",20,0,L,20,0,10);
           debug_inducedcharge_z_versus_time_10 = new TH2F("","",20,0,L,20,0,10);
 
+	  debug_inducedcharge_z_versus_time_10_num_holes = new TH2F("","",20,0,L,20,0,10);
+          debug_inducedcharge_z_versus_time_10_den_holes = new TH2F("","",20,0,L,20,0,10);
+          debug_inducedcharge_z_versus_time_10_holes = new TH2F("","",20,0,L,20,0,10);
+
 	  debug_inducedcharge_versus_time_nocorr = new TProfile("","",25,0,0.2,0.,1.2,"s");
-	  debug_inducedcharge_versus_time_corr = new TProfile("","",25,0.0,0.2,0.,1.2,"s"); //slightly offset to make it easier to see them.
+	  debug_inducedcharge_versus_time_corr = new TProfile("","",25,0.0,0.2,0.,1.2,"s");
+	  debug_inducedcharge_versus_time_nocorr_holes = new TProfile("","",25,0,0.2,0.,1.2,"s");
+          debug_inducedcharge_versus_time_corr_holes = new TProfile("","",25,0.0,0.2,0.,1.2,"s");
 
 	  debug_chunksize = new TH1F("","",100,0,100);
 	}
@@ -567,6 +581,17 @@ AllPixFEI4RadDamageDigitizer::~AllPixFEI4RadDamageDigitizer(){
 
 	if (debug_inducedcharge_z_versus_time_10_den->GetBinContent(i,j) > 0) debug_inducedcharge_z_versus_time_10->SetBinContent(i,j,debug_inducedcharge_z_versus_time_10_num->GetBinContent(i,j)/debug_inducedcharge_z_versus_time_10_den->GetBinContent(i,j));
         else debug_inducedcharge_z_versus_time_10->SetBinContent(i,j,0.);
+
+	//now for holes
+	if (debug_inducedcharge_z_versus_time_00_den_holes->GetBinContent(i,j) > 0) debug_inducedcharge_z_versus_time_00_holes->SetBinContent(i,j,debug_inducedcharge_z_versus_time_00_num_holes->GetBinContent(i,j)/debug_inducedcharge_z_versus_time_00_den_holes->GetBinContent(i,j));
+        else debug_inducedcharge_z_versus_time_00_holes->SetBinContent(i,j,0.);
+
+        if (debug_inducedcharge_z_versus_time_01_den_holes->GetBinContent(i,j) > 0) debug_inducedcharge_z_versus_time_01_holes->SetBinContent(i,j,debug_inducedcharge_z_versus_time_01_num_holes->GetBinContent(i,j)/debug_inducedcharge_z_versus_time_01_den_holes->GetBinContent(i,j));
+        else debug_inducedcharge_z_versus_time_01_holes->SetBinContent(i,j,0.);
+
+        if (debug_inducedcharge_z_versus_time_10_den_holes->GetBinContent(i,j) > 0) debug_inducedcharge_z_versus_time_10_holes->SetBinContent(i,j,debug_inducedcharge_z_versus_time_10_num_holes->GetBinContent(i,j)/debug_inducedcharge_z_versus_time_10_den_holes->GetBinContent(i,j));
+        else debug_inducedcharge_z_versus_time_10_holes->SetBinContent(i,j,0.);
+	
       }
     }
     gPad->SetRightMargin(0.18);
@@ -583,6 +608,19 @@ AllPixFEI4RadDamageDigitizer::~AllPixFEI4RadDamageDigitizer(){
     debug_inducedcharge_z_versus_time_00->Draw("colz");
     c1->Print("debug_inducedcharge_z_versus_time_00.pdf");
 
+    debug_inducedcharge_z_versus_time_00_holes->GetZaxis()->SetRangeUser(0,1);
+    debug_inducedcharge_z_versus_time_00_holes->GetXaxis()->SetNdivisions(505);
+    debug_inducedcharge_z_versus_time_00_holes->GetYaxis()->SetNdivisions(505);
+    debug_inducedcharge_z_versus_time_00_holes->GetXaxis()->SetTitle("Initial Position in z [#mum]");
+    debug_inducedcharge_z_versus_time_00_holes->GetYaxis()->SetTitle("Holes Time Traveled [ns]");
+    debug_inducedcharge_z_versus_time_00_holes->GetZaxis()->SetTitleOffset(1.7);
+    debug_inducedcharge_z_versus_time_00_holes->GetYaxis()->SetTitleOffset(1.4);
+    debug_inducedcharge_z_versus_time_00_holes->GetXaxis()->SetTitleOffset(1.3);
+    debug_inducedcharge_z_versus_time_00_holes->SetTitle("Center pixel");
+    debug_inducedcharge_z_versus_time_00_holes->GetZaxis()->SetTitle("Average Induced Charge / e");
+    debug_inducedcharge_z_versus_time_00_holes->Draw("colz");
+    c1->Print("debug_inducedcharge_z_versus_time_00_holes.pdf");
+
     debug_inducedcharge_z_versus_time_01->GetZaxis()->SetRangeUser(-0.2,0.2);
     debug_inducedcharge_z_versus_time_01->GetXaxis()->SetNdivisions(505);
     debug_inducedcharge_z_versus_time_01->GetYaxis()->SetNdivisions(505);
@@ -596,6 +634,19 @@ AllPixFEI4RadDamageDigitizer::~AllPixFEI4RadDamageDigitizer(){
     debug_inducedcharge_z_versus_time_01->Draw("colz");
     c1->Print("debug_inducedcharge_z_versus_time_01.pdf");
 
+    debug_inducedcharge_z_versus_time_01_holes->GetZaxis()->SetRangeUser(-0.2,0.2);
+    debug_inducedcharge_z_versus_time_01_holes->GetXaxis()->SetNdivisions(505);
+    debug_inducedcharge_z_versus_time_01_holes->GetYaxis()->SetNdivisions(505);
+    debug_inducedcharge_z_versus_time_01_holes->GetXaxis()->SetTitle("Initial Position in z [#mum]");
+    debug_inducedcharge_z_versus_time_01_holes->GetYaxis()->SetTitle("Holes Time Traveled [ns]");
+    debug_inducedcharge_z_versus_time_01_holes->GetZaxis()->SetTitleOffset(1.7);
+    debug_inducedcharge_z_versus_time_01_holes->GetYaxis()->SetTitleOffset(1.4);
+    debug_inducedcharge_z_versus_time_01_holes->GetXaxis()->SetTitleOffset(1.3);
+    debug_inducedcharge_z_versus_time_01_holes->SetTitle("+1 pixel in #phi");
+    debug_inducedcharge_z_versus_time_01_holes->GetZaxis()->SetTitle("Average Induced Charge (holes) / e");
+    debug_inducedcharge_z_versus_time_01_holes->Draw("colz");
+    c1->Print("debug_inducedcharge_z_versus_time_01_holes.pdf");
+
     debug_inducedcharge_z_versus_time_10->GetZaxis()->SetRangeUser(-0.2,0.2);
     debug_inducedcharge_z_versus_time_10->GetXaxis()->SetNdivisions(505);
     debug_inducedcharge_z_versus_time_10->GetYaxis()->SetNdivisions(505);
@@ -608,6 +659,19 @@ AllPixFEI4RadDamageDigitizer::~AllPixFEI4RadDamageDigitizer(){
     debug_inducedcharge_z_versus_time_10->GetZaxis()->SetTitle("Average Induced Charge (electrons) / e");
     debug_inducedcharge_z_versus_time_10->Draw("colz");
     c1->Print("debug_inducedcharge_z_versus_time_10.pdf");
+
+    debug_inducedcharge_z_versus_time_10_holes->GetZaxis()->SetRangeUser(-0.2,0.2);
+    debug_inducedcharge_z_versus_time_10_holes->GetXaxis()->SetNdivisions(505);
+    debug_inducedcharge_z_versus_time_10_holes->GetYaxis()->SetNdivisions(505);
+    debug_inducedcharge_z_versus_time_10_holes->GetXaxis()->SetTitle("Initial Position in z [#mum]");
+    debug_inducedcharge_z_versus_time_10_holes->GetYaxis()->SetTitle("Electrons Time Traveled [ns]");
+    debug_inducedcharge_z_versus_time_10_holes->GetZaxis()->SetTitleOffset(1.7);
+    debug_inducedcharge_z_versus_time_10_holes->GetYaxis()->SetTitleOffset(1.4);
+    debug_inducedcharge_z_versus_time_10_holes->GetXaxis()->SetTitleOffset(1.3);
+    debug_inducedcharge_z_versus_time_10_holes->SetTitle("+1 pixel in #eta");
+    debug_inducedcharge_z_versus_time_10_holes->GetZaxis()->SetTitle("Average Induced Charge (holes) / e");
+    debug_inducedcharge_z_versus_time_10_holes->Draw("colz");
+    c1->Print("debug_inducedcharge_z_versus_time_10_holes.pdf");
 
     gPad->SetRightMargin(0.05);
     debug_inducedcharge_versus_time_nocorr->GetYaxis()->SetRangeUser(0,1.1);
@@ -631,6 +695,20 @@ AllPixFEI4RadDamageDigitizer::~AllPixFEI4RadDamageDigitizer(){
     leg->Draw();
 
     c1->Print("debug_inducedcharge_versus_time.pdf");
+
+    debug_inducedcharge_versus_time_nocorr_holes->GetYaxis()->SetRangeUser(0,1.1);
+    debug_inducedcharge_versus_time_nocorr_holes->GetXaxis()->SetNdivisions(505);
+    debug_inducedcharge_versus_time_nocorr_holes->GetYaxis()->SetNdivisions(505);
+    debug_inducedcharge_versus_time_nocorr_holes->GetXaxis()->SetTitle("Starting z Position [mm]");
+    debug_inducedcharge_versus_time_nocorr_holes->GetYaxis()->SetTitle("Average Induced Charge (holes) / e");
+    debug_inducedcharge_versus_time_nocorr_holes->GetYaxis()->SetTitleOffset(1.4);
+    debug_inducedcharge_versus_time_nocorr_holes->GetXaxis()->SetTitleOffset(1.3);
+    debug_inducedcharge_versus_time_nocorr_holes->SetTitle("Induced charge versus Starting Position");
+    debug_inducedcharge_versus_time_nocorr_holes->Draw();
+    debug_inducedcharge_versus_time_corr_holes->SetLineColor(2);
+    debug_inducedcharge_versus_time_corr_holes->Draw("same");
+    leg->Draw();
+    c1->Print("debug_inducedcharge_versus_time_holes.pdf");
 
     debug_chunksize->GetXaxis()->SetNdivisions(505);
     debug_chunksize->GetYaxis()->SetNdivisions(505);
@@ -844,6 +922,9 @@ void AllPixFEI4RadDamageDigitizer::Digitize(){
     map<pair<G4int, G4int>, G4double > total_induced_uncorrected;
     map<pair<G4int, G4int>, G4double > total_induced_corrected;
     map<pair<G4int, G4int>, G4double > total_induced_den;
+    map<pair<G4int, G4int>, G4double > total_induced_uncorrected_holes;
+    map<pair<G4int, G4int>, G4double > total_induced_corrected_holes;
+    map<pair<G4int, G4int>, G4double > total_induced_den_holes;
     // Split the charge into subcharges (# = precision) that are diffused separately to the electrode
     //precision = int(eHitTotal/elec);
     for(G4int nQ  = 0 ; nQ < precision ; nQ++) {
@@ -861,8 +942,11 @@ void AllPixFEI4RadDamageDigitizer::Digitize(){
 
       // Loop over everything following twice, once for holes and once for electrons
       map<pair<G4int, G4int>, G4double > total_induced;
+      map<pair<G4int, G4int>, G4double > total_induced_holes;
       double driftTime_avg = 0.;
       double travelTime_avg = 0.;
+      double driftTime_avg_holes = 0.;
+      double travelTime_avg_holes = 0.;
       for(G4int eholes=0 ; eholes<2 ; eholes++) {
 		    
 	isHole = false; // Set a condition to keep track of electron/hole-specific functions
@@ -876,8 +960,12 @@ void AllPixFEI4RadDamageDigitizer::Digitize(){
 	G4double timeToElectrode = GetTimeToElectrode(zpos, isHole); //ns
 	G4double driftTime = GetDriftTime(isHole); //ns
 	G4double drift_time_constant = trappingTimeElectrons; //ns
+	//for debugging plots later.
 	if (eholes==0) travelTime_avg=(driftTime < timeToElectrode ? driftTime : timeToElectrode);
 	if (eholes==0) driftTime_avg=timeToElectrode;
+	if (eholes==1) travelTime_avg_holes=(driftTime < timeToElectrode ? driftTime : timeToElectrode);
+        if (eholes==1) driftTime_avg_holes=timeToElectrode;
+
 	if (isHole) drift_time_constant = trappingTimeHoles;
 	double average_charge = charge_chunk_map_e->GetBinContent(charge_chunk_map_e->FindBin(fabs(xpos),fabs(ypos),zpos)); //expects input in mm
 	if (isHole) average_charge = charge_chunk_map_h->GetBinContent(charge_chunk_map_h->FindBin(fabs(xpos),fabs(ypos),zpos));
@@ -948,7 +1036,7 @@ void AllPixFEI4RadDamageDigitizer::Digitize(){
 	    
 	    if (doChunkCorrection){
 	      //X' -> \mu + kappa * (X-\mu)  
-	      eHitRamo = eHit*(average_charge + kappa*((1-2*isHole)*(ramo - ramo_i)-average_charge));
+	      eHitRamo = (1-2*isHole)*eHit*(average_charge + kappa*((1-2*isHole)*(ramo - ramo_i)-average_charge));
 	    }
 	    pixelsContent[extraPixel] += eHitRamo; 
 	    if (eholes==0){
@@ -957,9 +1045,11 @@ void AllPixFEI4RadDamageDigitizer::Digitize(){
 	      total_induced_uncorrected[extraPixel] += eHitRamo;
 	      total_induced_corrected[extraPixel] += eHit*(average_charge + kappa*((ramo - ramo_i)-average_charge));
 	    }
-	    else{//let's start with electrons only for now.
-	      //total_induced[extraPixel]+=eHitRamo/eHit;
-	      //total_induced_corrected[extraPixel]+=average_charge;// + kappa*((1-2*isHole)*(ramo - ramo_i)-average_charge);
+	    else{
+	      total_induced_holes[extraPixel] += eHitRamo/eHit;
+              total_induced_den_holes[extraPixel] += 1.;
+	      total_induced_uncorrected_holes[extraPixel] += eHitRamo;
+              total_induced_corrected_holes[extraPixel] += eHit*(average_charge + kappa*(-(ramo - ramo_i)-average_charge));
 	    }
 	  } //loop over y
 	} //loop over x
@@ -971,14 +1061,20 @@ void AllPixFEI4RadDamageDigitizer::Digitize(){
 	  if ((*hitsCollection)[itr]->GetPixelNbX()==(*pCItr).first.first && (*hitsCollection)[itr]->GetPixelNbY()==(*pCItr).first.second){ //central pixel
 	    debug_inducedcharge_z_versus_time_00_num->Fill(zpos*1000,travelTime_avg,(*pCItr).second);
 	    debug_inducedcharge_z_versus_time_00_den->Fill(zpos*1000,travelTime_avg);
+	    debug_inducedcharge_z_versus_time_00_num_holes->Fill(zpos*1000,travelTime_avg_holes,total_induced_holes[(*pCItr).first]);
+            debug_inducedcharge_z_versus_time_00_den_holes->Fill(zpos*1000,travelTime_avg_holes);
 	  }
 	  if ((*hitsCollection)[itr]->GetPixelNbX()==(*pCItr).first.first && (*hitsCollection)[itr]->GetPixelNbY()+1==(*pCItr).first.second){ //shift one in phi
             debug_inducedcharge_z_versus_time_01_num->Fill(zpos*1000,travelTime_avg,(*pCItr).second);
             debug_inducedcharge_z_versus_time_01_den->Fill(zpos*1000,travelTime_avg);
+	    debug_inducedcharge_z_versus_time_01_num_holes->Fill(zpos*1000,travelTime_avg_holes,total_induced_holes[(*pCItr).first]);
+            debug_inducedcharge_z_versus_time_01_den_holes->Fill(zpos*1000,travelTime_avg_holes);
           }
 	  if ((*hitsCollection)[itr]->GetPixelNbX()+1==(*pCItr).first.first && (*hitsCollection)[itr]->GetPixelNbY()==(*pCItr).first.second){ //shift one in eta
             debug_inducedcharge_z_versus_time_10_num->Fill(zpos*1000,travelTime_avg,(*pCItr).second);
             debug_inducedcharge_z_versus_time_10_den->Fill(zpos*1000,travelTime_avg);
+	    debug_inducedcharge_z_versus_time_10_num_holes->Fill(zpos*1000,travelTime_avg_holes,total_induced_holes[(*pCItr).first]);
+            debug_inducedcharge_z_versus_time_10_den_holes->Fill(zpos*1000,travelTime_avg_holes);
           }
 	}
       }
@@ -986,11 +1082,11 @@ void AllPixFEI4RadDamageDigitizer::Digitize(){
     if (dodebug){
       map<pair<G4int, G4int>, G4double >::iterator pCItr = total_induced_corrected.begin();
       for( ; pCItr != total_induced_corrected.end() ; pCItr++){
-	if ((*hitsCollection)[itr]->GetPixelNbX()==(*pCItr).first.first && (*hitsCollection)[itr]->GetPixelNbY()==(*pCItr).first.second){ //central pixel          
+	if ((*hitsCollection)[itr]->GetPixelNbX()==(*pCItr).first.first && (*hitsCollection)[itr]->GetPixelNbY()==(*pCItr).first.second){ //central pixel  
 	  debug_inducedcharge_versus_time_corr->Fill(zpos,(*pCItr).second/eHitTotal);
-	  //GetTimeToElectrode(zpos, 0)/trappingTimeElectrons,(*pCItr).second/eHitTotal);
 	  debug_inducedcharge_versus_time_nocorr->Fill(zpos,total_induced_uncorrected[(*pCItr).first]/eHitTotal);
-	  //GetTimeToElectrode(zpos, 0)/trappingTimeElectrons,total_induced_uncorrected[(*pCItr).first]/eHitTotal);
+	  debug_inducedcharge_versus_time_corr_holes->Fill(zpos,total_induced_corrected_holes[(*pCItr).first]/eHitTotal);
+          debug_inducedcharge_versus_time_nocorr_holes->Fill(zpos,total_induced_uncorrected_holes[(*pCItr).first]/eHitTotal);
 	}
       }
     }

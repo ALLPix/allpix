@@ -17,6 +17,7 @@
 #include "TFile.h"
 #include "TH1F.h"
 #include "TMath.h"
+#include "TProfile.h"
 
 using namespace std;
 
@@ -67,7 +68,27 @@ private:
   TH2F *debug_inducedcharge_z_versus_time_10_num;
   TH2F *debug_inducedcharge_z_versus_time_10_den;
   TH2F *debug_inducedcharge_z_versus_time_10;
-  
+
+  TProfile *debug_inducedcharge_versus_time_nocorr;
+  TProfile *debug_inducedcharge_versus_time_corr;
+
+  TH2F *debug_inducedcharge_z_versus_time_00_num_holes;
+  TH2F *debug_inducedcharge_z_versus_time_00_den_holes;
+  TH2F *debug_inducedcharge_z_versus_time_00_holes;
+
+  TH2F *debug_inducedcharge_z_versus_time_01_num_holes;
+  TH2F *debug_inducedcharge_z_versus_time_01_den_holes;
+  TH2F *debug_inducedcharge_z_versus_time_01_holes;
+
+  TH2F *debug_inducedcharge_z_versus_time_10_num_holes;
+  TH2F *debug_inducedcharge_z_versus_time_10_den_holes;
+  TH2F *debug_inducedcharge_z_versus_time_10_holes;
+
+  TProfile *debug_inducedcharge_versus_time_nocorr_holes;
+  TProfile *debug_inducedcharge_versus_time_corr_holes;
+
+  TH1F* debug_chunksize;
+
   //Functions needed for the default Ramo potential:
   double betax(int n, int Nrep, double a){ return 2*TMath::Pi()*n/(Nrep*a); }
   double betay(int n, int Nrep, double b){  return 2*TMath::Pi()*n/(Nrep*b); }
