@@ -74,7 +74,7 @@ AllPixFEI4RadDamageDigitizer::AllPixFEI4RadDamageDigitizer(G4String modName, G4S
 	betaElectrons = 3.0E-16*cm2/ns;  //The charge-trapping probability is t = -tau*ln(u), for u ~ Uniform(0,1) and tau^{-1}=beta*fluence.  The value of beta might be slightly higher for holes than electrons, but it is hard to say (we ignore this effect here).  See e.g. https://cds.cern.ch/record/685542/files/indet-2003-014.pdf. 
 	
 	//Conditions
-	fluence = 5e14*1/cm2; // 1 MeV neq/cm^2
+	fluence = 1e15*1/cm2; // 1 MeV neq/cm^2
 	biasVoltage = 80; // V.  This is not used if external TCAD maps are supplied.
 	temperature = 263.2;// K  
 	bField = 0.;// Tesla = V*s/m^2 
@@ -82,7 +82,7 @@ AllPixFEI4RadDamageDigitizer::AllPixFEI4RadDamageDigitizer(G4String modName, G4S
 	tuning = 9./(20000*elec); //for X ToT @ Y e, this is X/Y so that a deposited energy of Y gives a ToT of X.  Typical values are 5 ToT @ 20ke.
 
 	//Phenomenological parameters
-	precision = 100; //this is the number of charges to divide the G4 hit into.
+	precision = 10; //this is the number of charges to divide the G4 hit into.
 
 	deplationLenght=0.200;   //mm IBL 
 	if(depVoltage>biasVoltage) deplationLenght=deplationLenght*pow(biasVoltage/depVoltage,0.5);
@@ -361,7 +361,7 @@ AllPixFEI4RadDamageDigitizer::AllPixFEI4RadDamageDigitizer(G4String modName, G4S
 	}
 	
         //Need to pre-compute a new map that allows us to properly take into account the charge chunking. 
-	int stepsZ = int(L/10); //one bin per 10 microns
+	int stepsZ = int(L/2); //one bin per 10 microns
 	int stepsY = int(pitchY*1000/2); //half width of sensor to take advantage of symmetry.
 	int stepsX = int(pitchX*1000/2);
 	charge_chunk_map_e = new TH3F("","",stepsX,0.,pitchX/2,stepsY,0.,pitchY/2,stepsZ,0.,detectorThickness); //distances are in mm.
@@ -543,6 +543,11 @@ AllPixFEI4RadDamageDigitizer::AllPixFEI4RadDamageDigitizer(G4String modName, G4S
 	  debug_inducedcharge_z_versus_time_10_num = new TH2F("","",20,0,L,20,0,10);
 	  debug_inducedcharge_z_versus_time_10_den = new TH2F("","",20,0,L,20,0,10);
           debug_inducedcharge_z_versus_time_10 = new TH2F("","",20,0,L,20,0,10);
+
+	  debug_inducedcharge_versus_time_nocorr = new TProfile("","",25,0,0.2,0.,1.2,"s");
+	  debug_inducedcharge_versus_time_corr = new TProfile("","",25,0.0,0.2,0.,1.2,"s"); //slightly offset to make it easier to see them.
+
+	  debug_chunksize = new TH1F("","",100,0,100);
 	}
 
 }// End of AllPixFEI4RadDamageDigitizer::AllPixFEI4RadDamageDigitizer definition
@@ -569,7 +574,7 @@ AllPixFEI4RadDamageDigitizer::~AllPixFEI4RadDamageDigitizer(){
     debug_inducedcharge_z_versus_time_00->GetXaxis()->SetNdivisions(505);
     debug_inducedcharge_z_versus_time_00->GetYaxis()->SetNdivisions(505);
     debug_inducedcharge_z_versus_time_00->GetXaxis()->SetTitle("Initial Position in z [#mum]");
-    debug_inducedcharge_z_versus_time_00->GetYaxis()->SetTitle("Average Trapping Time [ns]");
+    debug_inducedcharge_z_versus_time_00->GetYaxis()->SetTitle("Electrons Time Traveled [ns]");
     debug_inducedcharge_z_versus_time_00->GetZaxis()->SetTitleOffset(1.7);
     debug_inducedcharge_z_versus_time_00->GetYaxis()->SetTitleOffset(1.4);
     debug_inducedcharge_z_versus_time_00->GetXaxis()->SetTitleOffset(1.3);
@@ -582,12 +587,12 @@ AllPixFEI4RadDamageDigitizer::~AllPixFEI4RadDamageDigitizer(){
     debug_inducedcharge_z_versus_time_01->GetXaxis()->SetNdivisions(505);
     debug_inducedcharge_z_versus_time_01->GetYaxis()->SetNdivisions(505);
     debug_inducedcharge_z_versus_time_01->GetXaxis()->SetTitle("Initial Position in z [#mum]");
-    debug_inducedcharge_z_versus_time_01->GetYaxis()->SetTitle("Average Trapping Time [ns]");
+    debug_inducedcharge_z_versus_time_01->GetYaxis()->SetTitle("Electrons Time Traveled [ns]");
     debug_inducedcharge_z_versus_time_01->GetZaxis()->SetTitleOffset(1.7);
     debug_inducedcharge_z_versus_time_01->GetYaxis()->SetTitleOffset(1.4);
     debug_inducedcharge_z_versus_time_01->GetXaxis()->SetTitleOffset(1.3);
     debug_inducedcharge_z_versus_time_01->SetTitle("+1 pixel in #phi");
-    debug_inducedcharge_z_versus_time_01->GetZaxis()->SetTitle("Average Induced Charge / e");
+    debug_inducedcharge_z_versus_time_01->GetZaxis()->SetTitle("Average Induced Charge (electrons) / e");
     debug_inducedcharge_z_versus_time_01->Draw("colz");
     c1->Print("debug_inducedcharge_z_versus_time_01.pdf");
 
@@ -595,14 +600,46 @@ AllPixFEI4RadDamageDigitizer::~AllPixFEI4RadDamageDigitizer(){
     debug_inducedcharge_z_versus_time_10->GetXaxis()->SetNdivisions(505);
     debug_inducedcharge_z_versus_time_10->GetYaxis()->SetNdivisions(505);
     debug_inducedcharge_z_versus_time_10->GetXaxis()->SetTitle("Initial Position in z [#mum]");
-    debug_inducedcharge_z_versus_time_10->GetYaxis()->SetTitle("Average Trapping Time [ns]");
+    debug_inducedcharge_z_versus_time_10->GetYaxis()->SetTitle("Electrons Time Traveled [ns]");
     debug_inducedcharge_z_versus_time_10->GetZaxis()->SetTitleOffset(1.7);
     debug_inducedcharge_z_versus_time_10->GetYaxis()->SetTitleOffset(1.4);
     debug_inducedcharge_z_versus_time_10->GetXaxis()->SetTitleOffset(1.3);
     debug_inducedcharge_z_versus_time_10->SetTitle("+1 pixel in #eta");
-    debug_inducedcharge_z_versus_time_10->GetZaxis()->SetTitle("Average Induced Charge / e");
+    debug_inducedcharge_z_versus_time_10->GetZaxis()->SetTitle("Average Induced Charge (electrons) / e");
     debug_inducedcharge_z_versus_time_10->Draw("colz");
     c1->Print("debug_inducedcharge_z_versus_time_10.pdf");
+
+    gPad->SetRightMargin(0.05);
+    debug_inducedcharge_versus_time_nocorr->GetYaxis()->SetRangeUser(0,1.1);
+    debug_inducedcharge_versus_time_nocorr->GetXaxis()->SetNdivisions(505);
+    debug_inducedcharge_versus_time_nocorr->GetYaxis()->SetNdivisions(505);
+    debug_inducedcharge_versus_time_nocorr->GetXaxis()->SetTitle("Starting z Position [mm]");
+    debug_inducedcharge_versus_time_nocorr->GetYaxis()->SetTitle("Average Induced Charge (electrons) / e");
+    debug_inducedcharge_versus_time_nocorr->GetYaxis()->SetTitleOffset(1.4);
+    debug_inducedcharge_versus_time_nocorr->GetXaxis()->SetTitleOffset(1.3);
+    debug_inducedcharge_versus_time_nocorr->SetTitle("Induced charge versus Starting Position");
+    debug_inducedcharge_versus_time_nocorr->Draw();
+    debug_inducedcharge_versus_time_corr->SetLineColor(2);
+    debug_inducedcharge_versus_time_corr->Draw("same");
+
+    TLegend * leg = new TLegend(0.2,0.7,0.6,0.9);
+    leg->SetFillColor(0);
+    leg->SetBorderSize(0);
+    leg->SetFillStyle(0);
+    leg->AddEntry(debug_inducedcharge_versus_time_nocorr,"uncorrected","l");
+    leg->AddEntry(debug_inducedcharge_versus_time_corr,"corrected","l");
+    leg->Draw();
+
+    c1->Print("debug_inducedcharge_versus_time.pdf");
+
+    debug_chunksize->GetXaxis()->SetNdivisions(505);
+    debug_chunksize->GetYaxis()->SetNdivisions(505);
+    debug_chunksize->GetXaxis()->SetTitle("Chunk size");
+    debug_chunksize->GetYaxis()->SetTitle("arbitrary units");
+    debug_chunksize->GetYaxis()->SetTitleOffset(1.4);
+    debug_chunksize->GetXaxis()->SetTitleOffset(1.3);
+    debug_chunksize->Draw();
+    c1->Print("debug_chunk_size.pdf");
   }
 }  
 
@@ -780,7 +817,6 @@ void AllPixFEI4RadDamageDigitizer::Digitize(){
   // temporary data structure
   map<pair<G4int, G4int>, G4double > pixelsContent;		// stored energy per (countx,county) pixel	
   pair<G4int, G4int> tempPixel;					// (countx,county) which pixel
-  map<pair<G4int, G4int>, G4double > sumpixelsContent;		// stored energy per (countx,county) pixel	
   
   G4int nEntries = hitsCollection->entries();
   for(G4int itr  = 0 ; itr < nEntries ; itr++) {
@@ -805,7 +841,11 @@ void AllPixFEI4RadDamageDigitizer::Digitize(){
     pair<G4int, G4int> extraPixel;
     extraPixel = tempPixel;
 
+    map<pair<G4int, G4int>, G4double > total_induced_uncorrected;
+    map<pair<G4int, G4int>, G4double > total_induced_corrected;
+    map<pair<G4int, G4int>, G4double > total_induced_den;
     // Split the charge into subcharges (# = precision) that are diffused separately to the electrode
+    //precision = int(eHitTotal/elec);
     for(G4int nQ  = 0 ; nQ < precision ; nQ++) {
       
       //Each e-h chunk pair has eHitTotal / precision energy.  When the Ramo potential is used, the total induced energy is
@@ -817,10 +857,12 @@ void AllPixFEI4RadDamageDigitizer::Digitize(){
       //Need to determine how many elementary charges this charge chunk represents.
       double chunk_size = eHit/elec; 
       double kappa = 1./sqrt(chunk_size);
-		  
+      if (dodebug) debug_chunksize->Fill(chunk_size); //precision = int(eHitTotal/elec);  would have chunk_size = 1.
+
       // Loop over everything following twice, once for holes and once for electrons
       map<pair<G4int, G4int>, G4double > total_induced;
       double driftTime_avg = 0.;
+      double travelTime_avg = 0.;
       for(G4int eholes=0 ; eholes<2 ; eholes++) {
 		    
 	isHole = false; // Set a condition to keep track of electron/hole-specific functions
@@ -834,21 +876,22 @@ void AllPixFEI4RadDamageDigitizer::Digitize(){
 	G4double timeToElectrode = GetTimeToElectrode(zpos, isHole); //ns
 	G4double driftTime = GetDriftTime(isHole); //ns
 	G4double drift_time_constant = trappingTimeElectrons; //ns
-	driftTime_avg+=0.5*(driftTime < timeToElectrode ? driftTime : timeToElectrode);
+	if (eholes==0) travelTime_avg=(driftTime < timeToElectrode ? driftTime : timeToElectrode);
+	if (eholes==0) driftTime_avg=timeToElectrode;
 	if (isHole) drift_time_constant = trappingTimeHoles;
-	double average_charge = charge_chunk_map_e->GetBinContent(charge_chunk_map_e->FindBin(fabs(xpos)*1000,fabs(ypos)*1000,zpos*1000));
-	if (isHole) average_charge = charge_chunk_map_h->GetBinContent(charge_chunk_map_h->FindBin(fabs(xpos)*1000,fabs(ypos)*1000,zpos*1000));
-
+	double average_charge = charge_chunk_map_e->GetBinContent(charge_chunk_map_e->FindBin(fabs(xpos),fabs(ypos),zpos)); //expects input in mm
+	if (isHole) average_charge = charge_chunk_map_h->GetBinContent(charge_chunk_map_h->FindBin(fabs(xpos),fabs(ypos),zpos));
+	
 	G4double zposD = zpos; //this is the distance between the initial position and the final position.
 	if (isHole) zposD = detectorThickness - zpos;
 	if (driftTime < timeToElectrode){
 	  int nbin=0;
 	  if(!isHole){
-	    nbin = distancemap_e->FindBin(zpos,driftTime);
+	    nbin = distancemap_e->FindBin(zpos,min(driftTime,timeToElectrode));
 	    zposD = zpos-distancemap_e->GetBinContent(nbin);
 	  }
 	  else{
-	    nbin = distancemap_h->FindBin(zpos,driftTime);
+	    nbin = distancemap_h->FindBin(zpos,min(driftTime,timeToElectrode));
 	    zposD = distancemap_h->GetBinContent(nbin) - zpos;
 	  }
 	}
@@ -884,15 +927,17 @@ void AllPixFEI4RadDamageDigitizer::Digitize(){
 	    G4double y_neighbor = j*pitchY;
 	    extraPixel.second = loc_y + j;
 	    
+	    if (i!=0 && j!=0) continue;
+
 	    int nbin = ramoPotentialMap->FindBin(fabs((xpos-x_neighbor)*1000),fabs((ypos-y_neighbor)*1000),zpos*1000); //take the absolute value because we only have 1/4 of the ramo
 	    double ramo_i=0;
 	    if (!ramoPotentialMap->IsBinOverflow(nbin) && !ramoPotentialMap->IsBinOverflow(nbin)){ //check if the position is inside the map, else ramo=0
 	      ramo_i = ramoPotentialMap->GetBinContent(nbin);
 	    }
 	    int nbin2 = ramoPotentialMap->FindBin(fabs((xposD-x_neighbor)*1000),fabs((yposD-y_neighbor)*1000),(zpos+zposD)*1000); //for this check, zpos doesn't matter.
+	    if(!isHole) nbin2 = ramoPotentialMap->FindBin(fabs((xposD-x_neighbor)*1000),fabs((yposD-y_neighbor)*1000),(zpos-zposD)*1000);
 	    double ramo=0;
 	    if (!ramoPotentialMap->IsBinOverflow(nbin2) && !ramoPotentialMap->IsBinOverflow(nbin2)){ //check if the position is inside the map, else ramo=0 
-	      if(!isHole) nbin2 = ramoPotentialMap->FindBin(fabs((xposD-x_neighbor)*1000),fabs((yposD-y_neighbor)*1000),(zpos-zposD)*1000);
 	      ramo = ramoPotentialMap->GetBinContent(nbin2);		     
 	    }
 	    if( (zpos-zposD==0.)  &&  (fabs(xposD-x_neighbor)>pitchX/2 || fabs(yposD-y_neighbor)>pitchY/2) ) ramo=0;
@@ -905,10 +950,17 @@ void AllPixFEI4RadDamageDigitizer::Digitize(){
 	      //X' -> \mu + kappa * (X-\mu)  
 	      eHitRamo = eHit*(average_charge + kappa*((1-2*isHole)*(ramo - ramo_i)-average_charge));
 	    }
-	    
 	    pixelsContent[extraPixel] += eHitRamo; 
-	    if (eholes==0) total_induced[extraPixel]=eHitRamo/eHit;
-	    else total_induced[extraPixel]+=eHitRamo/eHit;
+	    if (eholes==0){
+	      total_induced[extraPixel] += eHitRamo/eHit;
+	      total_induced_den[extraPixel] += 1.;
+	      total_induced_uncorrected[extraPixel] += eHitRamo;
+	      total_induced_corrected[extraPixel] += eHit*(average_charge + kappa*((ramo - ramo_i)-average_charge));
+	    }
+	    else{//let's start with electrons only for now.
+	      //total_induced[extraPixel]+=eHitRamo/eHit;
+	      //total_induced_corrected[extraPixel]+=average_charge;// + kappa*((1-2*isHole)*(ramo - ramo_i)-average_charge);
+	    }
 	  } //loop over y
 	} //loop over x
       }  // end loop over charges/holes
@@ -916,21 +968,32 @@ void AllPixFEI4RadDamageDigitizer::Digitize(){
 	//N.B. this test only works if the B field is turned off.
 	map<pair<G4int, G4int>, G4double >::iterator pCItr = total_induced.begin();
 	for( ; pCItr != total_induced.end() ; pCItr++){
-	  if ((*hitsCollection)[itr]->GetPixelNbX()==(*pCItr).first.first && (*hitsCollection)[itr]->GetPixelNbY()==(*pCItr).first.second){
-	    debug_inducedcharge_z_versus_time_00_num->Fill(zpos*1000,driftTime_avg,(*pCItr).second);
-	    debug_inducedcharge_z_versus_time_00_den->Fill(zpos*1000,driftTime_avg);
+	  if ((*hitsCollection)[itr]->GetPixelNbX()==(*pCItr).first.first && (*hitsCollection)[itr]->GetPixelNbY()==(*pCItr).first.second){ //central pixel
+	    debug_inducedcharge_z_versus_time_00_num->Fill(zpos*1000,travelTime_avg,(*pCItr).second);
+	    debug_inducedcharge_z_versus_time_00_den->Fill(zpos*1000,travelTime_avg);
 	  }
-	  if ((*hitsCollection)[itr]->GetPixelNbX()==(*pCItr).first.first && (*hitsCollection)[itr]->GetPixelNbY()+1==(*pCItr).first.second){
-            debug_inducedcharge_z_versus_time_01_num->Fill(zpos*1000,driftTime_avg,(*pCItr).second);
-            debug_inducedcharge_z_versus_time_01_den->Fill(zpos*1000,driftTime_avg);
+	  if ((*hitsCollection)[itr]->GetPixelNbX()==(*pCItr).first.first && (*hitsCollection)[itr]->GetPixelNbY()+1==(*pCItr).first.second){ //shift one in phi
+            debug_inducedcharge_z_versus_time_01_num->Fill(zpos*1000,travelTime_avg,(*pCItr).second);
+            debug_inducedcharge_z_versus_time_01_den->Fill(zpos*1000,travelTime_avg);
           }
-	  if ((*hitsCollection)[itr]->GetPixelNbX()+1==(*pCItr).first.first && (*hitsCollection)[itr]->GetPixelNbY()==(*pCItr).first.second){
-            debug_inducedcharge_z_versus_time_10_num->Fill(zpos*1000,driftTime_avg,(*pCItr).second);
-            debug_inducedcharge_z_versus_time_10_den->Fill(zpos*1000,driftTime_avg);
+	  if ((*hitsCollection)[itr]->GetPixelNbX()+1==(*pCItr).first.first && (*hitsCollection)[itr]->GetPixelNbY()==(*pCItr).first.second){ //shift one in eta
+            debug_inducedcharge_z_versus_time_10_num->Fill(zpos*1000,travelTime_avg,(*pCItr).second);
+            debug_inducedcharge_z_versus_time_10_den->Fill(zpos*1000,travelTime_avg);
           }
 	}
       }
     } // end loop over nQ charges
+    if (dodebug){
+      map<pair<G4int, G4int>, G4double >::iterator pCItr = total_induced_corrected.begin();
+      for( ; pCItr != total_induced_corrected.end() ; pCItr++){
+	if ((*hitsCollection)[itr]->GetPixelNbX()==(*pCItr).first.first && (*hitsCollection)[itr]->GetPixelNbY()==(*pCItr).first.second){ //central pixel          
+	  debug_inducedcharge_versus_time_corr->Fill(zpos,(*pCItr).second/eHitTotal);
+	  //GetTimeToElectrode(zpos, 0)/trappingTimeElectrons,(*pCItr).second/eHitTotal);
+	  debug_inducedcharge_versus_time_nocorr->Fill(zpos,total_induced_uncorrected[(*pCItr).first]/eHitTotal);
+	  //GetTimeToElectrode(zpos, 0)/trappingTimeElectrons,total_induced_uncorrected[(*pCItr).first]/eHitTotal);
+	}
+      }
+    }
   }// end loop over nEntries
   
   // Now that pixelContent is filled, create one digit per pixel
