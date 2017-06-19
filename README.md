@@ -24,11 +24,11 @@ Make sure you loaded your Geant4 and ROOT setups (check $G4LIB and $ROOTSYS vars
     export G4WORKDIR=~/myG4WorkDirectory	
 ```	
 
-The default is $HOME/Allpix/allpix-install/bin, according to the following instructions.
+The default is $HOME/Allpix/allpix-install, according to the following instructions.
 
 Allpix is now compilable using Cmake. We suggest the following work folder structure. 	 
 ```	
-|--- Allpix /  				# Mother folder containing source, build and install folder
+|--- AllpixMotherFolder /  				# Mother folder containing source, build and install folder
 	 |----- allpix 			# Source code folder to be checked out from Github 
 	 |      |----- src 
 	 |      |----- include
@@ -60,7 +60,14 @@ Now create the build and install folder :
 
 Initialize cmake for compilation of allpix : 
 
-	cmake ../allpix -DCMAKE_INSTALL_PREFIX=../allpix-install	
+	cmake ../allpix -DCMAKE_INSTALL_PREFIX=$G4WORKDIR	
+
+if You wish to compile with the LCIO file writer option, use the following on LXPLUS :
+```
+	cmake ../allpix -DCMAKE_INSTALL_PREFIX=$G4WORKDIR -Dlcio=ON	
+```
+
+Please not that for a custom installation, the environnement variable LCIO should be set and poiting to your installation of LCIO. 
 	
 Once the Cmake environnement is set, to compile, simply execute : 
 
@@ -68,7 +75,7 @@ Once the Cmake environnement is set, to compile, simply execute :
 
 X is a number of processor 
 	
-make sure allpix-install/bin is added to the PATH environnement variable using this command, you may want to add this command to your setup script : 
+If you follow the structure below, the allpix executable should be added to the PATH by the lxplus setup script. However, for custom installation, make sure allpix-install/bin is added to the PATH environnement variable using this command, you may want to add this command to your setup script : 
 
 	export PATH=$PATH:PATHTOALLPIXINSTALLBINFOLDER
 	

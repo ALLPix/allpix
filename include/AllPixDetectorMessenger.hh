@@ -61,6 +61,8 @@ private:
   G4UIdirectory *             m_configDir;
   G4UIdirectory *             m_extrasDir;
   G4UIdirectory *             m_beamDir;
+  G4UIdirectory *             m_eutelescopeDir;
+ 
 
   G4UIcmdWithAnInteger *      m_detIdCmd;
   G4UIcmdWith3VectorAndUnit * m_detPosCmd;
