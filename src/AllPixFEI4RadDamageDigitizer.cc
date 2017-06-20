@@ -276,11 +276,17 @@ AllPixFEI4RadDamageDigitizer::AllPixFEI4RadDamageDigitizer(G4String modName, G4S
 	  distancemap_h = new TH2F("hdistance","Holes Distance Map",100,0,L/1000.,20,0,10);
 	  timeMap_e = new TH1F("etimes","Electron Time Map",100,0,L/1000.); //mm
 	  timeMap_h = new TH1F("htimes","Hole Time Map",100,0,L/1000.); //mm   
+	  
+	  // filling distancemap_e,h
 	  for (int i=1; i<= distancemap_e->GetNbinsX(); i++){
 	    for (int j=1; j<= distancemap_e->GetNbinsY(); j++){
+	      distancemap_e->SetBinContent(i,j,L/1000.); //if you travel long enough, you will reach the electrode.
 	      distancemap_h->SetBinContent(i,j,L/1000.); //if you travel long enough, you will reach the electrode.
 	    }
 	  }
+	  
+	  // filling timeMap_e,h
+	  
 	  for (int k=1; k<= distancemap_e->GetNbinsX(); k++){
 	    double z = distancemap_e->GetXaxis()->GetBinCenter(k);
 	    double mysum = 0.;
@@ -290,10 +296,12 @@ AllPixFEI4RadDamageDigitizer::AllPixFEI4RadDamageDigitizer(G4String modName, G4S
 	      double dz = distancemap_e->GetXaxis()->GetBinWidth(k2);
 	      double E = Efield3D ? GetElectricField(0.002,0.002,z2) : m_eFieldMap1D->GetBinContent(m_eFieldMap1D->GetXaxis()->FindBin(z2*1000))/1e7; //in MV/mm
 	      if (E > 0){
-		double mu = GetMobility(E, 0); //mm^2/MV*ns
-		mysum+=dz/(mu*E); //mm * 1/(mm/ns) = ns
-		distancemap_e->SetBinContent(k,distancemap_e->GetYaxis()->FindBin(mysum),z2);
-	      }
+			double mu = GetMobility(E, 0); //mm^2/MV*ns
+			mysum+=dz/(mu*E); //mm * 1/(mm/ns) = ns
+			distancemap_e->SetBinContent(k,distancemap_e->GetYaxis()->FindBin(mysum),z2);
+	      } else if (E == 0) {
+			  mysum = 3.40282e+38; // without efield: travel almost forever to reach the electrode since we don't do actual diffusion
+		  }
 	      timeMap_e->SetBinContent(k,mysum);
 	    }
 	    for (int k2=k; k2 <= distancemap_e->GetNbinsX(); k2++){ //holes go the opposite direction as electrons.
@@ -304,7 +312,9 @@ AllPixFEI4RadDamageDigitizer::AllPixFEI4RadDamageDigitizer(G4String modName, G4S
 		double mu_h = GetMobility(E, 1);
 		mysum_h+=dz/(mu_h*E);
 		distancemap_h->SetBinContent(k,distancemap_h->GetYaxis()->FindBin(mysum_h),z2);
-	      }
+	      } else if (E == 0) {
+			mysum_h = 3.40282e+38; // without efield: travel almost forever to reach the electrode since we don't do actual diffusion
+		  }
 	      timeMap_h->SetBinContent(k,mysum_h);
 	    }
 	  }
