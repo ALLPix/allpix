@@ -136,7 +136,7 @@ private:
   G4bool   bulkType;
 
   G4double depVoltage;
-  G4double deplationLenght;
+  G4double depletionLength;
 
   G4double detectorThickness;
   G4double biasVoltage;

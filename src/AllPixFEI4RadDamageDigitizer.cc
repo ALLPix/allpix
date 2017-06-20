@@ -84,8 +84,8 @@ AllPixFEI4RadDamageDigitizer::AllPixFEI4RadDamageDigitizer(G4String modName, G4S
 	//Phenomenological parameters
 	precision = 10; //this is the number of charges to divide the G4 hit into.
 
-	deplationLenght=0.200;   //mm IBL 
-	if(depVoltage>biasVoltage) deplationLenght=deplationLenght*pow(biasVoltage/depVoltage,0.5);
+	depletionLength=0.200;   //mm IBL 
+	
 	std::cout << "Load the input maps " << std::endl;
 	
 	//Input from TCAD
@@ -103,10 +103,10 @@ AllPixFEI4RadDamageDigitizer::AllPixFEI4RadDamageDigitizer(G4String modName, G4S
 	AllPixGeoDsc * gD = GetDetectorGeoDscPtr();
 	double L = gD->GetSensorZ()*mm*1000; //in microns; for all maps, 0 is at the collecting electrode and L is the far side.
 	int L_int = L; //for the histograms later that have one bin per micron.
-	depVoltage = 30.; //V; this is highly fluece-dependent !  Should update when you change the fluence.
-	deplationLenght = L/1000.; //in mm.
-	if(depVoltage>biasVoltage) deplationLenght=deplationLenght*pow(biasVoltage/depVoltage,0.5); //This is the usual formula depletion depth = \sqrt{2*\epsilon_0\epsilon_{Si}*V/(eN_D)}.  See e.g. (2.26) in Pixel Detectors by L. Rossi et al.
-
+	depVoltage = 60.; //V; this is highly fluece-dependent !  Should update when you change the fluence.
+	depletionLength = L/1000.; //in mm.
+	if(depVoltage>biasVoltage) depletionLength=depletionLength*pow(biasVoltage/depVoltage,0.5); //This is the usual formula depletion depth = \sqrt{2*\epsilon_0\epsilon_{Si}*V/(eN_D)}.  See e.g. (2.26) in Pixel Detectors by L. Rossi et al.
+		
 	//Geometry constants
 	detectorThickness = gD->GetSensorZ();
 	pitchX = gD->GetPixelX(); 	// total length of pixel in x
@@ -218,12 +218,15 @@ AllPixFEI4RadDamageDigitizer::AllPixFEI4RadDamageDigitizer(G4String modName, G4S
 	    Efield3D = false;
 	    m_eFieldMap1D = new TH1F("m_hefieldz","m_hefieldz",L_int,0,L_int); // 1D map of the Efield in case we want to use 1D field
 	    G4double electricField=0;
-	    G4double pass=deplationLenght/m_eFieldMap1D->GetNbinsX();
+	    G4double pass=depletionLength/m_eFieldMap1D->GetNbinsX();
 	    for (int i=1; i<= m_eFieldMap1D->GetNbinsX()+1; i++){
 	      G4double position=pass*i;
-	      if(biasVoltage<depVoltage)   electricField=(biasVoltage/deplationLenght)*(1-position/deplationLenght);
-	      if(biasVoltage>=depVoltage)  electricField=(depVoltage/deplationLenght)*(1-position/deplationLenght)+(biasVoltage-depVoltage)/(2*deplationLenght);
-	      if(position>deplationLenght) electricField=0.;
+	      if (depletionLength != 0) {
+			  if(biasVoltage<depVoltage)	electricField=(biasVoltage/depletionLength)*(1-position/depletionLength);
+			  if(biasVoltage>=depVoltage)  electricField=(depVoltage/depletionLength)*(1-position/depletionLength)+(biasVoltage-depVoltage)/(2*depletionLength);
+			  if(position>depletionLength) electricField=0.;
+		  }
+			  
 	      m_eFieldMap1D->SetBinContent(m_eFieldMap1D->GetNbinsX()-i+1,electricField*10); //in V/cm; n in n prior to type inversion.
 	      if (defaultEfield==0) m_eFieldMap1D->SetBinContent(i,(1e4)*biasVoltage/(L/1000.)); //in V/cm
 	    }
