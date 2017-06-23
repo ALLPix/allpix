@@ -278,15 +278,15 @@ AllPixFEI4RadDamageDigitizer::AllPixFEI4RadDamageDigitizer(G4String modName, G4S
 	  timeMap_h = new TH1F("htimes","Hole Time Map",100,0,L/1000.); //mm   
 	  
 	  // filling distancemap_e,h
+	  /**
 	  for (int i=1; i<= distancemap_e->GetNbinsX(); i++){
 	    for (int j=1; j<= distancemap_e->GetNbinsY(); j++){
-	      distancemap_e->SetBinContent(i,j,L/1000.); //if you travel long enough, you will reach the electrode.
+	      //distancemap_e->SetBinContent(i,j,L/1000.); //if you travel long enough, you will reach the electrode.
 	      distancemap_h->SetBinContent(i,j,L/1000.); //if you travel long enough, you will reach the electrode.
 	    }
-	  }
+	  }**/
 	  
 	  // filling timeMap_e,h
-	  
 	  for (int k=1; k<= distancemap_e->GetNbinsX(); k++){
 	    double z = distancemap_e->GetXaxis()->GetBinCenter(k);
 	    double mysum = 0.;
@@ -295,30 +295,40 @@ AllPixFEI4RadDamageDigitizer::AllPixFEI4RadDamageDigitizer(G4String modName, G4S
 	      double z2 = distancemap_e->GetXaxis()->GetBinCenter(k2);
 	      double dz = distancemap_e->GetXaxis()->GetBinWidth(k2);
 	      double E = Efield3D ? GetElectricField(0.002,0.002,z2) : m_eFieldMap1D->GetBinContent(m_eFieldMap1D->GetXaxis()->FindBin(z2*1000))/1e7; //in MV/mm
+	      double mu = GetMobility(E, 0); //mm^2/MV*ns
 	      if (E > 0){
-			double mu = GetMobility(E, 0); //mm^2/MV*ns
 			mysum+=dz/(mu*E); //mm * 1/(mm/ns) = ns
 			distancemap_e->SetBinContent(k,distancemap_e->GetYaxis()->FindBin(mysum),z2);
 	      } else if (E == 0) {
 			  mysum = 3.40282e+38; // without efield: travel almost forever to reach the electrode since we don't do actual diffusion
+			  distancemap_e->SetBinContent(k,distancemap_e->GetYaxis()->FindBin(mysum),z2);
 		  }
-	      timeMap_e->SetBinContent(k,mysum);
 	    }
+	    timeMap_e->SetBinContent(k,mysum);
+	    
 	    for (int k2=k; k2 <= distancemap_e->GetNbinsX(); k2++){ //holes go the opposite direction as electrons.
 	      double z2 = distancemap_e->GetXaxis()->GetBinCenter(k2);
 	      double dz = distancemap_e->GetXaxis()->GetBinWidth(k2);
 	      double E = Efield3D ? GetElectricField(0.002,0.002,z2) : m_eFieldMap1D->GetBinContent(m_eFieldMap1D->GetXaxis()->FindBin(z2*1000))/1e7; //in MV/mm
+	      double mu_h = GetMobility(E, 1);
 	      if (E > 0){
-		double mu_h = GetMobility(E, 1);
-		mysum_h+=dz/(mu_h*E);
-		distancemap_h->SetBinContent(k,distancemap_h->GetYaxis()->FindBin(mysum_h),z2);
+			mysum_h+=dz/(mu_h*E);
+			distancemap_h->SetBinContent(k,distancemap_h->GetYaxis()->FindBin(mysum_h),z2);
 	      } else if (E == 0) {
-			mysum_h = 3.40282e+38; // without efield: travel almost forever to reach the electrode since we don't do actual diffusion
+				mysum_h = 3.40282e+38; // without efield: travel almost forever to reach the electrode since we don't do actual diffusion
+				distancemap_h->SetBinContent(k,distancemap_h->GetYaxis()->FindBin(mysum_h),z2);
 		  }
-	      timeMap_h->SetBinContent(k,mysum_h);
 	    }
+	    timeMap_h->SetBinContent(k,mysum_h);
 	  }
-	}
+	  
+	  FillHoles(distancemap_e);
+	  FillHoles(distancemap_h);
+	  
+		
+		
+		
+	}//end generating maps
 
 	if (debug_maps){
 	  gPad->SetRightMargin(0.15);
@@ -748,6 +758,101 @@ void AllPixFEI4RadDamageDigitizer::SetDetectorDigitInputs(G4double thl){
 	// set digitization input values
 	// thl
 	m_digitIn.thl = thl; // <-- input !
+}
+
+void AllPixFEI4RadDamageDigitizer::FillHoles(TH2F *distancemap) {
+	//averaging out holes in maps
+	for (int i=1; i<= distancemap->GetNbinsX(); i++){
+		for (int j=1; j<= distancemap->GetNbinsY(); j++) {
+			double bincontent = distancemap->GetBinContent(i,j);
+			
+			double up = 0;
+			double down = 0;
+			double left = 0;
+			double right = 0;
+			
+			if (bincontent == 0) {
+				
+				//i: x direction
+				for (int m=i; m>=1; m--) {
+					if( distancemap->GetBinContent(m,j) > 0 ) {
+						left = m;
+						break;
+					}
+				}
+				for (int m=i; m<= distancemap->GetNbinsX(); m++) {
+					if( distancemap->GetBinContent(m,j) > 0 ) {
+						right = m;
+						break;
+					}
+				}
+				//j: y directiopn
+				for (int n=j; n>=1; n--) {
+					if( distancemap->GetBinContent(i,n) > 0 ) {
+						down = n;
+						break;
+					}
+				}
+				for (int n=j; n<= distancemap->GetNbinsY(); n++) {
+					if( distancemap->GetBinContent(i,n) > 0 ) {
+						up = n;
+						break;
+					}
+				}
+				
+				double dx = 0;
+				double dy = 0;
+								
+				if (right > 0) dx = abs( distancemap->GetBinContent(right,j) - distancemap->GetBinContent(left,j) )/abs(right-left);
+				else {
+					right = i;
+					if (i>distancemap->GetNbinsX()/2) right = distancemap->GetNbinsX();
+				}
+							
+				if (up > 0) dy = abs( distancemap->GetBinContent(i,up) - distancemap->GetBinContent(i,down) )/abs(up-down);
+				else {
+					up = j;
+					if (j>distancemap->GetNbinsY()/2) up = distancemap->GetNbinsY();
+				}
+				
+				int xlimit = i;
+				int ylimit = j;
+				
+				if (right > left) xlimit = right;
+				if (up > down) ylimit = up;
+
+				//decrement works better
+				for (int m = xlimit; m>left; m--) {
+					for (int n = ylimit; n>down; n-- ) {
+						if (distancemap->GetBinContent(m,n) == 0) {
+							if (n>1) {
+								double calcx = distancemap->GetBinContent(left,j)+(m-left)*dx;
+								double calcy = distancemap->GetBinContent(i,down)+(n-down)*dy;
+								double average = 0.;
+								if (calcx!=0 && calcy!=0) average = (calcx*calcx + calcy*calcy) / (calcx + calcy);					
+								else if (calcx == 0 && calcy > 0) average = calcy;
+								else if (calcx > 0 && calcy == 0) average = calcx;
+								distancemap->SetBinContent(m,n,average);
+							}
+							else {
+								double calcx = distancemap->GetBinContent(m,n)+(m-left)*dx;
+								//double calcx = 0;
+								double calcy = distancemap->GetBinContent(m,n+1);
+								double average = 0.;
+								if (calcx!=0 && calcy!=0) average = (calcx*calcx + calcy*calcy) / (calcx + calcy);					
+								else if (calcx == 0 && calcy > 0) average = calcy;
+								else if (calcx > 0 && calcy == 0) average = calcx;
+
+								distancemap->SetBinContent(m,n,average);
+
+							}
+							
+						}
+					}
+				}
+			}//end if bincontent == 0
+		}		  
+	}//end of filling holes
 }
 
 ///////////////////////////////////

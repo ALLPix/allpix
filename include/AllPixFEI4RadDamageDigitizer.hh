@@ -116,6 +116,9 @@ private:
     return myout;
   }
 
+	// functions for maps calculation
+	void FillHoles(TH2F *distancemap);
+
   G4double GetElectricField(G4double z);
   G4double GetElectricField(G4double x, G4double y, G4double z);
   G4double GetMobility(G4double electricField, G4bool isHole);
