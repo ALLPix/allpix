@@ -28,6 +28,7 @@
 
 #include "TMath.h"
 #include "TF1.h"
+#include "TF2.h"
 #include "TTree.h"
 // Included for radiation damage
 #include "math.h"
@@ -322,15 +323,13 @@ AllPixFEI4RadDamageDigitizer::AllPixFEI4RadDamageDigitizer(G4String modName, G4S
 	    timeMap_h->SetBinContent(k,mysum_h);
 	  }
 	  
-	  FillHoles(distancemap_e);
-	  FillHoles(distancemap_h);
-	  
-		
-		
+	  FillHoles(distancemap_e, isHole, L/1000., "distancefit_e");
+	  FillHoles(distancemap_h, isHole, L/1000., "distancefit_h");
 		
 	}//end generating maps
 
 	if (debug_maps){
+		c1->cd();
 	  gPad->SetRightMargin(0.15);
 	  distancemap_e->GetXaxis()->SetNdivisions(505);
 	  distancemap_e->GetYaxis()->SetNdivisions(505);
@@ -339,7 +338,7 @@ AllPixFEI4RadDamageDigitizer::AllPixFEI4RadDamageDigitizer(G4String modName, G4S
 	  distancemap_e->GetZaxis()->SetTitleOffset(1.6);
 	  distancemap_e->SetTitle("Electron Distance Map");
 	  distancemap_e->GetZaxis()->SetTitle("Location in z [mm]");
-	  distancemap_e->Draw("colz");
+	  distancemap_e->DrawCopy("colz");
 	  c1->Print("distancemap_e.pdf");
 	  
 	  distancemap_h->GetXaxis()->SetNdivisions(505);
@@ -349,7 +348,7 @@ AllPixFEI4RadDamageDigitizer::AllPixFEI4RadDamageDigitizer(G4String modName, G4S
 	  distancemap_h->GetZaxis()->SetTitleOffset(1.6);
 	  distancemap_h->SetTitle("Hole Distance Map");
 	  distancemap_h->GetZaxis()->SetTitle("Location in z [mm]");
-	  distancemap_h->Draw("colz");
+	  distancemap_h->DrawCopy("colz");
 	  c1->Print("distancemap_h.pdf");
 	  
 	  timeMap_h->SetTitle("");
@@ -760,100 +759,74 @@ void AllPixFEI4RadDamageDigitizer::SetDetectorDigitInputs(G4double thl){
 	m_digitIn.thl = thl; // <-- input !
 }
 
-void AllPixFEI4RadDamageDigitizer::FillHoles(TH2F *distancemap) {
-	//averaging out holes in maps
+Double_t fun_e(Double_t *x, Double_t *par) {
+	Double_t result = par[0]*TMath::Exp( par[1]*pow(x[0]+par[2],2) + par[3]*pow(x[1]+par[4],2) ) + par[5] + par[6]*x[0] + par[7]*x[1] ;
+	return result;
+	}
+	
+Double_t fun_h(Double_t *x, Double_t *par) {
+	Double_t result = par[0] + par[1]*(x[0]+par[2]) + par[3]*(x[1]+par[4]);
+	return result;
+	}
+
+
+//2dfit
+void AllPixFEI4RadDamageDigitizer::FillHoles(TH2F *distancemap, G4bool isHole, double sensorZ, char *name) {
+	TCanvas *c1 = new TCanvas(name,"I am a canvas",600,600);
+	
+	const Int_t npar = 10;
+	
+	Double_t f2params_e[npar] = {0.5, -50/biasVoltage, -sensorZ, -50/biasVoltage, 0, 0, 1, 0.01 }; 
+	Double_t f2params_h[npar] = {1, 1, 0, 1, 0};
+	Double_t f2params[npar] = {};
+	
+	for (int i = 0; i< npar; i++) {
+		f2params[i] = f2params_e[i];
+	}
+	
+	if (isHole) {
+		for (int i = 0; i< npar; i++) {
+			f2params[i] = f2params_h[i];
+		}
+	}
+	
+	TF2 *f2 = new TF2("f2",fun_e, 0.,10.,0.,0.3,npar);
+	if (isHole) f2 = new TF2("f2",fun_h, 0.,10.,0.,0.3,npar);
+	f2->SetParameters(f2params);
+	distancemap->Draw("lego2z");
+	distancemap->Fit("f2");
+	f2->Draw("cont1 same");
+	if (debug_maps) {
+		char filename[50];
+		char biasV[10];
+		sprintf(biasV, "%d", (int)biasVoltage);
+		strcpy(filename,name);
+		strcat(filename,biasV);
+		G4cout << filename << G4endl;
+		c1->Print(strcat(filename,".pdf"));
+	}
+
 	for (int i=1; i<= distancemap->GetNbinsX(); i++){
 		for (int j=1; j<= distancemap->GetNbinsY(); j++) {
-			double bincontent = distancemap->GetBinContent(i,j);
-			
-			double up = 0;
-			double down = 0;
-			double left = 0;
-			double right = 0;
-			
+			Double_t bincontent = distancemap->GetBinContent(i,j);
 			if (bincontent == 0) {
-				
-				//i: x direction
-				for (int m=i; m>=1; m--) {
-					if( distancemap->GetBinContent(m,j) > 0 ) {
-						left = m;
-						break;
-					}
+				Double_t coords[2] = {distancemap->GetXaxis()->GetBinCenter(i),distancemap->GetYaxis()->GetBinCenter(j)};
+				Double_t params[npar] = {};
+				for (int k = 0; k<npar; k++) {
+					params[k] = f2->GetParameter(k);
 				}
-				for (int m=i; m<= distancemap->GetNbinsX(); m++) {
-					if( distancemap->GetBinContent(m,j) > 0 ) {
-						right = m;
-						break;
-					}
-				}
-				//j: y directiopn
-				for (int n=j; n>=1; n--) {
-					if( distancemap->GetBinContent(i,n) > 0 ) {
-						down = n;
-						break;
-					}
-				}
-				for (int n=j; n<= distancemap->GetNbinsY(); n++) {
-					if( distancemap->GetBinContent(i,n) > 0 ) {
-						up = n;
-						break;
-					}
-				}
-				
-				double dx = 0;
-				double dy = 0;
-								
-				if (right > 0) dx = abs( distancemap->GetBinContent(right,j) - distancemap->GetBinContent(left,j) )/abs(right-left);
-				else {
-					right = i;
-					if (i>distancemap->GetNbinsX()/2) right = distancemap->GetNbinsX();
-				}
-							
-				if (up > 0) dy = abs( distancemap->GetBinContent(i,up) - distancemap->GetBinContent(i,down) )/abs(up-down);
-				else {
-					up = j;
-					if (j>distancemap->GetNbinsY()/2) up = distancemap->GetNbinsY();
-				}
-				
-				int xlimit = i;
-				int ylimit = j;
-				
-				if (right > left) xlimit = right;
-				if (up > down) ylimit = up;
-
-				//decrement works better
-				for (int m = xlimit; m>left; m--) {
-					for (int n = ylimit; n>down; n-- ) {
-						if (distancemap->GetBinContent(m,n) == 0) {
-							if (n>1) {
-								double calcx = distancemap->GetBinContent(left,j)+(m-left)*dx;
-								double calcy = distancemap->GetBinContent(i,down)+(n-down)*dy;
-								double average = 0.;
-								if (calcx!=0 && calcy!=0) average = (calcx*calcx + calcy*calcy) / (calcx + calcy);					
-								else if (calcx == 0 && calcy > 0) average = calcy;
-								else if (calcx > 0 && calcy == 0) average = calcx;
-								distancemap->SetBinContent(m,n,average);
-							}
-							else {
-								double calcx = distancemap->GetBinContent(m,n)+(m-left)*dx;
-								//double calcx = 0;
-								double calcy = distancemap->GetBinContent(m,n+1);
-								double average = 0.;
-								if (calcx!=0 && calcy!=0) average = (calcx*calcx + calcy*calcy) / (calcx + calcy);					
-								else if (calcx == 0 && calcy > 0) average = calcy;
-								else if (calcx > 0 && calcy == 0) average = calcx;
-
-								distancemap->SetBinContent(m,n,average);
-
-							}
-							
-						}
-					}
-				}
-			}//end if bincontent == 0
-		}		  
-	}//end of filling holes
+				Double_t gapvalue = fun_e(coords,params);
+				if (isHole) gapvalue = fun_h(coords,params);
+				if (gapvalue>sensorZ) gapvalue = sensorZ;
+				else if (gapvalue<0) gapvalue = 0;
+				distancemap->SetBinContent(i,j,gapvalue);
+			}
+		}
+	}
+	return;
 }
+
+
 
 ///////////////////////////////////
 // Radiation Damage Calculations //

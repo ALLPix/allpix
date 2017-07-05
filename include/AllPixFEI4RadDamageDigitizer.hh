@@ -117,7 +117,7 @@ private:
   }
 
 	// functions for maps calculation
-	void FillHoles(TH2F *distancemap);
+	void FillHoles(TH2F *distancemap, G4bool isHole, double sensorZ, char *name);
 
   G4double GetElectricField(G4double z);
   G4double GetElectricField(G4double x, G4double y, G4double z);
@@ -192,5 +192,8 @@ private:
   G4int MipCharge;
   G4double Lv1Unit;
 };
+
+	Double_t fun_e(Double_t *x, Double_t *par);
+	Double_t fun_h(Double_t *x, Double_t *par);
 
 #endif
