@@ -100,17 +100,12 @@ private:
   
   G4UIcmdWithABool   * m_EUTelescopeWriteCmd;
   G4UIcmdWithAString * m_EUTelescopeFolderNameCmd;
-<<<<<<< HEAD
   G4UIcmdWithABool   * m_EUTelescopeEventIDCmd;			
-  G4bool   m_EUTelescopeWriteFlag;
-  G4String m_EUTelescopeFolderName;
-  G4bool m_EUTelescopeEventIDFlag;
-=======
   G4UIcmdWithAnInteger * m_EUTelescopeRunNumberCmd;
   G4bool   m_EUTelescopeWriteFlag;
   G4String m_EUTelescopeFolderName;
+  G4bool m_EUTelescopeEventIDFlag;
   G4int    m_EUTelescopeRunNumber;
->>>>>>> 797822a... Added ability to set a runnumber for EUTelescope in the macro
   
   //nalipour: MC hits
   G4UIcmdWithABool   * m_Write_MC_FilesCmd;
