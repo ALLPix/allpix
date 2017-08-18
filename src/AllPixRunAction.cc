@@ -124,30 +124,36 @@ void AllPixRunAction::BeginOfRunAction(const G4Run* aRun)
 
     // Initialize Eutel output
     m_writeEUTelescopeFilesFlag = AllPixMessenger->GetEUTelescopeWriteFlag();
-
+    m_EUTelescopeRunNumber = AllPixMessenger->GetEUTelescopeRunNumber();
+    
     if(m_writeEUTelescopeFilesFlag){
 
       m_writeEUTelescopeFolder = AllPixMessenger->GetEUTelescopeFolderName();
-      string eutelRunNrFile = AllPixMessenger->GetEUTelescopeFolderName();
 
-      if(m_writeEUTelescopeFolder.back() != '/'){
-	m_writeEUTelescopeFolder.append("/");
-	eutelRunNrFile.append("/");
-      }
+      if(m_EUTelescopeRunNumber){ // EUTel Runnumber set by config
+	euRunNr = m_EUTelescopeRunNumber;
+      }else{
+	string eutelRunNrFile = AllPixMessenger->GetEUTelescopeFolderName();
+
+	if(m_writeEUTelescopeFolder.back() != '/'){
+	  m_writeEUTelescopeFolder.append("/");
+	  eutelRunNrFile.append("/");
+	}
     
-      eutelRunNrFile.append("runnumber.dat");
+	eutelRunNrFile.append("runnumber.dat");
 
-      ifstream runNrStrI(eutelRunNrFile);
-      runNrStrI >> euRunNr;
-      runNrStrI.close();
+	ifstream runNrStrI(eutelRunNrFile);
+	runNrStrI >> euRunNr;
+	runNrStrI.close();
 
-      euRunNr++;
+	euRunNr++;
 
-      G4cout << "This is EUTelescope Run Nr. " << euRunNr << G4endl;
+	ofstream runNrStrO(eutelRunNrFile);
+	runNrStrO << euRunNr;
+	runNrStrO.close();
+      }
       
-      ofstream runNrStrO(eutelRunNrFile);
-      runNrStrO << euRunNr;
-      runNrStrO.close();
+      G4cout << "This is EUTelescope Run Nr. " << euRunNr << G4endl;
 
       // Initialize the other writers (LCIO, ...)
       initWriters();

@@ -170,6 +170,10 @@ AllPixPrimaryGeneratorMessenger::AllPixPrimaryGeneratorMessenger(
   m_EUTelescopeFolderNameCmd->SetDefaultValue("./");
   m_EUTelescopeFolderNameCmd->AvailableForStates(G4State_PreInit, G4State_Idle);
 
+  m_EUTelescopeRunNumberCmd = new G4UIcmdWithAnInteger("/allpix/eutelescope/runnumber",this);
+  m_EUTelescopeRunNumberCmd->SetGuidance("RunNumber for EUTelescope file");
+  m_EUTelescopeRunNumberCmd->SetDefaultValue(0);
+  m_EUTelescopeRunNumberCmd->AvailableForStates(G4State_PreInit, G4State_Idle);
 
   //nalipour: MC hits
   m_Write_MC_FilesCmd = new G4UIcmdWithABool("/allpix/WriteROOTFiles/write",this);
@@ -323,6 +327,11 @@ void AllPixPrimaryGeneratorMessenger::SetNewValue(G4UIcommand* command, G4String
 	  G4cout << "folder " << m_EUTelescopeFolderName << " does not exist, creating..." << G4endl;
 	  system(TString::Format("mkdir -p %s",m_EUTelescopeFolderName.data()));
 	}
+    }
+  
+  if ( command == m_EUTelescopeRunNumberCmd )
+    {
+      m_EUTelescopeRunNumber = m_EUTelescopeRunNumberCmd->GetNewIntValue(newValue);
     }
 		
   //nalipour: MC hits
