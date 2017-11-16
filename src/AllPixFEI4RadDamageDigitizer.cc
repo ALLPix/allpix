@@ -760,25 +760,44 @@ void AllPixFEI4RadDamageDigitizer::SetDetectorDigitInputs(G4double thl){
 }
 
 Double_t fun_e(Double_t *x, Double_t *par) {
-	Double_t result = par[0]*TMath::Exp( par[1]*pow(x[0]+par[2],2) + par[3]*pow(x[1]+par[4],2) ) + par[5] + par[6]*x[0] + par[7]*x[1] ;
-	return result;
+	Double_t result = 0.0;
+	for (int i = 0; i<2; i++){
+		result += par[5*i]*pow(x[0]+par[5*i+1],i) + par[5*i+2]*pow(x[0]+par[5*i+3],i)*pow(x[1]+par[5*i+4],i);
 	}
-	
-Double_t fun_h(Double_t *x, Double_t *par) {
-	Double_t result = par[0] + par[1]*(x[0]+par[2]) + par[3]*(x[1]+par[4]);
+
 	return result;
 	}
 
+Double_t fun_h(Double_t *x, Double_t *par) {
+	Double_t result = 0.0;
+	for (int i = 0; i<2; i++){
+		result += par[4*i]*pow(x[1]+par[4*i+1],i)*pow(x[0],i) + par[4*i+2]*pow(x[1]+par[4*i+3],i);
+	}
+
+	return result;
+	}
 
 //2dfit
 void AllPixFEI4RadDamageDigitizer::FillHoles(TH2F *distancemap, G4bool isHole, double sensorZ, char *name) {
+	std::string filename(name);
+	std::string title;
+	if (!isHole) {
+		title +="Electron Distance Map "+std::to_string((int)biasVoltage)+"V";
+		}
+	else {
+		title +="Hole Distance Map "+std::to_string((int)biasVoltage)+"V";
+		}
+	filename += std::to_string((int)biasVoltage);
+	std::string rootfile(filename+".root");
+	TFile *distanceOutFile = new TFile(rootfile.c_str(),"RECREATE");
 	TCanvas *c1 = new TCanvas(name,"I am a canvas",600,600);
 	
-	const Int_t npar = 10;
+	const Int_t npar = 12;
 	
-	Double_t f2params_e[npar] = {0.5, -50/biasVoltage, -sensorZ, -50/biasVoltage, 0, 0, 1, 0.01 }; 
-	Double_t f2params_h[npar] = {1, 1, 0, 1, 0};
+	Double_t f2params_e[npar] = {1,0,1,0,0, 1,0,0.1,1,1, 0,0};
+	Double_t f2params_h[npar] = {1,0,1,0,0, 1,0,0.1,1,1, 0,0};
 	Double_t f2params[npar] = {};
+
 	
 	for (int i = 0; i< npar; i++) {
 		f2params[i] = f2params_e[i];
@@ -790,20 +809,42 @@ void AllPixFEI4RadDamageDigitizer::FillHoles(TH2F *distancemap, G4bool isHole, d
 		}
 	}
 	
-	TF2 *f2 = new TF2("f2",fun_e, 0.,10.,0.,0.3,npar);
-	if (isHole) f2 = new TF2("f2",fun_h, 0.,10.,0.,0.3,npar);
-	f2->SetParameters(f2params);
+	
+	TF2 *f2 = new TF2("f2",fun_e, 0.,10.,0.,detectorThickness,npar);
+	//if (isHole) f2 = new TF2("f2",fun_h, 0.,10.,0.,detectorThickness,npar);
+	f2->SetParameters(f2params);	
+	
 	distancemap->Draw("lego2z");
-	distancemap->Fit("f2");
-	f2->Draw("cont1 same");
+	
+	if (!isHole) {
+		distancemap->Fit("f2","WEM");
+	}
+	else {
+		distancemap->Fit("f2","EM");
+	}
+	
+	distancemap->SetTitle(title.c_str());
+	distancemap->GetXaxis()->SetNdivisions(505);
+	distancemap->GetXaxis()->SetTitle("Initial Position in z [#mum]");
+    distancemap->GetYaxis()->SetTitle("Electrons Time Traveled [ns]");
+	distancemap->GetZaxis()->SetTitle("Location in z [mm]");
+    distancemap->GetXaxis()->SetTitleOffset(1.7);
+    distancemap->GetYaxis()->SetTitleOffset(1.7);
+	distancemap->GetZaxis()->SetTitleOffset(1.7);
+    c1->SetLeftMargin(0.12);
+    c1->SetRightMargin(0.17);
+    c1->SetBottomMargin(0.12);
+	//f2->Draw("cont1 same");
+	
 	if (debug_maps) {
-		char filename[50];
-		char biasV[10];
-		sprintf(biasV, "%d", (int)biasVoltage);
-		strcpy(filename,name);
-		strcat(filename,biasV);
-		G4cout << filename << G4endl;
-		c1->Print(strcat(filename,".pdf"));
+		std::string pdffile(filename+".pdf");
+		G4cout << pdffile << G4endl;
+		c1->Print(pdffile.c_str());
+		distanceOutFile->Write();
+		distancemap->Write(rootfile.c_str());
+	}
+	else {
+		distanceOutFile->Delete();
 	}
 
 	for (int i=1; i<= distancemap->GetNbinsX(); i++){
@@ -816,7 +857,7 @@ void AllPixFEI4RadDamageDigitizer::FillHoles(TH2F *distancemap, G4bool isHole, d
 					params[k] = f2->GetParameter(k);
 				}
 				Double_t gapvalue = fun_e(coords,params);
-				if (isHole) gapvalue = fun_h(coords,params);
+				//if (isHole) gapvalue = fun_h(coords,params);
 				if (gapvalue>sensorZ) gapvalue = sensorZ;
 				else if (gapvalue<0) gapvalue = 0;
 				distancemap->SetBinContent(i,j,gapvalue);
