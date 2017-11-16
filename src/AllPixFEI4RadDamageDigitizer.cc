@@ -106,7 +106,7 @@ AllPixFEI4RadDamageDigitizer::AllPixFEI4RadDamageDigitizer(G4String modName, G4S
 	int L_int = L; //for the histograms later that have one bin per micron.
 	depVoltage = 60.; //V; this is highly fluece-dependent !  Should update when you change the fluence.
 	depletionLength = L/1000.; //in mm.
-	if(depVoltage>biasVoltage) depletionLength=depletionLength*pow(biasVoltage/depVoltage,0.5); //This is the usual formula depletion depth = \sqrt{2*\epsilon_0\epsilon_{Si}*V/(eN_D)}.  See e.g. (2.26) in Pixel Detectors by L. Rossi et al.
+	if(biasVoltage<depVoltage) depletionLength=depletionLength*pow(biasVoltage/depVoltage,0.5); //This is the usual formula depletion depth = \sqrt{2*\epsilon_0\epsilon_{Si}*V/(eN_D)}.  See e.g. (2.26) in Pixel Detectors by L. Rossi et al.
 		
 	//Geometry constants
 	detectorThickness = gD->GetSensorZ();
@@ -219,12 +219,13 @@ AllPixFEI4RadDamageDigitizer::AllPixFEI4RadDamageDigitizer(G4String modName, G4S
 	    Efield3D = false;
 	    m_eFieldMap1D = new TH1F("m_hefieldz","m_hefieldz",L_int,0,L_int); // 1D map of the Efield in case we want to use 1D field
 	    G4double electricField=0;
-	    G4double pass=depletionLength/m_eFieldMap1D->GetNbinsX();
+	    G4double pass=L/1000/m_eFieldMap1D->GetNbinsX();
+	    //G4double pass=depletionLength/m_eFieldMap1D->GetNbinsX();
 	    for (int i=1; i<= m_eFieldMap1D->GetNbinsX()+1; i++){
 	      G4double position=pass*i;
 	      if (depletionLength != 0) {
-			  if(biasVoltage<depVoltage)	electricField=(biasVoltage/depletionLength)*(1-position/depletionLength);
-			  if(biasVoltage>=depVoltage)  electricField=(depVoltage/depletionLength)*(1-position/depletionLength)+(biasVoltage-depVoltage)/(2*depletionLength);
+			  if(biasVoltage<depVoltage)	electricField= 2*(biasVoltage/depletionLength)*(1-position/depletionLength);
+			  if(biasVoltage>=depVoltage)  electricField=(2*depVoltage/depletionLength)*(1-position/depletionLength)+(biasVoltage-depVoltage)/(depletionLength);
 			  if(position>depletionLength) electricField=0.;
 		  }
 			  
@@ -236,6 +237,7 @@ AllPixFEI4RadDamageDigitizer::AllPixFEI4RadDamageDigitizer(G4String modName, G4S
 
 	if (debug_maps){
 	  gPad->SetLeftMargin(0.15);
+	  TFile *eOutFile = new TFile("efield_1D.root", "RECREATE");
 	  if (Efield3D){
 	    m_eFieldMap1D = new TH1F("hefieldz","hefieldz",eFieldMap->GetNbinsZ(),eFieldMap->GetZaxis()->GetBinCenter(1)-0.5*eFieldMap->GetZaxis()->GetBinWidth(1),eFieldMap->GetZaxis()->GetBinCenter(eFieldMap->GetNbinsZ())+0.5*eFieldMap->GetZaxis()->GetBinWidth(eFieldMap->GetNbinsZ()));
 	    for (int k=1; k<=eFieldMap->GetNbinsZ(); k++){
@@ -260,6 +262,7 @@ AllPixFEI4RadDamageDigitizer::AllPixFEI4RadDamageDigitizer(G4String modName, G4S
 	  m_eFieldMap1D->GetXaxis()->SetTitleSize(0.03);
 	  m_eFieldMap1D->Draw();
 	  c1->Print("Efield.pdf");
+	  m_eFieldMap1D->Write("efield_1D.root");
 	}
 
 	// Get the distance at the point of trap and time to electrode mapping (derived from electric field)  
