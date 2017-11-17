@@ -1154,13 +1154,13 @@ void AllPixFEI4RadDamageDigitizer::Digitize(){
 
 	    int nbin = ramoPotentialMap->FindBin(fabs((xpos-x_neighbor)*1000),fabs((ypos-y_neighbor)*1000),zpos*1000); //take the absolute value because we only have 1/4 of the ramo
 	    double ramo_i=0;
-	    if (!ramoPotentialMap->IsBinOverflow(nbin) && !ramoPotentialMap->IsBinOverflow(nbin)){ //check if the position is inside the map, else ramo=0
+	    if (!ramoPotentialMap->IsBinUnderflow(nbin) && !ramoPotentialMap->IsBinOverflow(nbin)){ //check if the position is inside the map, else ramo=0
 	      ramo_i = ramoPotentialMap->GetBinContent(nbin);
 	    }
 	    int nbin2 = ramoPotentialMap->FindBin(fabs((xposD-x_neighbor)*1000),fabs((yposD-y_neighbor)*1000),(zpos+zposD)*1000); //for this check, zpos doesn't matter.
 	    if(!isHole) nbin2 = ramoPotentialMap->FindBin(fabs((xposD-x_neighbor)*1000),fabs((yposD-y_neighbor)*1000),(zpos-zposD)*1000);
 	    double ramo=0;
-	    if (!ramoPotentialMap->IsBinOverflow(nbin2) && !ramoPotentialMap->IsBinOverflow(nbin2)){ //check if the position is inside the map, else ramo=0 
+	    if (!ramoPotentialMap->IsBinUnderflow(nbin2) && !ramoPotentialMap->IsBinOverflow(nbin2)){ //check if the position is inside the map, else ramo=0
 	      ramo = ramoPotentialMap->GetBinContent(nbin2);		     
 	    }
 	    if( (zpos-zposD==0.)  &&  (fabs(xposD-x_neighbor)>pitchX/2 || fabs(yposD-y_neighbor)>pitchY/2) ) ramo=0;
