@@ -233,25 +233,24 @@ AllPixFEI4RadDamageDigitizer::AllPixFEI4RadDamageDigitizer(G4String modName, G4S
 	if (defaultEfield==0) m_eFieldMap1D->SetBinContent(i,(1e4)*biasVoltage/(detectorThickness)); //in V/cm
       }
     } 
-  }	  
+  }	 
+  if (Efield3D){
+    m_eFieldMap1D = new TH1F("hefieldz","hefieldz",eFieldMap->GetNbinsZ(),eFieldMap->GetZaxis()->GetBinCenter(1)-0.5*eFieldMap->GetZaxis()->GetBinWidth(1),eFieldMap->GetZaxis()->GetBinCenter(eFieldMap->GetNbinsZ())+0.5*eFieldMap->GetZaxis()->GetBinWidth(eFieldMap->GetNbinsZ()));
+    for (int k=1; k<=eFieldMap->GetNbinsZ(); k++){
+      double avg_num = 0.;
+      double avg_den = 0.;
+      for (int i=1; i<=eFieldMap->GetNbinsX(); i++){
+	for (int j=1; j<=eFieldMap->GetNbinsY(); j++){
+	  avg_num+=eFieldMap->GetBinContent(i,j,k);
+	  avg_den+=1.;
+	}
+      }
+      m_eFieldMap1D->SetBinContent(k,avg_num/avg_den);
+    }
+  } 
 
   if (debug_maps){
     gPad->SetLeftMargin(0.15);
-    TFile *eOutFile = new TFile("efield_1D.root", "RECREATE");
-    if (Efield3D){
-      m_eFieldMap1D = new TH1F("hefieldz","hefieldz",eFieldMap->GetNbinsZ(),eFieldMap->GetZaxis()->GetBinCenter(1)-0.5*eFieldMap->GetZaxis()->GetBinWidth(1),eFieldMap->GetZaxis()->GetBinCenter(eFieldMap->GetNbinsZ())+0.5*eFieldMap->GetZaxis()->GetBinWidth(eFieldMap->GetNbinsZ()));
-      for (int k=1; k<=eFieldMap->GetNbinsZ(); k++){
-	double avg_num = 0.;
-	double avg_den = 0.;
-	for (int i=1; i<=eFieldMap->GetNbinsX(); i++){
-	  for (int j=1; j<=eFieldMap->GetNbinsY(); j++){
-	    avg_num+=eFieldMap->GetBinContent(i,j,k);
-	    avg_den+=1.;
-	  }
-	}
-	m_eFieldMap1D->SetBinContent(k,avg_num/avg_den);
-      }
-    }
     m_eFieldMap1D->GetYaxis()->SetRangeUser(0.,m_eFieldMap1D->GetMaximum()*1.5);
     m_eFieldMap1D->SetTitle("Electric Field");
     m_eFieldMap1D->GetXaxis()->SetTitle("Depth (z) [#mum]");
