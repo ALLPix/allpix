@@ -102,18 +102,18 @@ AllPixFEI4RadDamageDigitizer::AllPixFEI4RadDamageDigitizer(G4String modName, G4S
   //Sensor properties
   //Fetching info from pixeldetector.xml 
   AllPixGeoDsc * gD = GetDetectorGeoDscPtr();
-  double L = gD->GetSensorZ()*mm*1000; //in microns; for all maps, 0 is at the collecting electrode and L is the far side.
-  int L_int = L; //for the histograms later that have one bin per micron.
-  depVoltage = 60.; //V; this is highly fluece-dependent !  Should update when you change the fluence.
-  depletionLength = L/1000.; //in mm.
-  if(biasVoltage<depVoltage) depletionLength=depletionLength*pow(biasVoltage/depVoltage,0.5); //This is the usual formula depletion depth = \sqrt{2*\epsilon_0\epsilon_{Si}*V/(eN_D)}.  See e.g. (2.26) in Pixel Detectors by L. Rossi et al.
-	  
-  //Geometry constants
-  detectorThickness = gD->GetSensorZ();
+  detectorThickness = gD->GetSensorZ(); //mm
   pitchX = gD->GetPixelX(); 	// total length of pixel in x
   pitchY = gD->GetPixelY();	// total length of pixel in y
   nPixX= gD->GetNPixelsX(); 	// total number of pixels in x
   nPixY= gD->GetNPixelsY();	// total number of pixels in y
+  
+  //Sensor properties
+  double L = detectorThickness*mm*1000; //in microns; for all maps, 0 is at the collecting electrode and L is the far side.
+  int L_int = L; //for the histograms later that have one bin per micron.
+  depVoltage = 60.; //V; this is highly fluece-dependent !  Should update when you change the fluence.
+  depletionLength = detectorThickness; //in mm.
+  if(biasVoltage<depVoltage) depletionLength=depletionLength*pow(biasVoltage/depVoltage,0.5); //This is the usual formula depletion depth = \sqrt{2*\epsilon_0\epsilon_{Si}*V/(eN_D)}.  See e.g. (2.26) in Pixel Detectors by L. Rossi et al.
 
   //For debugging the inputs
   TCanvas *c1 = new TCanvas("","",600,600);
@@ -219,7 +219,7 @@ AllPixFEI4RadDamageDigitizer::AllPixFEI4RadDamageDigitizer(G4String modName, G4S
       Efield3D = false;
       m_eFieldMap1D = new TH1F("m_hefieldz","m_hefieldz",L_int,0,L_int); // 1D map of the Efield in case we want to use 1D field
       G4double electricField=0;
-      G4double pass=L/1000/m_eFieldMap1D->GetNbinsX();
+      G4double pass=detectorThickness/m_eFieldMap1D->GetNbinsX();
       //G4double pass=depletionLength/m_eFieldMap1D->GetNbinsX();
       for (int i=1; i<= m_eFieldMap1D->GetNbinsX()+1; i++){
 	G4double position=pass*i;
@@ -230,7 +230,7 @@ AllPixFEI4RadDamageDigitizer::AllPixFEI4RadDamageDigitizer(G4String modName, G4S
 	}
 		    
 	m_eFieldMap1D->SetBinContent(m_eFieldMap1D->GetNbinsX()-i+1,electricField*10); //in V/cm; n in n prior to type inversion.
-	if (defaultEfield==0) m_eFieldMap1D->SetBinContent(i,(1e4)*biasVoltage/(L/1000.)); //in V/cm
+	if (defaultEfield==0) m_eFieldMap1D->SetBinContent(i,(1e4)*biasVoltage/(detectorThickness)); //in V/cm
       }
     } 
   }	  
@@ -266,96 +266,123 @@ AllPixFEI4RadDamageDigitizer::AllPixFEI4RadDamageDigitizer(G4String modName, G4S
   }
 
   // Get the distance at the point of trap and time to electrode mapping (derived from electric field)  
-  distancemap_e=0;
-  distancemap_h=0;
-  timeMap_e=0;
-  timeMap_h=0;
-  distancemap_e=(TH2F*)dfile->Get("edistance");
-  distancemap_h=(TH2F*)dfile->Get("hdistance");
-  timeMap_e=(TH1F*)tfile->Get("etimes");
-  timeMap_h=(TH1F*)tfile->Get("htimes");
-  if (distancemap_e == 0 || distancemap_h == 0 || timeMap_e == 0 || timeMap_h == 0){
-    G4cout << "Did not find any pre-computed distance maps.  Will quickly do the integration now.  This is slow, but only needs to be done once per run." << G4endl;
-    distancemap_e = new TH2F("edistance","Electron Distance Map",100,0,L/1000.,20,0,10); //mm by ns
-    distancemap_h = new TH2F("hdistance","Holes Distance Map",100,0,L/1000.,20,0,10);
-    timeMap_e = new TH1F("etimes","Electron Time Map",100,0,L/1000.); //mm
-    timeMap_h = new TH1F("htimes","Hole Time Map",100,0,L/1000.); //mm   
-    
-    // filling distancemap_e,h
-    /**
-    for (int i=1; i<= distancemap_e->GetNbinsX(); i++){
-      for (int j=1; j<= distancemap_e->GetNbinsY(); j++){
-	//distancemap_e->SetBinContent(i,j,L/1000.); //if you travel long enough, you will reach the electrode.
-	distancemap_h->SetBinContent(i,j,L/1000.); //if you travel long enough, you will reach the electrode.
-      }
-    }**/
-    
-    // filling timeMap_e,h
-    for (int k=1; k<= distancemap_e->GetNbinsX(); k++){
-      double z = distancemap_e->GetXaxis()->GetBinCenter(k);
-      double mysum = 0.;
-      double mysum_h = 0.;
-      for (int k2=k; k2 >= 1; k2--){
-	double z2 = distancemap_e->GetXaxis()->GetBinCenter(k2);
-	double dz = distancemap_e->GetXaxis()->GetBinWidth(k2);
-	double E = Efield3D ? GetElectricField(0.002,0.002,z2) : m_eFieldMap1D->GetBinContent(m_eFieldMap1D->GetXaxis()->FindBin(z2*1000))/1e7; //in MV/mm
-	double mu = GetMobility(E, 0); //mm^2/MV*ns
-	if (E > 0){
-	  mysum+=dz/(mu*E); //mm * 1/(mm/ns) = ns
-	  distancemap_e->SetBinContent(k,distancemap_e->GetYaxis()->FindBin(mysum),z2);
-	} else if (E == 0) {
-	  mysum = 3.40282e+38; // without efield: travel almost forever to reach the electrode since we don't do actual diffusion
-	  distancemap_e->SetBinContent(k,distancemap_e->GetYaxis()->FindBin(mysum),z2);
-	}
-      }
-      timeMap_e->SetBinContent(k,mysum);
+    distancemap_e=0;
+    distancemap_h=0;
+    timeMap_e=0;
+    timeMap_h=0;
+    TFile *dOutFile = new TFile("distancemap.root", "RECREATE");
+    TFile *tOutFile = new TFile("timemap.root", "RECREATE");
+    dOutFile->cd();
+    distancemap_e=(TH2F*)dfile->Get("edistance");
+    distancemap_h=(TH2F*)dfile->Get("hdistance");
+    tOutFile->cd();
+    timeMap_e=(TH1F*)tfile->Get("etimes");
+    timeMap_h=(TH1F*)tfile->Get("htimes");
+    if (distancemap_e == 0 || distancemap_h == 0 || timeMap_e == 0 || timeMap_h == 0){
+      G4cout << "Did not find any pre-computed distance maps.  Will quickly do the integration now.  This is slow, but only needs to be done once per run." << G4endl;
+      dOutFile->cd();
+      distancemap_e = new TH2F("edistance","Electron Distance Map",100,0,detectorThickness,20,0,10); //mm by ns
+      distancemap_h = new TH2F("hdistance","Holes Distance Map",100,0,detectorThickness,20,0,10);
+      tOutFile->cd();
+      timeMap_e = new TH1F("etimes","Electron Time Map",100,0,detectorThickness); //mm
+      timeMap_h = new TH1F("htimes","Hole Time Map",100,0,detectorThickness); //mm   
       
-      for (int k2=k; k2 <= distancemap_e->GetNbinsX(); k2++){ //holes go the opposite direction as electrons.
-	double z2 = distancemap_e->GetXaxis()->GetBinCenter(k2);
-	double dz = distancemap_e->GetXaxis()->GetBinWidth(k2);
-	double E = Efield3D ? GetElectricField(0.002,0.002,z2) : m_eFieldMap1D->GetBinContent(m_eFieldMap1D->GetXaxis()->FindBin(z2*1000))/1e7; //in MV/mm
-	double mu_h = GetMobility(E, 1);
-	if (E > 0){
-	  mysum_h+=dz/(mu_h*E);
-	  distancemap_h->SetBinContent(k,distancemap_h->GetYaxis()->FindBin(mysum_h),z2);
-	} else if (E == 0) {
+      // filling distancemap_e,h
+     /** 
+      for (int i=1; i<= distancemap_e->GetNbinsX(); i++){
+	    for (int j=1; j<= distancemap_e->GetNbinsY(); j++){
+	      //distancemap_e->SetBinContent(i,j,detectorThickness); //if you travel long enough, you will reach the electrode.
+	      //distancemap_h->SetBinContent(i,j,detectorThickness); //if you travel long enough, you will reach the electrode.
+	    }
+      }**/
+      
+      // filling timeMap_e,h
+      for (int k=1; k<= distancemap_e->GetNbinsX(); k++){
+	double z = distancemap_e->GetXaxis()->GetBinCenter(k);
+	double mysum = 0.;
+	double mysum_h = 0.;
+	double Etemp = Efield3D ? GetElectricField(0.002,0.002,z) : m_eFieldMap1D->GetBinContent(m_eFieldMap1D->GetXaxis()->FindBin(z*1000))/1e7;
+	if (!(Etemp > 0)) {
 	  mysum_h = 3.40282e+38; // without efield: travel almost forever to reach the electrode since we don't do actual diffusion
-	  distancemap_h->SetBinContent(k,distancemap_h->GetYaxis()->FindBin(mysum_h),z2);
+	  //distancemap_h->SetBinContent(k,distancemap_h->GetYaxis()->FindBin(mysum_h),z);
+	  timeMap_h->SetBinContent(k,mysum_h);
 	}
-      }
-      timeMap_h->SetBinContent(k,mysum_h);
-    }
-    
-    FillHoles(distancemap_e, isHole, L/1000., "distancefit_e");
-    FillHoles(distancemap_h, isHole, L/1000., "distancefit_h");
+	else {
+	  for (int k2=k; k2 >= 1; k2--){
+	    double z2 = distancemap_e->GetXaxis()->GetBinCenter(k2);
+	    double dz = distancemap_e->GetXaxis()->GetBinWidth(k2);
+	    double E = Efield3D ? GetElectricField(0.002,0.002,z2) : m_eFieldMap1D->GetBinContent(m_eFieldMap1D->GetXaxis()->FindBin(z2*1000))/1e7; //in MV/mm
+	    double mu = GetMobility(E, 0); //mm^2/MV*ns
+	    if (E > 0){
+	      mysum+=dz/(mu*E); //mm * 1/(mm/ns) = ns
+	      distancemap_e->SetBinContent(k,distancemap_e->GetYaxis()->FindBin(mysum),z2);
+	    } 
+	  }
+	  timeMap_e->SetBinContent(k,mysum);
 	  
-  }//end generating maps
+	  for (int k2=k; k2 <= distancemap_e->GetNbinsX(); k2++){ //holes go the opposite direction as electrons.
+	    double z2 = distancemap_e->GetXaxis()->GetBinCenter(k2);
+	    double dz = distancemap_e->GetXaxis()->GetBinWidth(k2);
+	    double E = Efield3D ? GetElectricField(0.002,0.002,z2) : m_eFieldMap1D->GetBinContent(m_eFieldMap1D->GetXaxis()->FindBin(z2*1000))/1e7; //in MV/mm
+	    double mu_h = GetMobility(E, 1);
+	    if (E > 0){
+	      mysum_h+=dz/(mu_h*E);
+	      distancemap_h->SetBinContent(k,distancemap_h->GetYaxis()->FindBin(mysum_h),z2);
+	    }
+	  }
+	  timeMap_h->SetBinContent(k,mysum_h);
+	  }
+      }
+      FillHoles(distancemap_e, 0, "distancefit_e");
+      FillHoles(distancemap_h, 1, "distancefit_h");
+
+    }//end generating maps
 
   if (debug_maps){
+    dOutFile->cd();
     c1->cd();
-    gPad->SetRightMargin(0.15);
+    std::string title_e("Electron Distance Map ");
+    title_e += std::to_string((int)biasVoltage)+"V";
+    gPad->SetTopMargin(0.08);
+    gPad->SetBottomMargin(0.09);
+    gPad->SetRightMargin(0.16);
+    gPad->SetLeftMargin(0.09);
+    
     distancemap_e->GetXaxis()->SetNdivisions(505);
     distancemap_e->GetYaxis()->SetNdivisions(505);
     distancemap_e->GetXaxis()->SetTitle("Initial Position in z [mm]");
     distancemap_e->GetYaxis()->SetTitle("Time Traveled [ns]");
+    distancemap_e->GetXaxis()->SetTitleOffset(1.2);
+    distancemap_e->GetYaxis()->SetTitleOffset(1.2);
     distancemap_e->GetZaxis()->SetTitleOffset(1.6);
-    distancemap_e->SetTitle("Electron Distance Map");
+    distancemap_e->SetTitle(title_e.c_str());
     distancemap_e->GetZaxis()->SetTitle("Location in z [mm]");
     distancemap_e->DrawCopy("colz");
-    c1->Print("distancemap_e.pdf");
+    std::string name_e("distancemap_e"+std::to_string((int)biasVoltage)+"_filled.pdf");
+   // std::string name_e("distancemap_e"+std::to_string((int)biasVoltage)+".pdf");
+    c1->Print(name_e.c_str());
     
+    std::string title_h("Hole Distance Map ");
+    title_h += std::to_string((int)biasVoltage)+"V";
     distancemap_h->GetXaxis()->SetNdivisions(505);
     distancemap_h->GetYaxis()->SetNdivisions(505);
     distancemap_h->GetXaxis()->SetTitle("Initial Position in z [mm]");
     distancemap_h->GetYaxis()->SetTitle("Time Traveled [ns]");
+    distancemap_h->GetXaxis()->SetTitleOffset(1.2);
+    distancemap_h->GetYaxis()->SetTitleOffset(1.2);
     distancemap_h->GetZaxis()->SetTitleOffset(1.6);
-    distancemap_h->SetTitle("Hole Distance Map");
+    distancemap_h->SetTitle(title_h.c_str());
     distancemap_h->GetZaxis()->SetTitle("Location in z [mm]");
     distancemap_h->DrawCopy("colz");
-    c1->Print("distancemap_h.pdf");
+    std::string name_h("distancemap_h"+std::to_string((int)biasVoltage)+"_filled.pdf");
+    //std::string name_h("distancemap_h"+std::to_string((int)biasVoltage)+".pdf");
+    c1->Print(name_h.c_str());
+    dOutFile->Write();
     
+    tOutFile->cd();
     timeMap_h->SetTitle("");
-    timeMap_h->GetYaxis()->SetRangeUser(0,timeMap_h->GetMaximum() > timeMap_e->GetMaximum() ? timeMap_h->GetMaximum() : timeMap_e->GetMaximum());
+    //timeMap_h->GetYaxis()->SetRangeUser(0,timeMap_h->GetMaximum() > timeMap_e->GetMaximum() ? timeMap_h->GetMaximum() : timeMap_e->GetMaximum());
+    timeMap_h->GetYaxis()->SetRangeUser(0,60);
     timeMap_h->GetXaxis()->SetTitle("Starting Pixel Depth in z [mm]");
     timeMap_h->GetYaxis()->SetTitleOffset(1.4);
     timeMap_h->GetYaxis()->SetTitle("Projected Time to Reach Electrode [ns]");
@@ -372,6 +399,11 @@ AllPixFEI4RadDamageDigitizer::AllPixFEI4RadDamageDigitizer(G4String modName, G4S
     leg->AddEntry(timeMap_h,"Holes","l");
     leg->Draw();
     c1->Print("timemaps.pdf");
+    tOutFile->Write();
+  }
+  else{
+    dOutFile->Delete();
+    tOutFile->Delete();
   }
 
   //Compute the trapping time.
@@ -493,8 +525,8 @@ AllPixFEI4RadDamageDigitizer::AllPixFEI4RadDamageDigitizer(G4String modName, G4S
         
   if (lorentz_map_e == 0 || lorentz_map_h==0 ){
     G4cout << "Did not find any pre-computed lorentz maps.  Will quickly do the integration now.  This is slow, but only needs to be done once per run." << G4endl;
-    lorentz_map_e = new TH2F("lorentz_map_e","Lorentz Map e",100,0,L/1000.,100,0,L/1000); //mm by ns
-    lorentz_map_h = new TH2F("lorentz_map_h","Lorentz Map h",100,0,L/1000.,100,0,L/1000); //mm by ns
+    lorentz_map_e = new TH2F("lorentz_map_e","Lorentz Map e",100,0,detectorThickness,100,0,detectorThickness); //mm by ns
+    lorentz_map_h = new TH2F("lorentz_map_h","Lorentz Map h",100,0,detectorThickness,100,0,detectorThickness); //mm by ns
 	  
     for (int k=1; k<= lorentz_map_e->GetNbinsX(); k++){
       double z = lorentz_map_e->GetXaxis()->GetBinCenter(k);
@@ -779,7 +811,15 @@ Double_t fun_h(Double_t *x, Double_t *par) {
 }
 
 //2dfit
-void AllPixFEI4RadDamageDigitizer::FillHoles(TH2F *distancemap, G4bool isHole, double sensorZ, char *name) {
+void AllPixFEI4RadDamageDigitizer::FillHoles(TH2F *distancemap, G4bool isHole, char *name) {
+  double fitlow = 0.;
+  int binlow = 0;
+  double fieldStrength = 0.;
+  if (biasVoltage<depVoltage) {
+    binlow = m_eFieldMap1D->FindFirstBinAbove(0.);
+    fitlow = m_eFieldMap1D->GetBinCenter(binlow)/1000.; //efield map in um, distance and time maps in mm
+  }
+  
   std::string filename(name);
   std::string title;
   if (!isHole) {

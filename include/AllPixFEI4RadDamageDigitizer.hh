@@ -117,7 +117,7 @@ private:
   }
 
 	// functions for maps calculation
-	void FillHoles(TH2F *distancemap, G4bool isHole, double sensorZ, char *name);
+	void FillHoles(TH2F *distancemap, G4bool isHole, char *name);
 
   G4double GetElectricField(G4double z);
   G4double GetElectricField(G4double x, G4double y, G4double z);
@@ -136,7 +136,7 @@ private:
   // Variables for the charge sharing computation
   G4double mobility;
   G4double resistivity;
-  G4bool   bulkType;
+  //G4bool   bulkType;
 
   G4double depVoltage;
   G4double depletionLength;
@@ -160,12 +160,12 @@ private:
   G4int precision;
 
   // Physics process switches
-  G4bool doTrapping;
+  //G4bool doTrapping;
   G4bool doRamo;
   G4bool doDiff;
   G4bool doSimplifiedModel;
   G4bool doChunkCorrection;
-  G4bool doSlimEdge;
+  //G4bool doSlimEdge;
   G4bool isHole;
 
   //Defaults
@@ -181,16 +181,16 @@ private:
   G4double pitchY;
   G4int nPixX;
   G4int nPixY;
-  G4double chargeSharingConstant;
-  G4double GRShift;
-  G4int FEIX;
-  G4int Sensor;
+  //G4double chargeSharingConstant;
+  //G4double GRShift;
+  //G4int FEIX;
+  //G4int Sensor;
 
   //Tuning of the chip and counters characteristics
-  G4int MipTOT;
-  G4int CounterDepth;
-  G4int MipCharge;
-  G4double Lv1Unit;
+  //G4int MipTOT;
+  //G4int CounterDepth;
+  //G4int MipCharge;
+  //G4double Lv1Unit;
 };
 
 	Double_t fun_e(Double_t *x, Double_t *par);
