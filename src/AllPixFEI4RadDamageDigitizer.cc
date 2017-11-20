@@ -302,9 +302,10 @@ AllPixFEI4RadDamageDigitizer::AllPixFEI4RadDamageDigitizer(G4String modName, G4S
 	double mysum_h = 0.;
 	double Etemp = Efield3D ? GetElectricField(0.002,0.002,z) : m_eFieldMap1D->GetBinContent(m_eFieldMap1D->GetXaxis()->FindBin(z*1000))/1e7;
 	if (!(Etemp > 0)) {
-	  mysum_h = 3.40282e+38; // without efield: travel almost forever to reach the electrode since we don't do actual diffusion
-	  //distancemap_h->SetBinContent(k,distancemap_h->GetYaxis()->FindBin(mysum_h),z);
+	  mysum_h = 3.40282e+38; //holes travel forever from the zero-efield region to the back electrode.
+	  //distancemap_h->SetBinContent(k,distancemap_h->GetYaxis()->FindBin(mysum_h),z); //does not have to be filled since it's way outside the map's limits
 	  timeMap_h->SetBinContent(k,mysum_h);
+	  //electrons travel towards z=0, time map is time-to-zero-field-region which is 0 here
 	}
 	else {
 	  for (int k2=k; k2 >= 1; k2--){
