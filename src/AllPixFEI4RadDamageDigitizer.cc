@@ -84,8 +84,6 @@ AllPixFEI4RadDamageDigitizer::AllPixFEI4RadDamageDigitizer(G4String modName, G4S
 
   //Phenomenological parameters
   precision = 10; //this is the number of charges to divide the G4 hit into.
-
-  depletionLength=0.200;   //mm IBL 
   
   std::cout << "Load the input maps " << std::endl;
   
@@ -111,7 +109,7 @@ AllPixFEI4RadDamageDigitizer::AllPixFEI4RadDamageDigitizer(G4String modName, G4S
   //Sensor properties
   double L = detectorThickness*mm*1000; //in microns; for all maps, 0 is at the collecting electrode and L is the far side.
   int L_int = L; //for the histograms later that have one bin per micron.
-  depVoltage = 60.; //V; this is highly fluece-dependent !  Should update when you change the fluence.
+  depVoltage = 40.; //V; this is highly fluece-dependent !  Should update when you change the fluence.
   depletionLength = detectorThickness; //in mm.
   if(biasVoltage<depVoltage) depletionLength=depletionLength*pow(biasVoltage/depVoltage,0.5); //This is the usual formula depletion depth = \sqrt{2*\epsilon_0\epsilon_{Si}*V/(eN_D)}.  See e.g. (2.26) in Pixel Detectors by L. Rossi et al.
 
@@ -833,10 +831,10 @@ void AllPixFEI4RadDamageDigitizer::FillHoles(TH2F *distancemap, G4bool isHole, c
   TFile *distanceOutFile = new TFile(rootfile.c_str(),"RECREATE");
   TCanvas *c1 = new TCanvas(name,"I am a canvas",600,600);
   
-  const Int_t npar = 12;
+  const Int_t npar = 15;
   
-  Double_t f2params_e[npar] = {1,0,1,0,0, 1,0,0.1,1,1, 0,0};
-  Double_t f2params_h[npar] = {1,0,1,0,0, 1,0,0.1,1,1, 0,0};
+  Double_t f2params_e[npar] = {-0.2,0,-0.2,0,0, 0.5,1,-0.1,0.2,-10, 0,0,0,0,0};
+  Double_t f2params_h[npar] = {0.1,0,0.1,0,0, 1,-0.5,0.1,1,1, 0,0,0,0,0};
   Double_t f2params[npar] = {};
 
   
@@ -853,7 +851,10 @@ void AllPixFEI4RadDamageDigitizer::FillHoles(TH2F *distancemap, G4bool isHole, c
   
   TF2 *f2 = new TF2("f2",fun_e, 0.,10.,0.,detectorThickness,npar);
   //if (isHole) f2 = new TF2("f2",fun_h, 0.,10.,0.,detectorThickness,npar);
-  f2->SetParameters(f2params);	
+  f2->SetParameters(f2params);
+  if (!isHole) {
+    f2->SetParLimits(8,0,2.);
+  }
   
   distancemap->Draw("lego2z");
   
