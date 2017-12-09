@@ -900,7 +900,7 @@ void AllPixFEI4RadDamageDigitizer::FillHoles(TH2F *distancemap, G4bool isHole, c
 	}
 	Double_t gapvalue = fun_e(coords,params);
 	//if (isHole) gapvalue = fun_h(coords,params);
-	if (gapvalue>sensorZ) gapvalue = sensorZ;
+	if (gapvalue>detectorThickness) gapvalue = detectorThickness;
 	else if (gapvalue<0) gapvalue = 0;
 	distancemap->SetBinContent(i,j,gapvalue);
       }
