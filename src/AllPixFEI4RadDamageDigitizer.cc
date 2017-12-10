@@ -399,10 +399,6 @@ AllPixFEI4RadDamageDigitizer::AllPixFEI4RadDamageDigitizer(G4String modName, G4S
     c1->Print("timemaps.pdf");
     tOutFile->Write();
   }
-  else{
-    dOutFile->Delete();
-    tOutFile->Delete();
-  }
 
   //Compute the trapping time.
   if(fluence!=0.0) {
