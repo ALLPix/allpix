@@ -46,6 +46,9 @@ private:
   TH2F *ramoPotentialMap2D;
   TH3F *eFieldMap;
   TH1F *m_eFieldMap1D;
+  TH1F *tmp_eFieldMap1D;
+  TF1 *eFieldFitTop;
+	TF1 *eFieldFitBack;
   TH1F *timeMap_e;
   TH1F *timeMap_h;
   TH2F *distancemap_e;
@@ -195,5 +198,6 @@ private:
 
 	Double_t fun_e(Double_t *x, Double_t *par);
 	Double_t fun_h(Double_t *x, Double_t *par);
+	Double_t linearfit(Double_t *x, Double_t *par);
 
 #endif

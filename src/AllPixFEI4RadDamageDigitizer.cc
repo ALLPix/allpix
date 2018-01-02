@@ -229,6 +229,41 @@ AllPixFEI4RadDamageDigitizer::AllPixFEI4RadDamageDigitizer(G4String modName, G4S
 	m_eFieldMap1D->SetBinContent(m_eFieldMap1D->GetNbinsX()-i+1,electricField*10); //in V/cm; n in n prior to type inversion.
 	if (defaultEfield==0) m_eFieldMap1D->SetBinContent(i,(1e4)*biasVoltage/(detectorThickness)); //in V/cm
       }
+    }
+    else {
+      //check if m_eFieldMap1D has the same length as detectorThickness
+      if (m_eFieldMap1D->GetNbinsX() < L_int) {
+	tmp_eFieldMap1D = new TH1F("m_hefieldz","m_hefieldz",L_int,0,L_int);
+	int startZ = m_eFieldMap1D->GetBinCenter(0);
+	int endZ = m_eFieldMap1D->GetBinCenter(m_eFieldMap1D->GetNbinsX()-1);
+	for (int bin=0;bin<m_eFieldMap1D->GetNbinsX();bin++) {
+	  tmp_eFieldMap1D->SetBinContent(tmp_eFieldMap1D->FindBin(m_eFieldMap1D->GetBinCenter(bin)),m_eFieldMap1D->GetBinContent(bin));
+	}
+	const int npar = 2;
+	eFieldFitTop = new TF1("eFieldFitTop",linearfit, 0.,startZ+5,npar);
+	eFieldFitBack = new TF1("eFieldFitBack",linearfit, endZ-5,L_int,npar);
+	
+	
+	if (startZ > 0) {
+	  Double_t params[npar] = {200000.,-10000.};
+	  eFieldFitTop->SetParameters(params);
+	  tmp_eFieldMap1D->Fit("eFieldFitTop","W","",0.,startZ+5);
+	  for (int z = 0;z<=startZ;z++) {
+	    Double_t coords[1] = {(Double_t)z};
+	    tmp_eFieldMap1D->SetBinContent(tmp_eFieldMap1D->FindBin(z),linearfit(coords,eFieldFitTop->GetParameters()));
+	  }
+	}
+	if (endZ < L_int) {
+	  Double_t params[npar] = {-300000.,2000.};
+	  eFieldFitBack->SetParameters(params);
+	  tmp_eFieldMap1D->Fit("eFieldFitBack","W","",endZ-5,L_int);
+	  for (int z = endZ;z<=L_int;z++) {
+	    Double_t coords[1] = {(Double_t)z};
+	    tmp_eFieldMap1D->SetBinContent(tmp_eFieldMap1D->FindBin(z),linearfit(coords,eFieldFitBack->GetParameters()));
+	  }
+	}
+	m_eFieldMap1D = tmp_eFieldMap1D;
+      }
     } 
   }	 
   if (Efield3D){
@@ -257,6 +292,8 @@ AllPixFEI4RadDamageDigitizer::AllPixFEI4RadDamageDigitizer(G4String modName, G4S
     m_eFieldMap1D->GetYaxis()->SetTitleSize(0.03);
     m_eFieldMap1D->GetXaxis()->SetTitleSize(0.03);
     m_eFieldMap1D->Draw();
+    eFieldFitTop->Draw("same");
+    eFieldFitBack->Draw("same");
     c1->Print("Efield.pdf");
     m_eFieldMap1D->Write("efield_1D.root");
   }
@@ -799,6 +836,10 @@ void AllPixFEI4RadDamageDigitizer::SetDetectorDigitInputs(G4double thl){
   // set digitization input values
   // thl
   m_digitIn.thl = thl; // <-- input !
+}
+
+Double_t linearfit(Double_t *x, Double_t *par) {
+  return par[0]+par[1]*x[0];
 }
 
 Double_t fun_e(Double_t *x, Double_t *par) {
