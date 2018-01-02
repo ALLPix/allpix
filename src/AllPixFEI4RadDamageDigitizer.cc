@@ -218,7 +218,6 @@ AllPixFEI4RadDamageDigitizer::AllPixFEI4RadDamageDigitizer(G4String modName, G4S
       m_eFieldMap1D = new TH1F("m_hefieldz","m_hefieldz",L_int,0,L_int); // 1D map of the Efield in case we want to use 1D field
       G4double electricField=0;
       G4double pass=detectorThickness/m_eFieldMap1D->GetNbinsX();
-      //G4double pass=depletionLength/m_eFieldMap1D->GetNbinsX();
       for (int i=1; i<= m_eFieldMap1D->GetNbinsX()+1; i++){
 	G4double position=pass*i;
 	if (depletionLength != 0) {
