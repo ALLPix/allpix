@@ -283,14 +283,14 @@ AllPixFEI4RadDamageDigitizer::AllPixFEI4RadDamageDigitizer(G4String modName, G4S
       timeMap_e = new TH1F("etimes","Electron Time Map",100,0,detectorThickness); //mm
       timeMap_h = new TH1F("htimes","Hole Time Map",100,0,detectorThickness); //mm   
       
-      // filling distancemap_e,h
-     /** 
+      ///// filling distancemap_e,h
+     
       for (int i=1; i<= distancemap_e->GetNbinsX(); i++){
 	    for (int j=1; j<= distancemap_e->GetNbinsY(); j++){
-	      //distancemap_e->SetBinContent(i,j,detectorThickness); //if you travel long enough, you will reach the electrode.
-	      //distancemap_h->SetBinContent(i,j,detectorThickness); //if you travel long enough, you will reach the electrode.
+	      distancemap_e->SetBinContent(i,j,0); //if you travel long enough, you will reach the electrode.
+	      distancemap_h->SetBinContent(i,j,detectorThickness); //if you travel long enough, you will reach the electrode.
 	    }
-      }**/
+      }
       
       // filling timeMap_e,h
       for (int k=1; k<= distancemap_e->GetNbinsX(); k++){
@@ -426,16 +426,32 @@ AllPixFEI4RadDamageDigitizer::AllPixFEI4RadDamageDigitizer(G4String modName, G4S
           double ramo_intial = ramoPotentialMap->GetBinContent(ramoPotentialMap->FindBin(fabs(x*1000),fabs(y*1000),z*1000)); //fabs because the Ramo is only 1/4 of the pixel.
           double prob = exp(-timeToElectrode/trappingTimeElectrons)*(1.-ramo_intial);
           double prob_h = exp(-timeToElectrode_h/trappingTimeHoles)*ramo_intial;
-          for (double t = 0; t <= timeToElectrode; t+=timeToElectrode/stepsZ){
-            double final_pos = distancemap_e->GetBinContent(distancemap_e->FindBin(z,t)); //with respect to the electrode (at 0)
-            double ramo_final = ramoPotentialMap->GetBinContent(ramoPotentialMap->FindBin(fabs(x*1000),fabs(y*1000),final_pos*1000));
-            prob+=(ramo_final-ramo_intial)*(timeToElectrode/stepsZ)*exp(-t/trappingTimeElectrons)/trappingTimeElectrons;
-          } 
-          for (double t = 0; t <= timeToElectrode_h; t+=timeToElectrode_h/stepsZ){
-            double final_pos_h = distancemap_h->GetBinContent(distancemap_h->FindBin(z,t));
-            double ramo_final_h = ramoPotentialMap->GetBinContent(ramoPotentialMap->FindBin(fabs(x*1000),fabs(y*1000),final_pos_h*1000));
-            prob_h+=-(ramo_final_h-ramo_intial)*(timeToElectrode_h/stepsZ)*exp(-t/trappingTimeHoles)/trappingTimeHoles;
-          }
+	  //to avoid infinite loop if timeToElectrode==0
+	  if (timeToElectrode) {
+	    //std::cout<<"if timeToElectrode "<<timeToElectrode<<std::endl;
+	    for (double t = 0; t <= timeToElectrode; t+=timeToElectrode/stepsZ){
+	      double final_pos = distancemap_e->GetBinContent(distancemap_e->FindBin(z,t)); //with respect to the electrode (at 0)
+	      double ramo_final = ramoPotentialMap->GetBinContent(ramoPotentialMap->FindBin(fabs(x*1000),fabs(y*1000),final_pos*1000));
+	      prob+=(ramo_final-ramo_intial)*(timeToElectrode/stepsZ)*exp(-t/trappingTimeElectrons)/trappingTimeElectrons;
+	      //std::cout<<"e "<<t<<std::endl;
+	    } 
+	    for (double t = 0; t <= timeToElectrode_h; t+=timeToElectrode_h/stepsZ){
+	      //std::cout<<"h "<<t<<std::endl;
+	      double final_pos_h = distancemap_h->GetBinContent(distancemap_h->FindBin(z,t));
+	      double ramo_final_h = ramoPotentialMap->GetBinContent(ramoPotentialMap->FindBin(fabs(x*1000),fabs(y*1000),final_pos_h*1000));
+	      prob_h+=-(ramo_final_h-ramo_intial)*(timeToElectrode_h/stepsZ)*exp(-t/trappingTimeHoles)/trappingTimeHoles;
+	    }
+	  }
+	  else {
+	    //std::cout<<"else timeToElectrode "<<timeToElectrode<<" "<<timeToElectrode_h<<std::endl;
+	    double final_pos = distancemap_e->GetBinContent(distancemap_e->FindBin(z,timeToElectrode)); //with respect to the electrode (at 0)
+	    double ramo_final = ramoPotentialMap->GetBinContent(ramoPotentialMap->FindBin(fabs(x*1000),fabs(y*1000),final_pos*1000));
+	    prob+=(ramo_final-ramo_intial)*(timeToElectrode/stepsZ)*exp(-timeToElectrode/trappingTimeElectrons)/trappingTimeElectrons;
+
+	    double final_pos_h = distancemap_h->GetBinContent(distancemap_h->FindBin(z,timeToElectrode_h));
+	    double ramo_final_h = ramoPotentialMap->GetBinContent(ramoPotentialMap->FindBin(fabs(x*1000),fabs(y*1000),final_pos_h*1000));
+	    prob_h+=-(ramo_final_h-ramo_intial)*(timeToElectrode_h/stepsZ)*exp(-timeToElectrode_h/trappingTimeHoles)/trappingTimeHoles;
+	  }
           charge_chunk_map_e->SetBinContent(charge_chunk_map_e->FindBin(x,y,z),prob);
           charge_chunk_map_h->SetBinContent(charge_chunk_map_h->FindBin(x,y,z),prob_h);
       }
