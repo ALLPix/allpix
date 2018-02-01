@@ -292,8 +292,8 @@ AllPixFEI4RadDamageDigitizer::AllPixFEI4RadDamageDigitizer(G4String modName, G4S
     m_eFieldMap1D->GetYaxis()->SetTitleSize(0.03);
     m_eFieldMap1D->GetXaxis()->SetTitleSize(0.03);
     m_eFieldMap1D->Draw();
-    eFieldFitTop->Draw("same");
-    eFieldFitBack->Draw("same");
+    if (eFieldFitTop != 0) eFieldFitTop->Draw("same");
+    if (eFieldFitBack != 0) eFieldFitBack->Draw("same");
     c1->Print("Efield.pdf");
     m_eFieldMap1D->Write("efield_1D.root");
   }
