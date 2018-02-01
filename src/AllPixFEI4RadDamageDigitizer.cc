@@ -821,6 +821,27 @@ AllPixFEI4RadDamageDigitizer::~AllPixFEI4RadDamageDigitizer(){
     debug_chunksize->Draw();
     c1->Print("debug_chunk_size.pdf");
   }
+  
+  if (dodebug){
+    //For convinience, let's also add all the histos into one.
+    TFile* timefile = new TFile("timemap.root");
+    TH1F* timefile_etimes = (TH1F*)timefile->Get("etimes");
+    TH1F* timefile_htimes = (TH1F*)timefile->Get("htimes");
+    TFile* distancefile = new TFile("distancemap.root");
+    TH1F* distancefile_e = (TH1F*)distancefile->Get("edistance");
+    TH1F* distancefile_h = (TH1F*)distancefile->Get("hdistance");
+    TFile* myoutfile=new TFile("myoutfile.root","RECREATE");
+    myoutfile->cd();
+    ramoPotentialMap->Write("ramo3d");
+    timefile_etimes->Write();
+    timefile_htimes->Write();
+    distancefile_e->Write();
+    distancefile_h->Write();
+    lorentz_map_e->Write();
+    lorentz_map_h->Write();
+    myoutfile->Write();
+  }
+
 }  
 
 G4double AllPixFEI4RadDamageDigitizer::Phi(G4double x, G4double z, G4double Lx, G4double L){
