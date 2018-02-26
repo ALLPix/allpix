@@ -48,7 +48,7 @@ First create the mother Allpix folder :
 Then checkout the github version of allpix : 
     git clone https://github.com/ALLPix/allpix.git
 
-If running on lxplus, source the bash setup script (make sure you are using bash, if not, type ```exec bash```) to get access the the precompiled geant4, root and other dependencies : 
+If running on lxplus, source the bash setup script (make sure you are using bash, if not, type ```exec bash```) to get access the the precompiled geant4, root and other dependencies. (!!!!WARNING!!! lxplus path for installation has changed so make sure you have the latest version from github)  : 
 
 ``` 
 source allpix/setup_allpix_geant4.10.3.1.sh
