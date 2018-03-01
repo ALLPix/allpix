@@ -4,7 +4,7 @@
                                                                                       
 John Idarraga <idarraga@cern.ch>        
 Mathieu Benoit <mbenoit@cern.ch>  
-Samir Arfaoui  <sarfaoui@cern.ch>     
+Samir Arfaoui  R.I.P   
 
 ### Dependencies:
 
@@ -14,6 +14,9 @@ satisfied
 - GDML (xcerces)
 - OpenGL (optional, only needed to use openGL vizualisation)
 - Inventor  (optional, only needed to use the very convenient OpenInventor vizualisation)
+
+
+Regarding possible problem with open Inventor on lxplus, see : https://twiki.cern.ch/twiki/bin/view/CMSPublic/WorkBookFireworksHowToFix#Indirect_remote_rendering_disabl
 
 2) ROOT 6.04 or newer .  A basic setup with xml parser is enough.
 
