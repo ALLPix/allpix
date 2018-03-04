@@ -14,13 +14,24 @@ AllPixWriteROOTFile::AllPixWriteROOTFile(Int_t detID, TString path)
 
   tree->Branch("posX", &posX);
   tree->Branch("posY", &posY);
-  tree->Branch("energyTotal", &energyTotal);
+  tree->Branch("POLangle", &POLangle);
+  tree->Branch("AZMangle", &AZMangle);
   tree->Branch("TOT", &TOT);
-  tree->Branch("energyMC", &energyMC);
+  tree->Branch("TruthEntryX", &TruthEntryX);
+  tree->Branch("TruthEntryY", &TruthEntryY);
+  tree->Branch("TruthExitX", &TruthExitX);
+  tree->Branch("TruthExitY", &TruthExitY);
+  tree->Branch("deltaEfrac",&deltaEfrac);
+  tree->Branch("path_length_first_pixel",&path_length_first_pixel);
+  tree->Branch("InitE",&InitE);
+  tree->Branch("InitID",&InitID);
+  /*
+  tree->Branch("angle", &energyMC);
   tree->Branch("posX_WithRespectToPixel", &posX_WithRespectToPixel);
   tree->Branch("posY_WithRespectToPixel", &posY_WithRespectToPixel);
   tree->Branch("posZ_WithRespectToPixel", &posZ_WithRespectToPixel);
-/*
+  */
+  /*
   tree->Branch("nHits_MC", &nHits_MC);
   tree->Branch("posX_MC", &posX_MC);
   tree->Branch("posY_MC", &posY_MC);
@@ -39,6 +50,15 @@ void AllPixWriteROOTFile::AllPixWriteROOTFillTree()
   file->cd();
   tree->Fill();
 
+  path_length_first_pixel.clear();
+  TruthEntryY.clear();
+  TruthEntryX.clear();
+  TruthExitY.clear();
+  TruthExitX.clear();
+  POLangle.clear();
+  AZMangle.clear();
+  deltaEfrac.clear();
+
   posX.clear();
   posY.clear();
   energyTotal.clear();
@@ -47,6 +67,8 @@ void AllPixWriteROOTFile::AllPixWriteROOTFillTree()
   posX_WithRespectToPixel.clear();
   posY_WithRespectToPixel.clear();
   posZ_WithRespectToPixel.clear();
+  InitE.clear();
+  InitID.clear();
   /*
   posX_MC.clear();
   posY_MC.clear();
@@ -68,9 +90,20 @@ void AllPixWriteROOTFile::SetVectors(ROOTDataFormat* d)
 	energyTotal=d->get_energyTotal();
 	energyMC=d->get_energyMC();
 	TOT=d->get_TOT();
+	path_length_first_pixel=d->get_path_length_first_pixel();
 	posX_WithRespectToPixel=d->get_posX_WithRespectToPixel();
 	posY_WithRespectToPixel=d->get_posY_WithRespectToPixel();
 	posZ_WithRespectToPixel=d->get_posZ_WithRespectToPixel();
+
+	TruthExitY=d->get_TruthExitLocalY();
+        TruthExitX=d->get_TruthExitLocalX();
+	TruthEntryY=d->get_TruthEntryLocalY();
+	TruthEntryX=d->get_TruthEntryLocalX();
+	POLangle=d->get_POLangle();
+	AZMangle=d->get_AZMangle();
+	deltaEfrac=d->get_deltaEfrac();
+	InitE=d->get_InitE();
+	InitID=d->get_InitID();
 }
 
 void AllPixWriteROOTFile::AllPixCloseROOTFile()

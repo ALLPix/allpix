@@ -159,6 +159,7 @@ G4VPhysicalVolume * AllPixDetectorConstruction::Construct()
     // Air
     G4NistManager * nistman = G4NistManager::Instance();
     m_Air = nistman->FindOrBuildMaterial("G4_AIR");
+
     //nistman->ListMaterials("all");
 
     // Air is the default.  Can be changed from the messenger using
@@ -286,17 +287,7 @@ void AllPixDetectorConstruction::SetDetectorID(G4int id){
     // get the iterator informed
     m_detIdItr = m_detId.end() - 1;
 
-	m_nIds++;
-}
-
-void AllPixDetectorConstruction::SetEFieldFile(G4String file){
-	if(m_detId.empty()){
-		_BUILD_MEDIPIX_MSG();
-		exit(1);
-	}
-
-	m_EFieldFiles[*m_detIdItr] = file;
-
+    m_nIds++;
 }
 
 void AllPixDetectorConstruction::SetDetectorPosition(G4ThreeVector pos){
@@ -329,7 +320,7 @@ void AllPixDetectorConstruction::SetDetectorRotation(G4ThreeVector rot){
     m_rotVector[*m_detIdItr] = new G4RotationMatrix();
     m_rotVector[*m_detIdItr]->rotateX(rot.x());
     m_rotVector[*m_detIdItr]->rotateY(rot.y());
-    m_rotVector[*m_detIdItr]->rotateZ(rot.z());
+    m_rotVector[*m_detIdItr]->rotateX(rot.z()); //squirrel
 
     //G4cout << m_rotVector[m_nRotations]->getPhi() << " "
     // << m_rotVector[m_nRotations]->getPsi() << " "
@@ -339,15 +330,7 @@ void AllPixDetectorConstruction::SetDetectorRotation(G4ThreeVector rot){
 }
 
 void AllPixDetectorConstruction::SetLowTHL(G4double lowTHL){
-	m_lowThlVector.push_back(lowTHL);
-}
-
-void AllPixDetectorConstruction::SetTemperature(G4double temperature){
-	m_temperatures[*m_detIdItr] = temperature;
-}
-
-void AllPixDetectorConstruction::SetFlux(G4double flux){
-	m_fluxes[*m_detIdItr] = flux;
+    m_lowThlVector.push_back(lowTHL);
 }
 
 /**
@@ -480,7 +463,7 @@ void AllPixDetectorConstruction::BuildPixelDevices(map<int, AllPixGeoDsc *> geoM
     G4VisAttributes * wrapperVisAtt = new G4VisAttributes(G4Color(1,0,0,0.9));
     wrapperVisAtt->SetLineWidth(1);
     wrapperVisAtt->SetForceSolid(false);
-    wrapperVisAtt->SetVisibility(false);
+    wrapperVisAtt->SetVisibility(true);
 
     ///////////////////////////////////////////////////////////////////////
 
@@ -649,9 +632,9 @@ void AllPixDetectorConstruction::BuildPixelDevices(map<int, AllPixGeoDsc *> geoM
                << G4endl;
 
         G4Box* wrapper_box = new G4Box(wrapperName.second,
-                                       2.*wrapperHX,
-                                       2.*wrapperHY,
-                                       2.*wrapperHZ);
+                                       wrapperHX,
+                                       wrapperHY,
+                                       wrapperHZ);
 
         //G4RotationMatrix yRot45deg;   // Rotates X and Z axes only
         //yRot45deg.rotateY(M_PI/4.*rad);
@@ -669,8 +652,8 @@ void AllPixDetectorConstruction::BuildPixelDevices(map<int, AllPixGeoDsc *> geoM
         m_wrapper_log[(*detItr)]->SetVisAttributes(wrapperVisAtt);
 
 
-        //G4double sensorOffsetX = geoMap[*detItr]->GetSensorXOffset();
-        //G4double sensorOffsetY = geoMap[*detItr]->GetSensorYOffset();
+        G4double sensorOffsetX = geoMap[*detItr]->GetSensorXOffset();
+        G4double sensorOffsetY = geoMap[*detItr]->GetSensorYOffset();
 
         G4ThreeVector posWrapper = m_posVector[(*detItr)];
 
@@ -680,10 +663,8 @@ void AllPixDetectorConstruction::BuildPixelDevices(map<int, AllPixGeoDsc *> geoM
             posWrapper.setY(posWrapper.y() + m_vectorWrapperEnhancement[*detItr].y()/2.);
             posWrapper.setZ(posWrapper.z() + m_vectorWrapperEnhancement[*detItr].z()/2.);
         } else {
-            //posWrapper.setX(posWrapper.x() - sensorOffsetX );
-            //posWrapper.setY(posWrapper.y() - sensorOffsetY );
-            posWrapper.setX(posWrapper.x() );
-            posWrapper.setY(posWrapper.y() );
+            posWrapper.setX(posWrapper.x() - sensorOffsetX );
+            posWrapper.setY(posWrapper.y() - sensorOffsetY );
             posWrapper.setZ(posWrapper.z() );
         }
 
@@ -760,8 +741,7 @@ void AllPixDetectorConstruction::BuildPixelDevices(map<int, AllPixGeoDsc *> geoM
 
         // positions
         G4ThreeVector posCoverlayer(0,0,0);
-        //G4ThreeVector posDevice(sensorOffsetX,sensorOffsetY,0);
-        G4ThreeVector posDevice(0,0,0);
+        G4ThreeVector posDevice(sensorOffsetX,sensorOffsetY,0);
         G4ThreeVector posBumps(0,0,0);
         G4ThreeVector posChip(0,0,0);
         G4ThreeVector posPCB(0,0,0);
@@ -772,9 +752,7 @@ void AllPixDetectorConstruction::BuildPixelDevices(map<int, AllPixGeoDsc *> geoM
             posCoverlayer.setX( posDevice.x() );
             posCoverlayer.setY( posDevice.y() );
             posCoverlayer.setZ(
-						posDevice.z()
-                        //wrapperHZ
-                        - geoMap[*detItr]->GetHalfSensorZ()
+                        wrapperHZ
                         - geoMap[*detItr]->GetHalfCoverlayerZ()
                     );
         }
@@ -784,21 +762,21 @@ void AllPixDetectorConstruction::BuildPixelDevices(map<int, AllPixGeoDsc *> geoM
 
             posDevice.setX(posDevice.x() - m_vectorWrapperEnhancement[*detItr].x()/2.);
             posDevice.setY(posDevice.y() - m_vectorWrapperEnhancement[*detItr].y()/2.);
-            posDevice.setZ(posDevice.z() - m_vectorWrapperEnhancement[*detItr].z()/2.);
-                        //wrapperHZ
-                        //- 2.*geoMap[*detItr]->GetHalfCoverlayerZ()
-                    //- geoMap[*detItr]->GetHalfSensorZ()
-                    //- m_vectorWrapperEnhancement[*detItr].z()/2.
-                    //);
+            posDevice.setZ(
+                        wrapperHZ
+                        - 2.*geoMap[*detItr]->GetHalfCoverlayerZ()
+                    - geoMap[*detItr]->GetHalfSensorZ()
+                    - m_vectorWrapperEnhancement[*detItr].z()/2.
+                    );
             //posDevice.z() - m_vectorWrapperEnhancement[*detItr].z()/2.);
         } else {
             posDevice.setX(posDevice.x() );
             posDevice.setY(posDevice.y() );
-            posDevice.setZ(posDevice.z() );
-                        //wrapperHZ
-                        //- 2.*geoMap[*detItr]->GetHalfCoverlayerZ()
-                    //- geoMap[*detItr]->GetHalfSensorZ()
-                    //);
+            posDevice.setZ(
+                        wrapperHZ
+                        - 2.*geoMap[*detItr]->GetHalfCoverlayerZ()
+                    - geoMap[*detItr]->GetHalfSensorZ()
+                    );
         }
 
         ///////////////////////////////////////////////////////////
@@ -826,11 +804,11 @@ void AllPixDetectorConstruction::BuildPixelDevices(map<int, AllPixGeoDsc *> geoM
 
             posBumps.setX( posDevice.x() );
             posBumps.setY( posDevice.y() );
-            posBumps.setZ( posDevice.z()
-                        //wrapperHZ
-                        - geoMap[*detItr]->GetHalfSensorZ()
+            posBumps.setZ(
+                        wrapperHZ
                         - 2.*geoMap[*detItr]->GetHalfCoverlayerZ()
-						- (bump_height/2.)
+                    - 2.*geoMap[*detItr]->GetHalfSensorZ()
+                    - (bump_height/2.)
                     );
 
             //posDevice.z() -
@@ -841,13 +819,12 @@ void AllPixDetectorConstruction::BuildPixelDevices(map<int, AllPixGeoDsc *> geoM
 
             posChip.setX( posDevice.x() + geoMap[*detItr]->GetChipXOffset() );
             posChip.setY( posDevice.y() + geoMap[*detItr]->GetChipYOffset() );
-            posChip.setZ( posDevice.z()
-                        //wrapperHZ
-                    - geoMap[*detItr]->GetHalfSensorZ()
-                    - 2.*geoMap[*detItr]->GetHalfCoverlayerZ()
+            posChip.setZ(
+                        wrapperHZ
+                        - 2.*geoMap[*detItr]->GetHalfCoverlayerZ()
+                    - 2.*geoMap[*detItr]->GetHalfSensorZ()
                     - bump_height
                     - geoMap[*detItr]->GetHalfChipZ()
-                    + geoMap[*detItr]->GetChipZOffset()
                     );
 
             //posDevice.z() -
@@ -862,14 +839,12 @@ void AllPixDetectorConstruction::BuildPixelDevices(map<int, AllPixGeoDsc *> geoM
             bump_height = 0;
         }
 
-        //posPCB.setX( 0 ); //- 1.*geoMap[*detItr]->GetSensorXOffset() );
-        //posPCB.setY( 0 ); //- 1.*geoMap[*detItr]->GetSensorYOffset() );
-		posPCB.setX(posDevice.x()-1*geoMap[*detItr]->GetSensorXOffset());
-		posPCB.setY(posDevice.y()-1*geoMap[*detItr]->GetSensorYOffset());
-        posPCB.setZ(posDevice.z()
-                    //wrapperHZ
-                - geoMap[*detItr]->GetHalfSensorZ()
-                - 2.*geoMap[*detItr]->GetHalfCoverlayerZ()
+        posPCB.setX( 0 ); //- 1.*geoMap[*detItr]->GetSensorXOffset() );
+        posPCB.setY( 0 ); //- 1.*geoMap[*detItr]->GetSensorYOffset() );
+        posPCB.setZ(
+                    wrapperHZ
+                    - 2.*geoMap[*detItr]->GetHalfCoverlayerZ()
+                - 2.*geoMap[*detItr]->GetHalfSensorZ()
                 - bump_height
                 - 2.*geoMap[*detItr]->GetHalfChipZ()
                 - geoMap[*detItr]->GetHalfPCBZ()
@@ -1046,21 +1021,6 @@ void AllPixDetectorConstruction::BuildPixelDevices(map<int, AllPixGeoDsc *> geoM
         // Store the hit Collection name in the geometry
         geoMap[*detItr]->SetHitsCollectionName( aTrackerSD->GetHitsCollectionName() );
 
-	// Read electric field from file if necessary
-
-		if(m_EFieldFiles.count(*detItr)>0) geoMap[*detItr]->SetEFieldMap(m_EFieldFiles[(*detItr)]);
-		
-		if(m_temperatures.count(*detItr)>0)
-		{
-			geoMap[*detItr]->SetTemperature(m_temperatures[(*detItr)]);
-		}else{
-			geoMap[*detItr]->SetTemperature(300.);
-		}
-		geoMap[*detItr]->SetFlux(m_fluxes[(*detItr)]);
-		
-		geoMap[*detItr]->SetMagField(m_magField_cartesian);
-
-
         G4cout << "          detector " << (*detItr) << " ... done" << G4endl;
 
         //m_wrapper_phys[(*detItr)]->SetTranslation(posWrapper-posDevice);
@@ -1129,25 +1089,24 @@ void AllPixDetectorConstruction::SetMaxStepLengthSensor(G4double val) {
 #include "G4UniformMagField.hh"
 #include "MorourgoMagField.hh"
 #include "G4PropagatorInField.hh"
-void AllPixDetectorConstruction::SetPeakMagField(G4ThreeVector fieldValues)
+void AllPixDetectorConstruction::SetPeakMagField(G4double fieldValue)
 {
-	//apply a global uniform magnetic field along Z axis
-	G4FieldManager * fieldMgr
-	= G4TransportationManager::GetTransportationManager()->GetFieldManager();
-	G4TransportationManager* tmanager = G4TransportationManager::GetTransportationManager();
-	tmanager->GetPropagatorInField()->SetLargestAcceptableStep(1*mm);
-	m_magField_cartesian = fieldValues/tesla;
+    //apply a global uniform magnetic field along Z axis
+    G4FieldManager * fieldMgr
+            = G4TransportationManager::GetTransportationManager()->GetFieldManager();
+    G4TransportationManager* tmanager = G4TransportationManager::GetTransportationManager();
+    tmanager->GetPropagatorInField()->SetLargestAcceptableStep(1*mm);
+    if ( fieldValue != 0. )
+    {
 
-	if ( fieldValues[0] != 0. || fieldValues[1] != 0. || fieldValues[2] != 0. )
-	{
-
-		// FIXME !!! --> feed this value from the macro
-		//		m_magField = new MorourgoMagField(fieldValue, 252.5*mm);
-		//		fieldMgr->SetDetectorField(m_magField);
-		//		fieldMgr->CreateChordFinder(m_magField);
-		m_magField = new G4UniformMagField (fieldValues.getR(), fieldValues.getTheta(), fieldValues.getPhi());
-		fieldMgr->SetDetectorField(m_magField);
-		fieldMgr->CreateChordFinder(m_magField);
+        // FIXME !!! --> feed this value from the macro
+        //		m_magField = new MorourgoMagField(fieldValue, 252.5*mm);
+        //		fieldMgr->SetDetectorField(m_magField);
+        //		fieldMgr->CreateChordFinder(m_magField);
+        //m_magField = new G4UniformMagField ( G4ThreeVector(0.,0.,fieldValue) );
+      m_magField = new G4UniformMagField ( G4ThreeVector(fieldValue,0.,0.));
+       fieldMgr->SetDetectorField(m_magField);
+        fieldMgr->CreateChordFinder(m_magField);
 
         fieldMgr->SetMinimumEpsilonStep( 1e-7 );
         fieldMgr->SetMaximumEpsilonStep( 1e-6 );

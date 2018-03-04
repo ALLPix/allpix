@@ -63,6 +63,11 @@ void AllPixMCTruthDigitizer::Digitize(){
 		tempPixel.second = (*hitsCollection)[itr]->GetPixelNbY();
 		pixelsContent[tempPixel] += (*hitsCollection)[itr]->GetEdep();
 
+		G4double xpos = (*hitsCollection)[itr]->GetPosWithRespectToPixel().x();
+		G4double ypos = (*hitsCollection)[itr]->GetPosWithRespectToPixel().y(); 
+		G4double zpos = (*hitsCollection)[itr]->GetPosWithRespectToPixel().z();
+		//std::cout << "   " << itr << " " << 1000*xpos << " " << 1000*ypos << " " << 1000*zpos << std::endl;
+
 	}
 
 	// Now create digits, one per pixel
@@ -91,7 +96,7 @@ void AllPixMCTruthDigitizer::Digitize(){
 			digit->SetPixelIDY((*pCItr).first.second);
 			digit->SetPixelCounts((*pCItr).second/keV);
 
-			G4cout << "dEdX : " << (*pCItr).second/keV << endl;
+			//G4cout << "dEdX : " << (*pCItr).second/keV << endl;
 
 			m_digitsCollection->insert(digit);
 		}

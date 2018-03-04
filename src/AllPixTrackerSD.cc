@@ -164,12 +164,13 @@ G4bool AllPixTrackerSD::ProcessHits(G4Step * aStep, G4TouchableHistory *)
 	// detId_S.remove(0,4); // remove the part "Box_", take the ID
 
 	// Isolate the information of the incoming particle when doing the first hit in the SD
-	//G4cout << aParticle->GetPDGEncoding() << G4endl;
+	//G4cout << aParticle->GetPDGEncoding() << " " << aTrack->GetKineticEnergy()/keV  << G4endl;
 
-	if ( aTrack->GetTrackID() == 1 && ! firstStrikePrimary ) {
-		_kinEPrimary = aTrack->GetKineticEnergy()/keV;
-		_kinEPrimary -= (aStep->GetDeltaEnergy()/keV);
-		firstStrikePrimary = true;
+	if ( aTrack->GetTrackID() == 1 && ! firstStrikePrimary && 1==2) {
+	  std::cout << "first strike ! " << " " << aTrack->GetKineticEnergy()/keV <<  std::endl;
+	  _kinEPrimary = aTrack->GetKineticEnergy()/keV;
+	  _kinEPrimary -= (aStep->GetDeltaEnergy()/keV);
+	  firstStrikePrimary = true;
 	}
 
 	// Work with the Hit
@@ -187,13 +188,13 @@ G4bool AllPixTrackerSD::ProcessHits(G4Step * aStep, G4TouchableHistory *)
 	G4int copyIDy_post = -1;
 	G4int copyIDx_post = -1;
 	G4ThreeVector correctedPos(0,0,0);
-	G4ThreeVector PosOnChip(0,0,0);
+	G4ThreeVector correctedPos2(0,0,0);
 
 	if (m_thisIsAPixelDetector) {
 		// This positions are global, I will bring them to pixel-centered frame
 		// I can use the physical volumes for that
 		G4ThreeVector prePos = preStepPoint->GetPosition();
-
+		G4ThreeVector posPos = postStepPoint->GetPosition();
 
 		// Find the inverse rotation
 		//G4RotationMatrix invRot2 = CLHEP::inverseOf(*m_rotationOfWrapper);
@@ -208,20 +209,52 @@ G4bool AllPixTrackerSD::ProcessHits(G4Step * aStep, G4TouchableHistory *)
 		correctedPos -= absCenterOfDetector;
 		// apply rotation !
 		correctedPos = invRot * correctedPos;
-		PosOnChip = correctedPos - m_relativePosOfSD;
+		correctedPos2 = posPos;
+		correctedPos2 -= absCenterOfDetector;
+		correctedPos2 = invRot * correctedPos2;
 
 		// Now let's finally provide pixel-centered coordinates for each hit
 		// Build the center of the Pixel
+		
+		//std::cout << "      aardvark " << 1000*m_gD->GetPixelY() << " " << 1000*(correctedPos.y()-(m_gD->GetPixelY()*TMath::FloorNint(correctedPos.y() / m_gD->GetPixelY()) + m_gD->GetHalfPixelY())) << " " << TMath::FloorNint(correctedPos.y() / m_gD->GetPixelY())+2005 << " " << touchablepre->GetCopyNumber() << std::endl;
+
+		//std::cout << "      hippopot " << 1000*m_gD->GetPixelX() << " " << 1000*(correctedPos.x()-(m_gD->GetPixelX()*TMath::FloorNint(correctedPos.x() / m_gD->GetPixelX()) + m_gD->GetHalfPixelX())) << " " << TMath::FloorNint(correctedPos.x() / m_gD->GetPixelX())+0 << " " << touchablepre->GetCopyNumber(1) << std::endl;
+
 		G4ThreeVector centerOfPixel(
 				m_gD->GetPixelX()*TMath::FloorNint(correctedPos.x() / m_gD->GetPixelX()) + m_gD->GetHalfPixelX(),
 				m_gD->GetPixelY()*TMath::FloorNint(correctedPos.y() / m_gD->GetPixelY()) + m_gD->GetHalfPixelY(),
 				0.); // in the middle of the tower
+
+		int pos_y_patch = TMath::FloorNint(correctedPos.y() / m_gD->GetPixelY());
+		int pos_x_patch = TMath::FloorNint(correctedPos.x() / m_gD->GetPixelX());
+		
+		//std::cout << "   pos " << correctedPos.x() << " " << correctedPos.y() << " " << correctedPos.z() << " " << (correctedPos-centerOfPixel).x() << " " << (correctedPos-centerOfPixel).y() << " " << (correctedPos-centerOfPixel).z() << std::endl;
+
+		//////////<-------->>>>>>>angle
+		if ( aTrack->GetTrackID() == 1 && ! firstStrikePrimary ) {
+		  G4double yval0 = (correctedPos2-centerOfPixel).y();
+		  G4double yval1 = (correctedPos-centerOfPixel).y();
+		  G4double zval0 = (correctedPos2-centerOfPixel).z();
+		  G4double zval1 = (correctedPos-centerOfPixel).z();
+		  G4double xval0 = (correctedPos2-centerOfPixel).x();
+                  G4double xval1 = (correctedPos-centerOfPixel).x();
+		  G4double angle = 2*atan(1.)-atan((zval1-zval0)/(yval1-yval0));
+		  azm_angle = 2*atan(1.)-atan((zval1-zval0)/(yval1-yval0));
+		  pol_angle = 2*atan(1.)-atan((zval1-zval0)/(xval1-xval0));
+		  truthx = (correctedPos-centerOfPixel).x();
+		  truthy = (correctedPos-centerOfPixel).y();
+		  //std::cout << " polar angle " << 2*atan(1.)-atan((zval1-zval0)/(xval1-xval0)) << std::endl;
+		  //std::cout << "  aaa  " << angle << " " << (zval1-zval0)/(yval1-yval0) << std::endl;
+		}
+		//////////<---------------
 
 		// The position within the pixel !!!
 
                 // 20160316: The line below wrong and only works if the relative postion is (0,0,0)   
 		// correctedPos = correctedPos - centerOfPixel - m_relativePosOfSD;
 		correctedPos = correctedPos - centerOfPixel;
+
+		//std::cout << "wtf " << centerOfPixel.z() << " " << correctedPos.z() << " " << prePos.z() << std::endl;
 		
 		//G4cout << "uncorrectedPos : " << prePos.x()/um << " " << prePos.y()/um
 		//	   << " " << prePos.z()/um << " [um]" << G4endl;
@@ -234,10 +267,17 @@ G4bool AllPixTrackerSD::ProcessHits(G4Step * aStep, G4TouchableHistory *)
 
 		// depth 1 --> x
 		// depth 0 --> y
-		copyIDy_pre  = touchablepre->GetCopyNumber();
-		copyIDx_pre  = touchablepre->GetCopyNumber(1);
+		copyIDy_pre  = pos_y_patch ;//TMath::FloorNint(correctedPos.y() / m_gD->GetPixelY())+2005 ;//SQUIRREL TEMP PATCH // touchablepre->GetCopyNumber();
+		copyIDx_pre  = pos_x_patch ;//touchablepre->GetCopyNumber(1);
 
 	}
+
+	if ( aTrack->GetTrackID() == 1 && ! firstStrikePrimary ) {
+	  //std::cout << "first strike ! " << " " << aTrack->GetKineticEnergy()/keV <<  std::endl;
+          _kinEPrimary = aTrack->GetKineticEnergy()/keV;
+          _kinEPrimary -= (aStep->GetDeltaEnergy()/keV);
+          firstStrikePrimary = true;
+        }
 
 	// Look at the touchablepost only if in the same volume, i.e. in the sensitive Si Box
 	// If the hit is in a different pixel, it is still the same phys volume
@@ -266,10 +306,11 @@ G4bool AllPixTrackerSD::ProcessHits(G4Step * aStep, G4TouchableHistory *)
 	newHit->SetEdep(edep);
 	_totalEdep += edep;
 	newHit->SetPos(aStep->GetPostStepPoint()->GetPosition());
-
+	newHit->SetIncidentAZMAngle(azm_angle);
+	newHit->SetIncidentPOLAngle(pol_angle);
 	newHit->SetPosWithRespectToPixel( correctedPos );
-	newHit->SetPosInLocalReferenceFrame(PosOnChip);
-
+	newHit->SetTruthEntryLocalX(truthx);
+	newHit->SetTruthEntryLocalY(truthy);
 	newHit->SetProcessName(aProcessPointer->GetProcessName());
 	newHit->SetTrackPdgId(aParticle->GetPDGEncoding());
 

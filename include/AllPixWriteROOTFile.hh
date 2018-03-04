@@ -47,6 +47,14 @@ public:
 
   Int_t detectorID;
 
+  std::vector<Double_t> path_length_first_pixel;
+  std::vector<Double_t> deltaEfrac;
+  std::vector<Double_t> POLangle;
+  std::vector<Double_t> AZMangle;
+  std::vector<Double_t> TruthEntryY;
+  std::vector<Double_t> TruthEntryX;
+  std::vector<Double_t> TruthExitY;
+  std::vector<Double_t> TruthExitX;
   std::vector<Int_t> posX;
   std::vector<Int_t> posY;
   std::vector<Double_t> energyTotal;
@@ -55,6 +63,8 @@ public:
   std::vector<Double_t> posX_WithRespectToPixel;
   std::vector<Double_t> posY_WithRespectToPixel;
   std::vector<Double_t> posZ_WithRespectToPixel;
+  std::vector<Double_t> InitE;
+  std::vector<Int_t> InitID;
   /*
   Int_t nHits_MC;
   Int_t eventNB_MC;

@@ -36,7 +36,7 @@
 #/vis/scene/add/axes 0. 0. 0. 10. cm
 /vis/scene/add/volume World -1 2
 /vis/viewer/set/style s
-/vis/open OIX 1024x768-100+100
+#/vis/open OIX 1024x768-100+100
 #/vis/open OGLIXm 1024x768-100+100
 #/vis/open RayTracer
 #/vis/open OGLIQt
@@ -90,7 +90,7 @@
 
 ####################################################################
 # Shoot
-/allpix/beam/frames 1000
+/allpix/beam/frames 100
 /allpix/beam/type const 1
 /allpix/beam/on
 

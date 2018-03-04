@@ -1,6 +1,6 @@
 /**
  *  Author:
- *    Callie Bertsche: c.bertsche@cern.ch
+ *    bnachman@cern.ch
  *
  *  allpix Authors:
  *   John Idarraga <idarraga@cern.ch>

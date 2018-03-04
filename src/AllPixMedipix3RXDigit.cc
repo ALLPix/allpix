@@ -19,7 +19,6 @@ AllPixMedipix3RXDigit::AllPixMedipix3RXDigit()
 	pixelIDY = -1;
 	nthresholds = 8;
 	pixelCounts.clear();
-	kinEParent = 0.;
 
 	for(int i = 0 ; i < nthresholds ; i++) pixelCounts.push_back( 0 );
 

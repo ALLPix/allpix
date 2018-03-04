@@ -29,10 +29,9 @@
 /**
  * This constructor is called once per run
  */
-AllPixRun::AllPixRun(AllPixDetectorConstruction * det, TString ofp, TString dataset, TString tempDir, G4bool writeFlag, G4bool MCWriteFlag, G4bool eutelWriteFlag){
+AllPixRun::AllPixRun(AllPixDetectorConstruction * det, TString ofp, TString dataset, TString tempDir, G4bool writeFlag, G4bool MCWriteFlag){
 
   m_writeTPixTelescopeFilesFlag = writeFlag;
-  m_writeEUTelescopeFilesFlag = eutelWriteFlag;
   m_writeMCFilesFlag=MCWriteFlag; //nalipour: flag for MC
 
   m_detectorPtr = det;
@@ -234,7 +233,8 @@ void AllPixRun::RecordHitsForROOTFiles_withChargeSharing(const G4Event* evt) // 
 	     << "        be found to be different than the number of" << G4endl
 	     << "        detectors. nDetectors = " << m_nOfDetectors << G4endl
 	     << "        nDC =  " << nDC <<  " ... Giving up." << G4endl;
-      exit(1);
+	     //return;
+	     exit(1);
     }
   
   for (G4int i = 0 ; i < nDC ; i++) {
@@ -269,6 +269,7 @@ void AllPixRun::RecordDigits_all(const G4Event* evt) // Fill Data with charge sh
 	     << "        detectors. nDetectors = " << m_nOfDetectors << G4endl
 	     << "        nDC =  " << nDC <<  " ... Giving up." << G4endl;
       exit(1);
+      //return;
     }
 
   for (G4int i = 0 ; i < nDC ; i++) {
@@ -279,14 +280,25 @@ void AllPixRun::RecordDigits_all(const G4Event* evt) // Fill Data with charge sh
     G4int nDigits = digitsCollection->entries();
     for (G4int itr  = 0 ; itr < nDigits ; itr++)
       {
+	//std::cout << itr << " " << (*digitsCollection)[itr]->GetPixelIDX() << " " << (*digitsCollection)[itr]->GetPixelEnergyDep() << std::endl; //squirrel
     	MC_ROOT_data[i]->add_posX((*digitsCollection)[itr]->GetPixelIDX());
     	MC_ROOT_data[i]->add_posY((*digitsCollection)[itr]->GetPixelIDY());
     	MC_ROOT_data[i]->add_energyTotal((*digitsCollection)[itr]->GetPixelEnergyDep());
        	MC_ROOT_data[i]->add_TOT((*digitsCollection)[itr]->GetPixelCounts());
+	MC_ROOT_data[i]->add_POLangle((*digitsCollection)[itr]->GetPOLangle());
+	MC_ROOT_data[i]->add_AZMangle((*digitsCollection)[itr]->GetAZMangle());
+	MC_ROOT_data[i]->add_deltaEfrac((*digitsCollection)[itr]->GetdeltaEfrac());
+	MC_ROOT_data[i]->add_path_length_first_pixel((*digitsCollection)[itr]->Getpath_length_first_pixel());
+	MC_ROOT_data[i]->add_TruthEntryLocalX((*digitsCollection)[itr]->GetTruthEntryLocalX());
+	MC_ROOT_data[i]->add_TruthEntryLocalY((*digitsCollection)[itr]->GetTruthEntryLocalY());
+	MC_ROOT_data[i]->add_TruthExitLocalX((*digitsCollection)[itr]->GetTruthExitLocalX());
+        MC_ROOT_data[i]->add_TruthExitLocalY((*digitsCollection)[itr]->GetTruthExitLocalY());
        	MC_ROOT_data[i]->add_energyMC((*digitsCollection)[itr]->GetPixelEnergyMC());
-       	MC_ROOT_data[i]->add_posX_WithRespectToPixel((*digitsCollection)[itr]->Get_posX_WithRespectoToPixel());
+	MC_ROOT_data[i]->add_posX_WithRespectToPixel((*digitsCollection)[itr]->Get_posX_WithRespectoToPixel());
        	MC_ROOT_data[i]->add_posY_WithRespectToPixel((*digitsCollection)[itr]->Get_posY_WithRespectoToPixel());
        	MC_ROOT_data[i]->add_posZ_WithRespectToPixel((*digitsCollection)[itr]->Get_posZ_WithRespectoToPixel());
+	MC_ROOT_data[i]->add_InitE((*digitsCollection)[itr]->GetInitE());
+	MC_ROOT_data[i]->add_InitID((*digitsCollection)[itr]->GetInitID());
       }
   }
 }
@@ -477,11 +489,9 @@ void AllPixRun::FillTelescopeFiles(const G4Run* aRun, G4String folderName, G4boo
     }
 
   // clear map and close file for next run
-  // m_data.clear();
+  m_data.clear();
   tpixtelescope_f.close();
 }
-
-
 
 /**
  *  Called at the very end of the event
@@ -492,8 +502,8 @@ void AllPixRun::RecordEvent(const G4Event* evt) {
 
   RecordHits(evt);
   RecordDigits(evt);
-  if (m_writeTPixTelescopeFilesFlag || m_writeEUTelescopeFilesFlag)
-    RecordTelescopeDigits(evt);
+  if (m_writeTPixTelescopeFilesFlag)
+    //RecordTelescopeDigits(evt); //SQUIRREL
 
   if(m_writeMCFilesFlag) //nalipour: Record MC hits
     {
@@ -667,7 +677,8 @@ void AllPixRun::RecordDigits(const G4Event* evt){
 	   << "        be found to be different than the number of" << G4endl
 	   << "        detectors. nDetectors = " << m_nOfDetectors << G4endl
 	   << "        nDC =  " << nDC <<  " ... Giving up." << G4endl;
-    exit(1);
+    return;
+    //exit(1);
   }
 
   // lcio bridge

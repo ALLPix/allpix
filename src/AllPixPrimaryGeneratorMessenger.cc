@@ -76,7 +76,6 @@ AllPixPrimaryGeneratorMessenger::AllPixPrimaryGeneratorMessenger(
   m_beamTypePar1    = 1.;
   m_beamTypePar2    = 1.;
   m_TimepixTelescopeWriteFlag = false;
-  m_EUTelescopeWriteFlag = false;
   gunDir = new G4UIdirectory("/N06/gun/");
   gunDir->SetGuidance("PrimaryGenerator control");
   m_Write_MC_FilesFlag=false; //nalipour: MC hits
@@ -148,32 +147,6 @@ AllPixPrimaryGeneratorMessenger::AllPixPrimaryGeneratorMessenger(
   m_TimepixTelescopeSumTOTCmd->SetGuidance("Sum TOT of pixels with multiple hits/frame. Default ON.");
   m_TimepixTelescopeSumTOTCmd->SetDefaultValue(true);
   m_TimepixTelescopeSumTOTCmd->AvailableForStates(G4State_PreInit, G4State_Idle);
-	
-	
-  m_EUTelescopeWriteCmd = new G4UIcmdWithABool("/allpix/eutelescope/write",this);
-  m_EUTelescopeWriteCmd->SetGuidance("Switch on/off writing EUTelescope files. Default OFF.");
-  m_EUTelescopeWriteCmd->SetDefaultValue(false);
-  m_EUTelescopeWriteCmd->AvailableForStates(G4State_PreInit, G4State_Idle);
-  
-  m_EUTelescopeEventIDCmd = new G4UIcmdWithABool("/allpix/eutelescope/WriteEventID",this);
-  m_EUTelescopeEventIDCmd->SetGuidance("Switch on/off writing event ID as 4 field in EUTelescope files. Default OFF.");
-  m_EUTelescopeEventIDCmd->SetDefaultValue(true);
-  m_EUTelescopeEventIDCmd->AvailableForStates(G4State_PreInit, G4State_Idle);
-  
-   
-  
-
-  m_EUTelescopeFolderNameCmd = new G4UIcmdWithAString("/allpix/eutelescope/setFolderPath",this);;
-  m_EUTelescopeFolderNameCmd->SetGuidance("Set EUTelescope files folder path.");
-  m_EUTelescopeFolderNameCmd->SetGuidance("Directory structure will be created if it does not exist.");
-  m_EUTelescopeFolderNameCmd->SetGuidance("Default is ./");
-  m_EUTelescopeFolderNameCmd->SetDefaultValue("./");
-  m_EUTelescopeFolderNameCmd->AvailableForStates(G4State_PreInit, G4State_Idle);
-
-  m_EUTelescopeRunNumberCmd = new G4UIcmdWithAnInteger("/allpix/eutelescope/runnumber",this);
-  m_EUTelescopeRunNumberCmd->SetGuidance("RunNumber for EUTelescope file");
-  m_EUTelescopeRunNumberCmd->SetDefaultValue(0);
-  m_EUTelescopeRunNumberCmd->AvailableForStates(G4State_PreInit, G4State_Idle);
 
   //nalipour: MC hits
   m_Write_MC_FilesCmd = new G4UIcmdWithABool("/allpix/WriteROOTFiles/write",this);
@@ -204,7 +177,8 @@ AllPixPrimaryGeneratorMessenger::~AllPixPrimaryGeneratorMessenger()
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-void AllPixPrimaryGeneratorMessenger::SetNewValue(G4UIcommand* command, G4String newValue)
+void AllPixPrimaryGeneratorMessenger::SetNewValue(
+						  G4UIcommand* command, G4String newValue)
 { 
   if( command == m_MCPrefix )
     {
@@ -305,35 +279,8 @@ void AllPixPrimaryGeneratorMessenger::SetNewValue(G4UIcommand* command, G4String
       m_TimepixTelescopeSumTOTFlag = m_TimepixTelescopeSumTOTCmd->GetNewBoolValue(newValue);
     }
 
-		
-  if ( command == m_EUTelescopeWriteCmd )
-    {
-      m_EUTelescopeWriteFlag = m_EUTelescopeWriteCmd->GetNewBoolValue(newValue);		
-    }
-    
-  if ( command == m_EUTelescopeEventIDCmd )
-    {
-     m_EUTelescopeEventIDFlag  =m_EUTelescopeEventIDCmd->GetNewBoolValue(newValue);		
-    }          
-		
-  if ( command == m_EUTelescopeFolderNameCmd )
-    {
-      m_EUTelescopeFolderName = newValue;
-			
-      // check if folder exists, otherwise create it
-      struct stat st;
-      if ( stat(m_EUTelescopeFolderName,&st) != 0 )
-	{
-	  G4cout << "folder " << m_EUTelescopeFolderName << " does not exist, creating..." << G4endl;
-	  system(TString::Format("mkdir -p %s",m_EUTelescopeFolderName.data()));
-	}
-    }
-  
-  if ( command == m_EUTelescopeRunNumberCmd )
-    {
-      m_EUTelescopeRunNumber = m_EUTelescopeRunNumberCmd->GetNewIntValue(newValue);
-    }
-		
+
+
   //nalipour: MC hits
   if (command == m_Write_MC_FilesCmd)
     {

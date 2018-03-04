@@ -11,13 +11,6 @@
 #include <iostream>
 #include <fstream>
 #include <string>
-#include <tuple>
-#include <sys/stat.h>
-#include <unistd.h>
-#include <map>
-#include <math.h>
-#include <vector>
-#include "G4ThreeVector.hh"
 
 #include "CLHEP/Units/SystemOfUnits.h"
 using namespace CLHEP;
@@ -146,15 +139,6 @@ public:
     G4double GetThreshold(){return m_Chip_Threshold;}
     G4double GetCrossTalk(){return m_Cross_Talk;}
     G4double GetSaturationEnergy(){return m_Saturation_Energy;}
-    G4double GetTemperature(){return m_Temperature;};
-    G4double GetFlux(){return m_Flux;};
-    G4ThreeVector GetMagField(){return m_MagField;};
-
-    G4ThreeVector GetEFieldFromMap(G4ThreeVector);
-
-    G4bool GetEFieldBoolean(){return m_efieldfromfile;};
-
-
 
     ///////////////////////////////////////
     // Set
@@ -330,21 +314,6 @@ public:
         m_Saturation_Energy = val;
     }
 
-    void SetTemperature(G4double val){
-	m_Temperature = val;
-    }
-
-    void SetFlux(G4double val){
-	m_Flux = val;
-    }
-
-    void SetMagField(G4ThreeVector vals){
-	m_MagField = vals;
-    }
-
-    void SetEFieldMap(G4String valS);
-
-
     ///////////////////////////////////////////////////
     // operators
     //void operator=(AllPixGeoDsc &);
@@ -434,16 +403,8 @@ private:
     G4double m_Chip_Threshold;
     G4double m_Cross_Talk;
     G4double m_Saturation_Energy;
-    G4double m_Temperature;
-    G4double m_Flux;
-    G4ThreeVector m_MagField;
 
-	G4String m_EFieldFile;
 
-	vector<vector<vector<G4ThreeVector>>> m_efieldmap;
-	G4int m_efieldmap_nx, m_efieldmap_ny, m_efieldmap_nz;
-
-	G4bool m_efieldfromfile;
 
 };
 

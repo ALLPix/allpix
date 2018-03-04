@@ -78,8 +78,6 @@ AllPixRunAction::~AllPixRunAction()
   m_lciobridge_f->close();
   m_lciobridge_dut_f->close();
 
-  closeWriters();
-  
   delete timer;
 }
 
@@ -88,12 +86,12 @@ AllPixRunAction::~AllPixRunAction()
  */
 G4Run * AllPixRunAction::GenerateRun(){
 
+	
   m_writeTPixTelescopeFilesFlag = AllPixMessenger->GetTimepixTelescopeWriteFlag(); //pass it to veto RecordTelescopeDigits
-  m_writeEUTelescopeFilesFlag = AllPixMessenger->GetEUTelescopeWriteFlag();
   m_writeMCROOTFilesFlag = AllPixMessenger->GetWrite_MC_FilesFlag(); // nalipour: Flag to write the ROOT file
   
   m_AllPixRun = new AllPixRun(m_detectorPtr, m_detectorPtr->GetOutputFilePrefix(),
-			      m_dataset, m_tempdir, m_writeTPixTelescopeFilesFlag, m_writeMCROOTFilesFlag, m_writeEUTelescopeFilesFlag); // keep this pointer //nalipour: Add the flag for the ROOT files
+			      m_dataset, m_tempdir, m_writeTPixTelescopeFilesFlag, m_writeMCROOTFilesFlag); // keep this pointer //nalipour: Add the flag for the ROOT files
   m_AllPixRun->SetLCIOBridgeFileDsc(m_lciobridge_f, m_lciobridge_dut_f);
 
   if(m_writeMCROOTFilesFlag && writeROOTFile==NULL) //nalipour: Initialise the ROOT files (once in the whole program)
@@ -105,7 +103,7 @@ G4Run * AllPixRunAction::GenerateRun(){
       writeROOTFile=new AllPixWriteROOTFile* [(int)geoMap->size()];
       for( detItr = geoMap->begin() ; detItr != geoMap->end() ; detItr++)
 	{
-	  //G4cout << "nalipour ******" << (*detItr).first << G4endl;
+	  G4cout << "nalipour ******" << (*detItr).first << G4endl;
 	  writeROOTFile[m_AllPixRun->return_detIdToIndex((*detItr).first)]=new AllPixWriteROOTFile((*detItr).first, AllPixMessenger->GetWrite_MC_FolderName());
 	}
     }
@@ -119,47 +117,6 @@ void AllPixRunAction::BeginOfRunAction(const G4Run* aRun)
 {
   G4cout << "### Run " << aRun->GetRunID() << " start." << G4endl;
   timer->Start();
-
-  if(aRun->GetRunID()==0){
-
-    // Initialize Eutel output
-    m_writeEUTelescopeFilesFlag = AllPixMessenger->GetEUTelescopeWriteFlag();
-    m_EUTelescopeRunNumber = AllPixMessenger->GetEUTelescopeRunNumber();
-    
-    if(m_writeEUTelescopeFilesFlag){
-
-      m_writeEUTelescopeFolder = AllPixMessenger->GetEUTelescopeFolderName();
-
-      if(m_EUTelescopeRunNumber){ // EUTel Runnumber set by config
-	euRunNr = m_EUTelescopeRunNumber;
-      }else{
-	string eutelRunNrFile = AllPixMessenger->GetEUTelescopeFolderName();
-
-	if(m_writeEUTelescopeFolder.back() != '/'){
-	  m_writeEUTelescopeFolder.append("/");
-	  eutelRunNrFile.append("/");
-	}
-    
-	eutelRunNrFile.append("runnumber.dat");
-
-	ifstream runNrStrI(eutelRunNrFile);
-	runNrStrI >> euRunNr;
-	runNrStrI.close();
-
-	euRunNr++;
-
-	ofstream runNrStrO(eutelRunNrFile);
-	runNrStrO << euRunNr;
-	runNrStrO.close();
-      }
-      
-      G4cout << "This is EUTelescope Run Nr. " << euRunNr << G4endl;
-
-      // Initialize the other writers (LCIO, ...)
-      initWriters();
-      
-    }
-  }
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -167,7 +124,6 @@ void AllPixRunAction::BeginOfRunAction(const G4Run* aRun)
 void AllPixRunAction::EndOfRunAction(const G4Run* aRun)
 {   
 
-    
   // at the end of the run
   //G4cout << "Filling frames ntuple" << G4endl;
   m_AllPixRun->FillFramesNtuple(aRun);
@@ -187,17 +143,13 @@ void AllPixRunAction::EndOfRunAction(const G4Run* aRun)
     m_AllPixRun->FillTelescopeFiles(aRun,folderName,eventIDflag,sumTOTflag);
   }
 
-  // Give the data to the generic writer modules
-  writeEventToWriters(aRun);
-  
   if(m_writeMCROOTFilesFlag) //nalipour: Fill ROOT files
     {
       m_AllPixRun->FillROOTFiles(writeROOTFile);
     }
   timer->Stop();
   G4cout << "event Id = " << aRun->GetNumberOfEvent()
-	 << " " << *timer << G4endl;    
-     
+	 << " " << *timer << G4endl;
 
 }
 
@@ -206,44 +158,3 @@ AllPixRun* AllPixRunAction::ReturnAllPixRun()
   return m_AllPixRun;
 }
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
-void AllPixRunAction::initWriters(){
-
-  G4cout << "Initializing writers..." << G4endl;
-
-#ifdef HAVE_LCIO
-  if(m_writeEUTelescopeFilesFlag){
-    lcio = new AllPixLCIOwriter();
-    lcio->SetWriteEventID(AllPixMessenger->GetEUTelescopeEventIDFlag());       
-    writerList.push_back(lcio);
-  }
-#endif
-
-  G4cout << "writerList has " << writerList.size() << " entries. Initializing." << G4endl << G4endl;
-
-  for(size_t i=0; i<writerList.size(); i++){
-    writerList[i]->Initialize(m_writeEUTelescopeFolder, euRunNr);
-  }
-
-}
-
-void AllPixRunAction::writeEventToWriters(const G4Run* aRun){
-
-  // Get data map
-  map<int,vector<vector<vector<int>>>> data;
-  m_AllPixRun->getData(data);
-
-  for(size_t i=0; i<writerList.size(); i++){
-    // Give the data to the writer
-    writerList[i]->WriteEvent(euRunNr, aRun->GetRunID(), data);
-  }
-
-}
-
-void AllPixRunAction::closeWriters(){
-
-  for(size_t i=0; i<writerList.size(); i++){
-    writerList[i]->Close();
-  }  
-
-}

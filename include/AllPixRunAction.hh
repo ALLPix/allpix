@@ -46,20 +46,10 @@
 
 #include "AllPixPrimaryGeneratorAction.hh"
 #include "AllPixWriteROOTFile.hh" //nalipour
-#include "AllPixWriter.hh"
-
-#ifdef HAVE_LCIO
-#include "AllPixLCIOwriter.hh"
-#define lcio_h 1
-#else
-#define lcio_h 0
-#endif
 
 #include <iostream>
 #include <fstream>
 using namespace std;
-
-
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
@@ -115,27 +105,9 @@ private:
 
   AllPixPrimaryGeneratorMessenger * AllPixMessenger;
 
-
   G4bool m_writeTPixTelescopeFilesFlag;
-  G4bool m_writeEUTelescopeFilesFlag;
   G4bool m_writeMCROOTFilesFlag; //nalipour: Flag to write MC hits in a ROOT file
 
-  string m_writeEUTelescopeFolder;
-  G4int m_EUTelescopeRunNumber;
-  
-  G4int euRunNr;
-
-  vector <AllPixWriter*> writerList;
-
-  void initWriters();
-  void writeEventToWriters(const G4Run* aRun);
-  void closeWriters();
-
-#ifdef HAVE_LCIO
-  AllPixLCIOwriter * lcio;
-#endif
-
-  
 };
 
 

@@ -215,7 +215,7 @@ void AllPixMimosa26Digitizer::Digitize(){
 					if((tempPixel.first>=0 and tempPixel.second>=0) and (tempPixel.first<nPixX and tempPixel.second<nPixY)) pixelsContent[tempPixel] += (*hitsCollection)[itr]->GetEdep();
 
 					tempPixel.first  = (*hitsCollection)[itr]->GetPixelNbX()-1;
-					tempPixel.second = (*hitsCollection)[itr]->GetPixelNbY()-1;
+					tempPixel.second = (*hitsCollection)[itr]->GetPixelNbY()+1;
 					if((tempPixel.first>=0 and tempPixel.second>=0) and (tempPixel.first<nPixX and tempPixel.second<nPixY)) pixelsContent[tempPixel] += (*hitsCollection)[itr]->GetEdep();
 
 				}

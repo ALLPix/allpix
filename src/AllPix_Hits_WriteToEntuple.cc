@@ -80,7 +80,7 @@ void Hits_WriteToNtuple::fillVars(SimpleHits * hits_i){
 
 	// fill the Tree
 	nt->cd();
-	t2->Fill();
+	//t2->Fill();
 
 	// clean up
 	m_storableHits->Rewind();

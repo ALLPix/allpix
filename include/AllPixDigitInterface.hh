@@ -53,7 +53,16 @@ public:
 	virtual G4double GetPixelEnergyDep(){return 0;} ;     // MC+charge sharing
 	virtual G4double GetPixelEnergyMC() ;     //MC only (nalipour)
 	virtual G4ThreeVector GetPrimaryVertex(){return G4ThreeVector() ;}; // MC //
-
+  virtual G4double GetPOLangle() {return 0;};
+  virtual G4double GetAZMangle() {return 0;};
+  virtual G4double GetTruthEntryLocalX() {return 0;};
+  virtual G4double GetTruthEntryLocalY() {return 0;};
+  virtual G4double GetTruthExitLocalX() {return 0;};
+  virtual G4double GetTruthExitLocalY() {return 0;};
+  virtual G4double GetdeltaEfrac() {return 0;};
+  virtual G4double Getpath_length_first_pixel() {return 0;};
+  virtual G4double GetInitE() {return 0;};
+  virtual G4int GetInitID() {return 0;};
 	virtual void Set_posX_WithRespectoToPixel(G4double pos); //nalipour
 	virtual void Set_posY_WithRespectoToPixel(G4double pos); //nalipour
 	virtual void Set_posZ_WithRespectoToPixel(G4double pos); //nalipour

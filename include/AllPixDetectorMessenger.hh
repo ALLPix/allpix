@@ -40,7 +40,6 @@ class G4UIcmdWithoutParameter;
 class G4UIcmdWith3VectorAndUnit;
 class G4UIcmdWithADoubleAndUnit;
 class G4UIcmdWithAString;
-class G4UIcmdWithADouble;
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
@@ -61,13 +60,10 @@ private:
   G4UIdirectory *             m_configDir;
   G4UIdirectory *             m_extrasDir;
   G4UIdirectory *             m_beamDir;
-  G4UIdirectory *             m_eutelescopeDir;
- 
 
   G4UIcmdWithAnInteger *      m_detIdCmd;
   G4UIcmdWith3VectorAndUnit * m_detPosCmd;
   G4UIcmdWith3VectorAndUnit * m_detRotCmd;
-  G4UIcmdWithAString *        m_detEFieldFileCmd;
   G4UIcmdWith3VectorAndUnit * m_testStructPosCmd;
   G4UIcmdWith3VectorAndUnit * m_testStructRotCmd;
   G4UIcmdWithAnInteger *      m_testStructDetLinkCmd;
@@ -75,7 +71,7 @@ private:
   G4UIcmdWithAnInteger *      m_AppliancesType;
   G4UIcmdWith3VectorAndUnit * m_detAppliancePosCmd;
   G4UIcmdWith3VectorAndUnit * m_wrapperEnhancementCmd;
-  G4UIcmdWith3VectorAndUnit * m_magFieldCmd;
+  G4UIcmdWithADoubleAndUnit * m_magFieldCmd;
 
   G4UIcmdWithAString * m_worldMaterial;
 
@@ -87,8 +83,6 @@ private:
   G4UIcmdWithADoubleAndUnit * m_HVCmd;
   G4UIcmdWithADoubleAndUnit * m_ClockCmd;
   G4UIcmdWithADoubleAndUnit * m_StepLengthSensor;
-  G4UIcmdWithADouble * m_TempCmd;
-  G4UIcmdWithADouble * m_FluxCmd;
 
   G4UIcmdWithoutParameter   * m_UpdateCmd;
 

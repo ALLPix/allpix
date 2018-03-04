@@ -182,6 +182,8 @@ int main(int argc, char** argv)
 	visManager->Initialize();
 #endif
 
+	std::cout << "bannana " << std::endl;
+
 	// Get the pointer to the User Interface manager
 	//
 	G4UImanager* UI = G4UImanager::GetUIpointer();
@@ -190,8 +192,9 @@ int main(int argc, char** argv)
 
 	G4String command = "/control/execute ";
 
-	if (argc-1 == _RUN_BATCH)   // batch mode
-	{
+	//if (argc-1 == _RUN_BATCH)   // batch mode
+	    if (1==1) //so can run many jobs
+	  {
 		//G4String command = "/control/execute ";
 		//G4String fileName = argv[_MACRO];
 		UI->ApplyCommand(command+fileName);
@@ -228,16 +231,22 @@ int main(int argc, char** argv)
 		//session = new G4UIXm(argc, argv);
 		session = new G4UIterminal();
 
+		std::cout << "plum " << std::endl;
 		UI->ApplyCommand(command+fileName);
 		//UI->ApplyCommand("/control/execute visTutor/gui.mac");
-
+		std::cout << "book " << std::endl;
 		session->SessionStart();
+		std::cout << "squirrel " << std::endl;
 		delete session;
 	}
+
+	std::cout << "artichoke " << std::endl;
 
 #ifdef G4VIS_USE
 	delete visManager;
 #endif
+
+	std::cout << "ardvark " << std::endl;
 
 	// Geo description
 	extern ReadGeoDescription * g_GeoDsc; // already loaded ! :)

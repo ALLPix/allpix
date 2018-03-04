@@ -65,13 +65,13 @@ void AllPixMedipix3RXDigitizer::Digitize(){
 	AllPixGeoDsc * gD = GetDetectorGeoDscPtr();
 	gD->GetNPixelsX();
 
-	G4double kinEParent_tmp = 0.;
+	G4double kinEParent;
 	for(G4int itr  = 0 ; itr < nEntries ; itr++) {
 
 		tempPixel.first  = (*hitsCollection)[itr]->GetPixelNbX();
 		tempPixel.second = (*hitsCollection)[itr]->GetPixelNbY();
 		pixelsContent[tempPixel] += (*hitsCollection)[itr]->GetEdep();
-		kinEParent_tmp = (*hitsCollection)[itr]->GetKinEParent();
+		kinEParent = (*hitsCollection)[itr]->GetKinEParent();
 
 	}
 
@@ -110,7 +110,7 @@ void AllPixMedipix3RXDigitizer::Digitize(){
 		}
 
 		// kinEnergy parent.  Once per event.
-		digit->SetKinEParent( kinEParent_tmp );
+		digit->SetKinEParent( kinEParent );
 
 		m_digitsCollection->insert(digit);
 

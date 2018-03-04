@@ -72,7 +72,6 @@ public:
   void SetEdep     (G4double de)      { edep = de; };
   void SetPos      (G4ThreeVector xyz){ pos = xyz; };
   void SetPosWithRespectToPixel (G4ThreeVector pxzy) { m_posWithRespectToPixel = pxzy; };
-  void SetPosInLocalReferenceFrame (G4ThreeVector xyz) { m_posInLocalReferenceFrame = xyz; };
   void SetProcessName(G4String process) { processName = process; };
   void SetTrackPdgId(G4int pdgId) { pdgIdTrack = pdgId; };
   void SetTrackVolumeName(G4String vn) { trackVolumeName = vn; };
@@ -80,7 +79,11 @@ public:
   void SetDetId(G4int i){ detID = i; };
   void SetKinEParent(G4double kinE){ kinEParent = kinE; };
   //void SetKineticEnergy     (G4double kinE) {kinE = kinE; };
-  
+  void SetIncidentPOLAngle(G4double inc) {incidentPOLangle = inc;};
+  void SetIncidentAZMAngle(G4double inc) {incidentAZMangle = inc;};
+  void SetTruthEntryLocalX(G4double loc) {TruthEntryLocalX = loc;};
+  void SetTruthEntryLocalY(G4double loc) {TruthEntryLocalY = loc;};
+
   G4int GetTrackID()    { return trackID; };
   G4int GetParentID()    { return parentID; };
   G4int GetPixelNbX()  { return pixelNbX; };
@@ -91,16 +94,21 @@ public:
   G4double GetEdep()    { return edep; };
   G4ThreeVector GetPos(){ return pos; };
   G4ThreeVector GetPosWithRespectToPixel() { return m_posWithRespectToPixel; };
-  G4ThreeVector GetPosInLocalReferenceFrame() {return m_posInLocalReferenceFrame; };
   G4String GetProcessName() { return processName; };
   G4int GetTrackPdgId() { return pdgIdTrack; };
   G4String GetTrackVolumeName() {return trackVolumeName;};
   G4String GetParentVolumeName() {return parentVolumeName;};
   G4double GetKinEParent() { return kinEParent; };
+  G4double GetIncidentPOLAngle() {return incidentPOLangle;};
+  G4double GetIncidentAZMAngle() {return incidentAZMangle;};
+  G4double GetTruthEntryLocalX() {return TruthEntryLocalX;};
+  G4double GetTruthEntryLocalY() {return TruthEntryLocalY;};
   //G4double GetKineticEnergy(){ return kinE; };
   
 private:
   
+  G4double TruthEntryLocalX;
+  G4double TruthEntryLocalY;
   G4int         trackID;
   G4int         detID;
   G4int         parentID;
@@ -111,12 +119,13 @@ private:
   G4double      edep;
   G4ThreeVector pos;
   G4ThreeVector m_posWithRespectToPixel;
-  G4ThreeVector m_posInLocalReferenceFrame;
   G4String      processName;
   G4int         pdgIdTrack;
   G4String      trackVolumeName;
   G4String      parentVolumeName;
   G4double		kinEParent;
+  G4double incidentPOLangle;
+  G4double incidentAZMangle;
   //G4double      kinE;
 
 };

@@ -79,6 +79,10 @@ private:
   bool firstStrikePrimary;
   G4double _kinEPrimary;
   G4double _totalEdep;
+  G4double azm_angle;
+  G4double pol_angle;
+  G4double truthx;
+  G4double truthy;
 
   // used to dump tracking info in special cases
   long m_globalTrackId_Dump;

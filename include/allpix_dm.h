@@ -66,7 +66,6 @@ public:
 	void ResetCountersPad();
 	void CleanUpMatrix();
 	void SetFrameAsMCData(){m_isMCData = true;};
-	std::map<int, int> const& GetHitMap() const {return m_frameXC;};
 	Int_t GetEntriesPad(){return m_nEntriesPad;};
 	Int_t GetHitsInPad(){return m_nHitsInPad;};
 	Int_t GetChargeInPad(){return m_nChargeInPad;};
@@ -124,7 +123,6 @@ private:
 	TString  fMPXDataSetNumber;
 
 public:
-	FrameStruct(){};
 	FrameStruct(TString);
 	~FrameStruct(){};
 
@@ -138,11 +136,6 @@ public:
 	void RewindMetaDataValues();
 	void SetnX(int x){fWidth = x;};
 	void SetnY(int y){fHeight = y;};
-	Int_t GetWidth() {return fWidth;};
-	Int_t GetHeight() {return fHeight;};
-	std::vector<Double_t> const& GetVertex_x() const {return m_primaryVertex_x;};
-	std::vector<Double_t> const& GetVertex_y() const {return m_primaryVertex_y;};
-	std::vector<Double_t> const& GetVertex_z() const {return m_primaryVertex_z;};
 
 	ClassDef(FrameStruct,4)
 };

@@ -20,8 +20,12 @@
 #include "AllPixMedipix3RXDigitizer.hh"
 // Included by newdigitizer.sh script --> EdepHistogrammer
 #include "AllPixEdepHistogrammerDigitizer.hh"
-// Included by newdigitizer.sh script --> CMSp1
-#include "AllPixCMSp1Digitizer.hh"
+// Included by newdigitizer.sh script --> TruthWithLorentz
+#include "AllPixTruthWithLorentzDigitizer.hh"
+// Included by newdigitizer.sh script --> TruthWithLorentzAndTOT
+#include "AllPixTruthWithLorentzAndTOTDigitizer.hh"
+// Included by newdigitizer.sh script --> TestBichsel
+#include "AllPixTestBichselDigitizer.hh"
 // __endofheader__
 
 // geometry
@@ -158,13 +162,28 @@ else if (digitizerName == "EdepHistogrammer") {
 			dmPtr = static_cast<AllPixDigitizerInterface *> (dp);
 			cout << "    Setting up a " << digitizerName << " digitizer for det : " << detectorId << endl;
 		}
- // Included by newdigitizer.sh script --> CMSp1
-else if (digitizerName == "CMSp1") {
-			AllPixCMSp1Digitizer * dp = new AllPixCMSp1Digitizer(digitizerModulesNames[itr] , hcName, digitColectionName);
+ 
+// Included by newdigitizer.sh script --> TruthWithLorentz
+else if (digitizerName == "TruthWithLorentz") {
+			AllPixTruthWithLorentzDigitizer * dp = new AllPixTruthWithLorentzDigitizer(digitizerModulesNames[itr] , hcName, digitColectionName);
 			dmPtr = static_cast<AllPixDigitizerInterface *> (dp);
 			cout << "    Setting up a " << digitizerName << " digitizer for det : " << detectorId << endl;
 		}
-
+ 
+// Included by newdigitizer.sh script --> TruthWithLorentzAndTOT
+else if (digitizerName == "TruthWithLorentzAndTOT") {
+			AllPixTruthWithLorentzAndTOTDigitizer * dp = new AllPixTruthWithLorentzAndTOTDigitizer(digitizerModulesNames[itr] , hcName, digitColectionName);
+			dmPtr = static_cast<AllPixDigitizerInterface *> (dp);
+			cout << "    Setting up a " << digitizerName << " digitizer for det : " << detectorId << endl;
+		}
+ 
+// Included by newdigitizer.sh script --> TestBichsel
+else if (digitizerName == "TestBichsel") {
+			AllPixTestBichselDigitizer * dp = new AllPixTestBichselDigitizer(digitizerModulesNames[itr] , hcName, digitColectionName);
+			dmPtr = static_cast<AllPixDigitizerInterface *> (dp);
+			cout << "    Setting up a " << digitizerName << " digitizer for det : " << detectorId << endl;
+		}
+ 
         // __endofdigitlist__
    	    else {
 			G4cout << "    can't find digitizer with name : " << digitizerName << G4endl;

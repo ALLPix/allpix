@@ -1,0 +1,84 @@
+####################################################################
+# Sensor
+/allpix/det/setId        998
+/allpix/det/setPosition  0.0 0.0 0.0 mm
+/allpix/det/setRotation  0.0 84.3 0.0 deg
+
+# B-field
+#/allpix/extras/setPeakField 0.4 tesla
+
+####################################################################
+# Build detectors
+/allpix/phys/Physics emstandard_opt0
+/run/initialize
+/allpix/det/update
+
+#/control/manual #lists all possible commands
+
+# Visualization
+/vis/scene/create
+/vis/scene/add/axes 0. 0. 0. 10. cm
+/vis/scene/add/volume World -1 2
+/vis/scene/add/magneticField 3
+/vis/viewer/set/style s
+#/vis/open OIX 1024x768-100+100
+#/vis/open OGLIXm 1024x768-100+100
+#/vis/open RayTracer
+#/vis/open OGLIQt
+#/vis/open OGLSQt
+#/vis/open OIX
+#/vis/open OGLIX 1024x768-100+100
+#/vis/open OGLSXm
+#/vis/open DAWNFILE
+#/vis/open OGLSX
+#/vis/open OGL 600x600-0+0
+/vis/viewer/set/background 0.4 0.5 0.6
+/vis/viewer/set/viewpointThetaPhi 20 50
+/vis/viewer/zoom 2.0
+/vis/viewer/flush
+
+/vis/scene/add/trajectories
+/vis/modeling/trajectories/create/drawByCharge
+/vis/modeling/trajectories/drawByCharge-0/default/setDrawStepPts false
+/vis/modeling/trajectories/drawByCharge-0/default/setStepPtsSize 2
+/vis/scene/endOfEventAction accumulate
+#/vis/viewer/flush
+
+####################################################################
+# Verbose control
+/run/verbose 0
+/control/verbose 0
+/control/saveHistory
+/tracking/verbose 0
+/allpix/phys/verbose 0
+
+####################################################################
+# Write Telescope files
+/allpix/timepixtelescope/setFolderPath /tmp/bnachman/
+/allpix/timepixtelescope/setEventIDcolumn 0
+/allpix/timepixtelescope/setSumTOT 1
+/allpix/timepixtelescope/write 1
+
+/allpix/WriteROOTFiles/write 1
+/allpix/WriteROOTFiles/setFolderPath LongClusters/runELPLUS
+
+####################################################################
+# Source GPS
+#/gps/List #lists the particles you can shoot with G4
+/gps/particle e+
+/gps/pos/type Plane
+/gps/pos/shape Rectangle
+/gps/pos/centre 0.0 0.0 -30.25 mm
+/gps/pos/halfy 0.01 cm #chip is ~2 cm x 2 cm
+/gps/pos/halfx 0.02 cm
+/gps/direction 0 0 1
+/gps/energy 20.0 GeV
+/gps/number 1 #number of particles per bunch
+
+####################################################################
+# Shoot
+/allpix/beam/frames 10000
+/allpix/beam/type const 1
+/allpix/beam/on
+
+

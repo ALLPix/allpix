@@ -69,7 +69,7 @@ void AllPixEdepHistogrammerDigitizer::Digitize(){
 	for(G4int itr  = 0 ; itr < nEntries ; itr++) {
 		G4double zpos = (*hitsCollection)[itr]->GetPosWithRespectToPixel().z()/um;
 		// Dose in Rad , Energy in joule / kg(V*rho)
-		//double doseInRad = 1.60217733e-16*((*hitsCollection)[itr]->GetEdep()/keV)/(0.001*0.001*0.01e-6*2532.59);
+		double doseInRad = 1.60217733e-16*((*hitsCollection)[itr]->GetEdep()/keV)/(0.001*0.001*0.01e-6*2532.59);
 		Edeposition->Fill(zpos,(*hitsCollection)[itr]->GetEdep()/keV);
 		//G4cout << "Deposition of " << (*hitsCollection)[itr]->GetEdep()/keV << "keV at x,y,z : " << xpos << " " << ypos << " " << zpos << endl;
 		tempPixel.first  = (*hitsCollection)[itr]->GetPixelNbX();
