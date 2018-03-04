@@ -76,7 +76,7 @@
 /allpix/timepixtelescope/write 1
 
 /allpix/WriteROOTFiles/write 1
-/allpix/WriteROOTFiles/setFolderPath Yitian_data/Simulationkaon+PLUS_8_linear_eta_0.0_pT_0.4
+/allpix/WriteROOTFiles/setFolderPath SiliconLBLData/
 
 ####################################################################
 
