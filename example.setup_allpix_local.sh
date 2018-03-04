@@ -1,9 +1,0 @@
-source /afs/cern.ch/sw/lcg/external/gcc/4.8/x86_64-slc6/setup.sh
-source /home/mbenoit/workspace/GEANT4/root-6.04.00/bin/thisroot.sh 
-source /home/mbenoit/workspace/GEANT4/geant4.10.1-install/bin/geant4.sh
-export OIVHOME=/afs/cern.ch/eng/clic/software/Pixel_TestBeam_Software/OpenInventor/OIV_Install
-export OIVLIBS=/afs/cern.ch/eng/clic/software/Pixel_TestBeam_Software/OpenInventor/OIV_Install/lib/libSoXt.so
-export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/afs/cern.ch/eng/clic/software/Pixel_TestBeam_Software/xerces/lib
-export G4WORKDIR=/home/mbenoit/geant4_workdir
-export PATH=$PATH:/home/mbenoit/geant4_workdir/bin/Linux-g++
-export LD_LIBRARY_PATH=/home/mbenoit/miniconda/lib:$LD_LIBRARY_PATH
