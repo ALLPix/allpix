@@ -113,6 +113,7 @@ void AllPixLCIOwriter::WriteEvent(int runnr, int eventID, map<int,vector<vector<
   sprintf(encodingString, "sensorID:7,sparsePixelType:5");
 
   int planeNr = 0;
+  int dutNr = telescopePlanes;
 
   LCCollectionVec* telescopeDataCollection = new LCCollectionVec( LCIO::TRACKERDATA );
   CellIDEncoder<TrackerDataImpl> telescopeEncoder(encodingString, telescopeDataCollection);
@@ -135,12 +136,12 @@ void AllPixLCIOwriter::WriteEvent(int runnr, int eventID, map<int,vector<vector<
 
     if(inTelescope){
       telescopeEncoder["sensorID"] = planeNr;
-      telescopeEncoder["sparsePixelType"] = 2;
+      telescopeEncoder["sparsePixelType"] = 2;  //type 1 works for EUTelescope reconstruction
       
       telescopeEncoder.setCellID(planeData);
     }else{
-      encoder["sensorID"] = planeNr;
-      encoder["sparsePixelType"] = 2;
+      encoder["sensorID"] = dutNr;
+      encoder["sparsePixelType"] = 2;      //type 1 works for EUTelescope reconstruction
 
       encoder.setCellID(planeData);
     }
@@ -203,17 +204,19 @@ void AllPixLCIOwriter::WriteEvent(int runnr, int eventID, map<int,vector<vector<
     }else if(detId == 901){
       sprintf(collectionName, "CMSPixelREF");
     }else{
-      sprintf(collectionName, "Det%d",detId);
+      //sprintf(collectionName, "Det%d",detId);
+      sprintf(collectionName, "zsdata_apix"); //EUTelescope reco
     }
 
     if(inTelescope){
       telescopeDataCollection->addElement(planeData);
+      planeNr++;
     }else{
       dataCollection->addElement(planeData);
       event->addCollection(dataCollection, collectionName);
+      dutNr++;
     }
 
-    planeNr++;
     
   }
 
