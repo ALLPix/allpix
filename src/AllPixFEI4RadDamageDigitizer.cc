@@ -79,8 +79,10 @@ AllPixFEI4RadDamageDigitizer::AllPixFEI4RadDamageDigitizer(G4String modName, G4S
   biasVoltage = 80; // V.  This is not used if external TCAD maps are supplied.
   temperature = 263.2;// K  
   bField = 0.;// Tesla = V*s/m^2 
-  threshold = 2000*elec; //This is the threshold for charge collection.
-  tuning = 9./(20000*elec); //for X ToT @ Y e, this is X/Y so that a deposited energy of Y gives a ToT of X.  Typical values are 5 ToT @ 20ke.
+  threshold = 1500*elec; //This is the threshold for charge collection.
+  tuneTOT = 10.;
+  tuneCharge = 8000*elec;
+  tuning = tuneTOT/tuneCharge; //for X ToT @ Y e, this is X/Y so that a deposited energy of Y gives a ToT of X.  Typical values are 5 ToT @ 20ke.
 
   //Phenomenological parameters
   precision = 10; //this is the number of charges to divide the G4 hit into.
@@ -222,7 +224,7 @@ AllPixFEI4RadDamageDigitizer::AllPixFEI4RadDamageDigitizer(G4String modName, G4S
 	G4double position=pass*i;
 	if (depletionLength != 0) {
 	  if(biasVoltage<depVoltage)	electricField= 2*(biasVoltage/depletionLength)*(1-position/depletionLength);
-	  if(biasVoltage>=depVoltage)  electricField=(2*depVoltage/depletionLength)*(1-position/depletionLength)+(biasVoltage-depVoltage)/(depletionLength);
+	  if(biasVoltage>=depVoltage)	electricField=(2*depVoltage/depletionLength)*(1-position/depletionLength)+(biasVoltage-depVoltage)/(depletionLength);
 	  if(position>depletionLength) electricField=0.;
 	}
 		    
@@ -265,7 +267,8 @@ AllPixFEI4RadDamageDigitizer::AllPixFEI4RadDamageDigitizer(G4String modName, G4S
 	m_eFieldMap1D = tmp_eFieldMap1D;
       }
     } 
-  }	 
+  }
+  	 
   if (Efield3D){
     m_eFieldMap1D = new TH1F("hefieldz","hefieldz",eFieldMap->GetNbinsZ(),eFieldMap->GetZaxis()->GetBinCenter(1)-0.5*eFieldMap->GetZaxis()->GetBinWidth(1),eFieldMap->GetZaxis()->GetBinCenter(eFieldMap->GetNbinsZ())+0.5*eFieldMap->GetZaxis()->GetBinWidth(eFieldMap->GetNbinsZ()));
     for (int k=1; k<=eFieldMap->GetNbinsZ(); k++){
@@ -325,7 +328,11 @@ AllPixFEI4RadDamageDigitizer::AllPixFEI4RadDamageDigitizer(G4String modName, G4S
       for (int i=1; i<= distancemap_e->GetNbinsX(); i++){
 	    for (int j=1; j<= distancemap_e->GetNbinsY(); j++){
 	      distancemap_e->SetBinContent(i,j,0); //if you travel long enough, you will reach the electrode.
-	      distancemap_h->SetBinContent(i,j,detectorThickness); //if you travel long enough, you will reach the electrode.
+	      if (distancemap_e->GetXaxis()->GetBinCenter(i) < distancemap_e->GetXaxis()->GetBinCenter(distancemap_e->GetNbinsX())/3) {
+		distancemap_h->SetBinContent(i,j,0);
+	      } else {
+		distancemap_h->SetBinContent(i,j,detectorThickness);
+	      }
 	    }
       }
       
@@ -367,9 +374,10 @@ AllPixFEI4RadDamageDigitizer::AllPixFEI4RadDamageDigitizer(G4String modName, G4S
 	  timeMap_h->SetBinContent(k,mysum_h);
 	  }
       }
-      FillHoles(distancemap_e, 0, "distancefit_e");
-      FillHoles(distancemap_h, 1, "distancefit_h");
-
+      if (eFieldMap == 0) {
+	PatchDistanceMap(distancemap_e, 0, "distancefit_e");
+	PatchDistanceMap(distancemap_h, 1, "distancefit_h");
+      }
     }//end generating maps
 
   if (debug_maps){
@@ -882,7 +890,7 @@ Double_t fun_h(Double_t *x, Double_t *par) {
 }
 
 //2dfit
-void AllPixFEI4RadDamageDigitizer::FillHoles(TH2F *distancemap, G4bool isHole, char *name) {
+void AllPixFEI4RadDamageDigitizer::PatchDistanceMap(TH2F *distancemap, G4bool isHole, char *name) {
   double fitlow = 0.;
   int binlow = 0;
   double fieldStrength = 0.;
@@ -1342,9 +1350,13 @@ void AllPixFEI4RadDamageDigitizer::Digitize(){
   for( ; pCItr != pixelsContent.end() ; pCItr++) {
 
     G4double deposited_energy = (*pCItr).second;
-    int ToT = TMath::FloorNint(deposited_energy*tuning);
-    //G4cout<<"  X " << (*pCItr).first.first<< " Y "<< (*pCItr).first.second<< " EN " << (*pCItr).second <<" Threshold "<<threshold<<" tot "<< ToT<< G4endl;
-    if (ToT >=15) ToT = 15; //FEI4 is 4-bit.
+    //int ToT = TMath::FloorNint(deposited_energy*tuning);
+    //TOT in 1--14 (ROD/RCE) for HitDiscCnfg=0
+    int offsetTOT = 1; //min TOT value for q>=thres
+    int ToT = int( (tuneTOT-offsetTOT)/(tuneCharge - threshold)*(deposited_energy-threshold) )+offsetTOT;
+    //G4cout<<"  X " << (*pCItr).first.first<< " Y "<< (*pCItr).first.second<< " EN " << (*pCItr).second <<" Threshold "<<threshold<<" tot "<< ToT<< " old tot "<<TMath::FloorNint(deposited_energy*tuning)<< G4endl;
+    if (ToT < 0) ToT = 0;
+    if (ToT > 14) ToT = 14; //FEI4 is 4-bit.
     AllPixFEI4RadDamageDigit * digit = new AllPixFEI4RadDamageDigit;
     digit->SetPixelIDX((*pCItr).first.first);
     digit->SetPixelIDY((*pCItr).first.second);

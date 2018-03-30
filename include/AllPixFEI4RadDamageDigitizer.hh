@@ -120,7 +120,7 @@ private:
   }
 
 	// functions for maps calculation
-	void FillHoles(TH2F *distancemap, G4bool isHole, char *name);
+	void PatchDistanceMap(TH2F *distancemap, G4bool isHole, char *name);
 
   G4double GetElectricField(G4double z);
   G4double GetElectricField(G4double x, G4double y, G4double z);
@@ -154,6 +154,8 @@ private:
   G4double betaHoles;
   G4double bField;
   G4double chipNoise;
+  G4double tuneTOT;
+  G4double tuneCharge;
   G4double tuning;
   G4double threshold;
   G4double diffusion_length;
