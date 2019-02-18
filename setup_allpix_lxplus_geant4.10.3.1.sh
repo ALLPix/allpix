@@ -1,8 +1,10 @@
 #cmake 3.3.2
 export PATH=/afs/cern.ch/sw/lcg/contrib/CMake/3.3.2/Linux-x86_64/bin:${PATH}
 #gcc4.8
-source /afs/cern.ch/sw/lcg/external/gcc/4.8/x86_64-slc6/setup.sh
-
+#source /afs/cern.ch/sw/lcg/external/gcc/4.8/x86_64-slc6/setup.sh
+# later for centos7
+#source /cvmfs/sft.cern.ch/lcg/contrib/gcc/4.8.4/x86_64-centos7-gcc48-opt/setup.sh
+source /cvmfs/sft.cern.ch/lcg/contrib/gcc/4.8.4/x86_64-slc6-gcc48-opt/setup.sh
 
 
 #python2.7.4
