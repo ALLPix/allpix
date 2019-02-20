@@ -25,8 +25,9 @@ export PYTHONPATH=$PYTHONPATH:/afs/cern.ch/work/m/mbenoit/public/AllPixSoftware/
 
 
 #root6
-source /afs/cern.ch/work/m/mbenoit/public/AllPixSoftware/geant4/root-6.04.00/bin/thisroot.sh
-export PATH=$ROOTSYS/bin:$PATH
+#source /afs/cern.ch/work/m/mbenoit/public/AllPixSoftware/geant4/root-6.04.00/bin/thisroot.sh
+source /cvmfs/sft.cern.ch/lcg/app/releases/ROOT/6.04.18/x86_64-slc6-gcc48-opt/root/bin/thisroot.sh
+#export PATH=$ROOTSYS/bin:$PATH
 
 #xerces 
 
